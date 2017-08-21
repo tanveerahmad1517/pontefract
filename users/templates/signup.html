@@ -1,12 +1,14 @@
 {% extends "base.html" %}
 
+{% block title %}Sign Up{% endblock %}
+
 {% block body %}
 <nav></nav>
 <main>
   <form method="POST">
-    <input type="text" id="username" name="username">
-    <input type="text" id="email" name="email">
-    <input type="text" id="password" name="password">
+    <input type="text" id="username" name="username" placeholder="Username">
+    <input type="text" id="email" name="email" placeholder="email">
+    <input type="text" id="password" name="password" placeholder="password">
     {% csrf_token %}
     <input type="submit" value="Sign Up">
   </form>
