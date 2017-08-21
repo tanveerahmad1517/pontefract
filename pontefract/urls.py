@@ -19,5 +19,6 @@ from timetrack import urls as timetrack_urls
 
 urlpatterns = [
     url(r"^logout/$", users_views.logout_page, name="logout_page"),
+    url(r"^login/$", users_views.login_page, name="login_page"),
     url(r"^", include(timetrack_urls)),
 ]

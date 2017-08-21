@@ -15,6 +15,17 @@ def signup_page(request):
     return render(request, "signup.html")
 
 
+def login_page(request):
+    if request.method == "POST":
+        user = authenticate(
+         username=request.POST["username"],
+         password=request.POST["password"]
+        )
+        if user:
+            login(request, user)
+    return redirect("/")
+
+
 def logout_page(request):
     logout(request)
     return redirect("/")

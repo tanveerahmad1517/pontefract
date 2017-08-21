@@ -41,6 +41,29 @@ class SignupPageViewTests(ViewTest):
 
 
 
+class LoginViewTests(ViewTest):
+
+    def test_login_view_redirects_to_home(self):
+        response = self.client.post("/login/", data={
+         "username": "testsam",
+         "password": "testpassword"
+        })
+        self.assertRedirects(response, "/")
+        response = self.client.get("/login/")
+        self.assertRedirects(response, "/")
+
+
+    def test_login_view_can_login(self):
+        self.client.logout()
+        self.assertNotIn("_auth_user_id", self.client.session)
+        response = self.client.post("/login/", data={
+         "username": "testsam",
+         "password": "testpassword"
+        })
+        self.assertIn("_auth_user_id", self.client.session)
+
+
+
 class LogoutViewTests(ViewTest):
 
     def test_logout_view_redirects_to_home(self):

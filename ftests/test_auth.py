@@ -38,6 +38,20 @@ class SignupTests(FunctionalTest):
         nav = self.browser.find_element_by_tag_name("nav")
         self.assertNotIn("malotru69", nav.text)
 
+        # They log back in
+        login = nav.find_element_by_id("login")
+        name_input, password_input = login.find_elements_by_tag_name("input")[:2]
+        name_input.send_keys("malotru69")
+        password_input.send_keys("password1")
+        submit_button = login.find_elements_by_tag_name("input")[-1]
+        submit_button.click()
+
+        # They are on the main page, logged in
+        self.check_page("/")
+        nav = self.browser.find_element_by_tag_name("nav")
+        self.assertIn("malotru69", nav.text)
+        self.assertIn("Log Out", nav.text)
+
 
     def test_cannot_sign_up_with_exsisting_email(self):
         pass
