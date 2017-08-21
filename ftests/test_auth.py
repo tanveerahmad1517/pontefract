@@ -31,6 +31,13 @@ class SignupTests(FunctionalTest):
         self.assertIn("malotru69", nav.text)
         self.assertIn("Log Out", nav.text)
 
+        # They logout
+        logout = nav.find_element_by_id("logout-link").find_element_by_tag_name("a")
+        logout.click()
+        self.check_page("/")
+        nav = self.browser.find_element_by_tag_name("nav")
+        self.assertNotIn("malotru69", nav.text)
+
 
     def test_cannot_sign_up_with_exsisting_email(self):
         pass
