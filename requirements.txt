@@ -1,4 +1,0 @@
-django==1.10.7
-selenium
-gunicorn
-psycopg2
