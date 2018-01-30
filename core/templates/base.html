@@ -6,23 +6,11 @@
   <meta name="author" content="Sam Ireland">
   <meta name="description" content="pontefract - time tracking for individuals">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{% endblock %} - Pontefract</title>
-  <script src="https://code.jquery.com/jquery.min.js"></script>
-  {% block css %}{% endblock %}
-  <!--analytics-->
+
+  {% block head %}{% endblock %}
 </head>
 
 <body>
-    <header>{{ user.username }}</header>
-
-    <nav></nav>
-
-    <main>
-{% block main %}{% endblock %}
-    </main>
-
-    <footer></footer>
-
+{% block body %}{% endblock %}
 </body>
-
 </html>
