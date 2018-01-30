@@ -2,6 +2,7 @@
 
 {% block head %}
 <title>Sign Up</title>
+<link rel="stylesheet" type="text/css" href="/static/css/signup.css">
 {% endblock %}
 
 
@@ -12,7 +13,9 @@
         <div id="site-description">Time tracking for individuals</div>
     </div>
 
-{% include "signup-form.html" %}
+    <div id="signup">
+    {% include "signup-form.html" %}
+    </div>
 
 </main>
 {% endblock %}

@@ -1,0 +1,50 @@
+html {
+    font-family: Arvo;
+    margin: 0px;
+}
+
+body {
+    margin: 0px;
+}
+
+form {
+    padding: 20px;
+}
+
+input {
+    display: block;
+    font-size: 120%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 8px;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid silver;
+}
+
+input[type=submit] {
+    width: auto;
+    cursor: pointer;
+}
+
+
+@media only screen and (min-width: 568px) {
+  /* iPad and up */
+
+
+
+
+@media only screen and (min-width: 769px) {
+  /* Small Desktop screens and up */
+
+
+
+
+
+
+@media only screen and (min-width: 1025px) {
+  /* Big Desktop screens */
+
+
+
+}

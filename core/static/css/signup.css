@@ -1,0 +1,63 @@
+#overview {
+    background-color: #40739e;
+    color: white;
+    text-align: center;
+    margin: 0px;
+}
+
+h1 {
+    font-size: 400%;
+    text-align: center;
+    padding-top: 70px;
+    padding-bottom: 70px;
+    margin: 0px;
+}
+
+#site-description {
+    padding: 40px;
+}
+
+#signup {
+    margin: 0px;
+    background-color: #8c7ae6;
+}
+
+form {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+
+@media only screen and (min-width: 568px) {
+  /* iPad and up */
+
+
+
+
+@media only screen and (min-width: 769px) {
+  /* Small Desktop screens and up */
+
+  h1 {
+      font-size: 500%;
+  }
+
+  #site-description {
+      font-size: 150%;
+  }
+
+  form {
+      width: 50%;
+      margin-left: auto;
+      margin-right: auto;
+  }
+
+
+
+
+@media only screen and (min-width: 1025px) {
+  /* Big Desktop screens */
+
+
+
+}
