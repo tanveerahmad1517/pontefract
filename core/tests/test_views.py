@@ -70,6 +70,19 @@ class SignupViewTests(DjangoTest):
         self.mock_login.assert_called_with(request, "USER")
 
 
+    def test_new_user_validation(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = False
+        request = self.make_request("---", method="post", data={
+         "username": "u", "email": "e"
+        })
+        self.check_view_uses_template(signup, request, "signup.html")
+        self.check_view_has_context(signup, request, {"form": form})
+        self.mock_form.assert_called_with(QueryDict("username=u&email=e"))
+        form.is_valid.assert_called_with()
+
+
 
 class HomeViewTests(DjangoTest):
 
