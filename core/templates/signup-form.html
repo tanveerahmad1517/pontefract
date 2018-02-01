@@ -1,6 +1,7 @@
 <form method="POST">
     <div class="error" id="username-error">{% if form.errors.username %}{{ form.errors.username.0 }}{% endif %}</div>
     {{ form.username }}
+    <div class="error" id="email-error">{% if form.errors.email %}{{ form.errors.email.0 }}{% endif %}</div>
     {{ form.email }}
     <div class="error" id="password-error">{% if form.errors.password %}{{ form.errors.password.0 }}{% endif %}</div>
     {{ form.password }}
