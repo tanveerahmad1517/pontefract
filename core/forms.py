@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 
 class UserForm(forms.ModelForm):
 
-
     confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={
      "placeholder": "Confirm Password", "autocomplete": "off"
     }))
@@ -26,7 +25,7 @@ class UserForm(forms.ModelForm):
 
 
     def clean(self):
-        cleaned_data = super(UserForm, self).clean()
+        cleaned_data = forms.ModelForm.clean(self)
 
         if User.objects.filter(email=cleaned_data["email"]):
             self.add_error("email", "That email address is already in use")
