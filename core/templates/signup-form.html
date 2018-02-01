@@ -2,8 +2,9 @@
     <div class="error" id="username-error">{% if form.errors.username %}{{ form.errors.username.0 }}{% endif %}</div>
     {{ form.username }}
     {{ form.email }}
+    <div class="error" id="password-error">{% if form.errors.password %}{{ form.errors.password.0 }}{% endif %}</div>
     {{ form.password }}
-    <input id="confirm-password" name="password2" type="password" placeholder="Confirm Password">
+    {{ form.confirm_password }}
     {% csrf_token %}
     <input type="submit" value="Sign Up">
 </form>

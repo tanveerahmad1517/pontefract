@@ -3,6 +3,11 @@ from django.contrib.auth.models import User
 
 class UserForm(forms.ModelForm):
 
+
+    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={
+     "placeholder": "Confirm Password", "autocomplete": "off"
+    }))
+
     class Meta:
         model = User
         fields = ["username", "email", "password"]
@@ -18,3 +23,12 @@ class UserForm(forms.ModelForm):
           "placeholder": "Password", "autocomplete": "off"
          })
         }
+
+
+    def clean(self):
+        cleaned_data = super(UserForm, self).clean()
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if password != confirm_password:
+            self.add_error('password', "Passwords don't match")
