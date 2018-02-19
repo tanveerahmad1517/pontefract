@@ -2,5 +2,4 @@ __pycache__
 *.pyc
 *.sqlite3
 secrets.py
-*env
-.DS_Store
+*.log
