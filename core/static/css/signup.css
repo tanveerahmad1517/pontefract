@@ -3,6 +3,48 @@ html {
     font-size: 200%;
 }
 
+body {
+    margin: 0px;
+}
+
+#top-panel {
+    background-color: #a7d0f9;
+    color: #561a3e;
+    padding-bottom: 40px;
+}
+
 h1 {
     font-family: Shrikhand;
+    margin-top: 0px;
+    padding-top: 50px;
+}
+
+#site-description {
+    font-size: 80%;
+    line-height: 2;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+
+@media only screen and (min-width: 568px) {
+    /* iPad and up */
+}
+
+
+@media only screen and (min-width: 769px) {
+    /* Small Desktop screens and up */
+    h1 {
+        font-family: Shrikhand;
+        font-size: 300%;
+    }
+
+    #site-description {
+
+    }
+}
+
+
+@media only screen and (min-width: 1025px) {
+    /* Big Desktop screens */
 }
