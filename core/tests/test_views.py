@@ -26,7 +26,7 @@ class SignupViewTests(DjangoTest):
 
     def test_signup_view_uses_signup_template(self):
         request = self.make_request("---")
-        self.check_view_uses_template(signup, request, "signup.html")
+        self.check_view_uses_template(signup, request, "landing.html")
 
 
     def test_signup_view_sends_signup_form(self):

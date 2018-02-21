@@ -29,3 +29,8 @@ class SignupTests(FunctionalTest):
         password2.send_keys("swordfish")
         submit = form.find_elements_by_tag_name("input")[-1]
         self.click(submit)
+
+        # They are on their own homepage
+        self.check_page("/")
+        nav = self.browser.find_element_by_tag_name("nav")
+        self.assertIn("joe23", nav.text)

@@ -7,4 +7,4 @@ def root(request):
 
 def signup(request):
     form = SignupForm()
-    return render(request, "signup.html", {"form": form})
+    return render(request, "landing.html", {"form": form})
