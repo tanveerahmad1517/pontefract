@@ -1,3 +1,4 @@
+import os
 from .secrets import SECRET_KEY, BASE_DIR, DATABASES
 
 ALLOWED_HOSTS = []
@@ -21,6 +22,7 @@ MIDDLEWARE = [
 ]
 
 STATIC_URL = "/static/"
+STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, "../static"))
 
 TEMPLATES = [{
  "BACKEND": "django.template.backends.django.DjangoTemplates",
