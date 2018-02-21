@@ -1,0 +1,8 @@
+<form>
+    {{ form.username }}
+    {{ form.email }}
+    {{ form.password }}
+    {{ form.confirm_password }}
+    {% csrf_token %}
+    <input type="submit" value="Sign Up">
+</form>
