@@ -40,3 +40,16 @@ class SignupViewTests(DjangoTest):
         form.is_valid.assert_called_with()
         form.save.assert_called_with()
         self.mock_login.assert_called_with(request, "USER")
+
+
+    def test_can_return_form_if_errors(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = False
+        request = self.make_request(
+         "---", method="post", data={"username": "u", "email": "e"}
+        )
+        response = signup(request)
+        self.mock_form.assert_called_with(QueryDict("username=u&email=e"))
+        form.is_valid.assert_called_with()
+        self.assertIs(form, response)

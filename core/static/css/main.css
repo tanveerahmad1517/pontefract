@@ -19,6 +19,12 @@ form {
     text-align: center;
 }
 
+.error {
+    color: #b33939;
+    font-size: 14px;
+    text-align: left;
+}
+
 input {
     display: block;
     font-size: 18px;

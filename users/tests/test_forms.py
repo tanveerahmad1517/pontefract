@@ -4,6 +4,20 @@ from users.forms import *
 
 class SignupFormTests(DjangoTest):
 
+    '''def setUp(self):
+        self.patch1 = patch("core.forms.User.objects.filter")
+        self.patch2 = patch("django.forms.ModelForm.clean")
+        self.mock_filter = self.patch1.start()
+        self.mock_clean = self.patch2.start()
+        self.mock_filter.return_value = []
+        self.mock_clean.side_effect = lambda x: x.data
+
+
+    def tearDown(self):
+        self.patch1.stop()
+        self.patch2.stop()'''
+
+
     def test_signup_form_has_correct_fields(self):
         form = SignupForm()
         self.assertEqual(
@@ -60,3 +74,11 @@ class SignupFormTests(DjangoTest):
          }
         )
         self.assertTrue(password.is_required)
+
+
+    def test_can_validate_form(self):
+        form = SignupForm(data={
+         "username": "u", "email": "e@b.com",
+         "password": "p", "confirm_password": "p"
+        })
+        self.assertTrue(form.is_valid())

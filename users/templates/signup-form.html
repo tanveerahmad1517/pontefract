@@ -1,5 +1,7 @@
-<form method="POST" action="{% url 'signup' %}">
+<form method="POST">
     <h2>Create an account</h2>
+    {% if form.errors.username %}<div class="error" id="username-error">{{ form.errors.username.0 }}</div>{% endif %}
+    <div class="error" id="username-error">
     {{ form.username }}
     {{ form.email }}
     {{ form.password }}
