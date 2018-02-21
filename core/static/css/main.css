@@ -2,6 +2,19 @@ html {
     font-family: Questrial;
 }
 
+body {
+    margin: 0px;
+}
+
+nav {
+    background-color: #a7d0f9;
+    color: #561a3e;
+    height: auto;
+    text-align: right;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
 form {
     text-align: center;
 }
