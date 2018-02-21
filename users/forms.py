@@ -35,3 +35,7 @@ class SignupForm(forms.ModelForm):
         cleaned_data = forms.ModelForm.clean(self)
         if User.objects.filter(email=cleaned_data["email"]):
             self.add_error("email", "That email address is already in use")
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+        if password != confirm_password:
+            self.add_error("password", "Passwords don't match")

@@ -113,3 +113,36 @@ class SignupTests(FunctionalTest):
         self.assertEqual(password2.get_attribute("value"), "")
         error = form.find_element_by_id("email-error")
         self.assertIn("already", error.text)
+
+
+    def test_passwords_must_match(self):
+        # User goes to the landing page
+        self.get("/")
+
+        # They enter details with differing passwords
+        form = self.browser.find_element_by_tag_name("form")
+        username = form.find_elements_by_tag_name("input")[0]
+        email = form.find_elements_by_tag_name("input")[1]
+        password1 = form.find_elements_by_tag_name("input")[2]
+        password2 = form.find_elements_by_tag_name("input")[3]
+        username.send_keys("joe23")
+        email.send_keys("a@b.com")
+        password1.send_keys("swordfish")
+        password2.send_keys("swordfishx")
+        submit = form.find_elements_by_tag_name("input")[-1]
+        self.click(submit)
+
+        # They are still on the landing page and an error message is there
+        self.check_page("/")
+        signup = self.browser.find_element_by_id("signup-panel")
+        form = signup.find_element_by_tag_name("form")
+        username = form.find_elements_by_tag_name("input")[0]
+        email = form.find_elements_by_tag_name("input")[1]
+        password1 = form.find_elements_by_tag_name("input")[2]
+        password2 = form.find_elements_by_tag_name("input")[3]
+        self.assertEqual(username.get_attribute("value"), "joe23")
+        self.assertEqual(email.get_attribute("value"), "a@b.com")
+        self.assertEqual(password1.get_attribute("value"), "")
+        self.assertEqual(password2.get_attribute("value"), "")
+        error = form.find_element_by_id("password-error")
+        self.assertIn("don't match", error.text)

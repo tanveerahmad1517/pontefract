@@ -10,7 +10,7 @@ class SignupFormTests(DjangoTest):
         self.mock_filter = self.patch1.start()
         self.mock_clean = self.patch2.start()
         self.mock_filter.return_value = []
-        #self.mock_clean.side_effect = lambda x: x.data
+        self.mock_clean.side_effect = lambda x: x.data
 
 
     def tearDown(self):
@@ -92,3 +92,12 @@ class SignupFormTests(DjangoTest):
         })
         self.assertFalse(form.is_valid())
         self.assertIn("email", form.errors)
+
+
+    def test_form_rejects_mismatched_passwords(self):
+        form = SignupForm(data={
+         "username": "u", "email": "E@X.com",
+         "password": "p", "confirm_password": "p2"
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn("password", form.errors)

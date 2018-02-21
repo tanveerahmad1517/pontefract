@@ -5,7 +5,8 @@
 
     {% if form.errors.email %}<div class="error" id="email-error">{{ form.errors.email.0 }}</div>{% endif %}
     {{ form.email }}
-    
+
+    {% if form.errors.password %}<div class="error" id="password-error">{{ form.errors.password.0 }}</div>{% endif %}
     {{ form.password }}
     {{ form.confirm_password }}
     {% csrf_token %}
