@@ -29,3 +29,9 @@ class SignupForm(forms.ModelForm):
         for field in self.fields:
             self.fields[field].widget.is_required = True
             del self.fields[field].widget.attrs["maxlength"]
+
+
+    def clean(self):
+        cleaned_data = forms.ModelForm.clean(self)
+        if User.objects.filter(email=cleaned_data["email"]):
+            self.add_error("email", "That email address is already in use")

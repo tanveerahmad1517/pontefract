@@ -18,7 +18,6 @@ def landing(request):
 
     if request.method == "POST":
         response = signup(request)
-        print(response)
         if isinstance(response, HttpResponse):
             return response
         return render(request, "landing.html", {"form": response})
