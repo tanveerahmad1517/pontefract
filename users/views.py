@@ -20,6 +20,7 @@ def signup(request):
              email=form.data["email"]
             )
             user.set_password(form.data["password"])
+            user.save()
             auth.login(request, user)
         else:
             return form
@@ -40,5 +41,7 @@ def login(request):
             )
             auth.login(request, user)
             return redirect("/")
+        else:
+            return render(request, "login.html", {"form": form})
     form = LoginForm()
     return render(request, "login.html", {"form": form})

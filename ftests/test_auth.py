@@ -164,3 +164,32 @@ class LoginTests(FunctionalTest):
         self.check_page("/")
         nav = self.browser.find_element_by_tag_name("nav")
         self.assertIn("sarah", nav.text)
+
+
+    def test_can_reject_bad_credentials(self):
+        # User goes to the login page
+        self.get("/")
+        signup = self.browser.find_element_by_id("signup-panel")
+        form = signup.find_element_by_tag_name("form")
+        login_link = form.find_elements_by_tag_name("a")[-1]
+        self.click(login_link)
+        self.check_page("/login/")
+
+        # They put incorrect credentials in
+        form = self.browser.find_element_by_tag_name("form")
+        username = form.find_elements_by_tag_name("input")[0]
+        password = form.find_elements_by_tag_name("input")[1]
+        username.send_keys("sarah")
+        password.send_keys("psswrd")
+        submit = form.find_elements_by_tag_name("input")[-1]
+
+        # They don't work
+        self.click(submit)
+        self.check_page("/login/")
+        form = self.browser.find_element_by_tag_name("form")
+        username = form.find_elements_by_tag_name("input")[0]
+        password = form.find_elements_by_tag_name("input")[1]
+        self.assertEqual(username.get_attribute("value"), "sarah")
+        self.assertEqual(password.get_attribute("value"), "")
+        error = form.find_element_by_id("username-error")
+        self.assertIn("credentials", error.text)

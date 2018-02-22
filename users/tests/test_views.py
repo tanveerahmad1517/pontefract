@@ -110,3 +110,17 @@ class LoginViewTests(DjangoTest):
         form.is_valid.assert_called_with()
         self.mock_authenticate.assert_called_with(username="u", password="p")
         self.mock_login.assert_called_with(request, "USER")
+
+
+    def test_can_return_form_if_errors(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = False
+        request = self.make_request(
+         "---", method="post", data={"username": "u", "password": "p"}
+        )
+        response = login(request)
+        self.mock_form.assert_called_with(QueryDict("username=u&password=p"))
+        form.is_valid.assert_called_with()
+        self.check_view_uses_template(login, request, "login.html")
+        self.check_view_has_context(login, request, {"form": form})

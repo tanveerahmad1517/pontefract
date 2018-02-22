@@ -1,5 +1,6 @@
 <form method="POST">
     <h2>Sign in to your account</h2>
+    {% if form.errors.username %}<div class="error" id="username-error">{{ form.errors.username.0 }}</div>{% endif %}
     {{ form.username }}
     {{ form.password }}
     {% csrf_token %}
