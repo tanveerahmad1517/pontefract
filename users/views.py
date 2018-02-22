@@ -20,7 +20,6 @@ def signup(request):
              email=form.data["email"]
             )
             user.set_password(form.data["password"])
-            user.save()
             auth.login(request, user)
         else:
             return form
@@ -32,6 +31,14 @@ def login(request):
     log in on POST requests.
 
     It expects there to be a template called 'login.html' somewhere."""
-    
+
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            user = auth.authenticate(
+             username=form.data["username"], password=form.data["password"]
+            )
+            auth.login(request, user)
+            return redirect("/")
     form = LoginForm()
     return render(request, "login.html", {"form": form})

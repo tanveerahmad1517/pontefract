@@ -66,11 +66,17 @@ class LoginViewTests(DjangoTest):
 
     def setUp(self):
         self.patch1 = patch("users.views.LoginForm")
+        self.patch2 = patch("django.contrib.auth.login")
+        self.patch3 = patch("django.contrib.auth.authenticate")
         self.mock_form = self.patch1.start()
+        self.mock_login = self.patch2.start()
+        self.mock_authenticate = self.patch3.start()
 
 
     def tearDown(self):
         self.patch1.stop()
+        self.patch2.stop()
+        self.patch3.stop()
 
 
     def test_login_view_uses_login_template(self):
@@ -83,3 +89,24 @@ class LoginViewTests(DjangoTest):
         request = self.make_request("---")
         self.check_view_has_context(login, request, {"form": "FORM"})
         self.mock_form.assert_called_with()
+
+
+    def test_login_form_redirects_on_successful_post(self):
+        request = self.make_request("---", method="post")
+        self.check_view_redirects(login, request, "/")
+
+
+    def test_login_form_can_login(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = True
+        form.data = {"username": "u", "password": "p"}
+        self.mock_authenticate.return_value = "USER"
+        request = self.make_request(
+         "---", method="post", data={"username": "u", "password": "p"}
+        )
+        login(request)
+        self.mock_form.assert_called_with(QueryDict("username=u&password=p"))
+        form.is_valid.assert_called_with()
+        self.mock_authenticate.assert_called_with(username="u", password="p")
+        self.mock_login.assert_called_with(request, "USER")

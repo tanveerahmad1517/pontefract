@@ -76,7 +76,7 @@ class SignupFormTests(DjangoTest):
         self.assertTrue(password.is_required)
 
 
-    def test_can_validate_form(self):
+    def test_can_validate_signup_form(self):
         form = SignupForm(data={
          "username": "u", "email": "e@b.com",
          "password": "p", "confirm_password": "p"
@@ -106,6 +106,19 @@ class SignupFormTests(DjangoTest):
 
 class LoginFormTests(DjangoTest):
 
+    def setUp(self):
+        self.patch1 = patch("users.forms.authenticate")
+        self.patch2 = patch("django.forms.ModelForm.clean")
+        self.mock_auth = self.patch1.start()
+        self.mock_clean = self.patch2.start()
+        self.mock_clean.side_effect = lambda x: x.data
+
+
+    def tearDown(self):
+        self.patch1.stop()
+        self.patch2.stop()
+
+
     def test_login_form_has_correct_fields(self):
         form = LoginForm()
         self.assertEqual(list(form.fields.keys()), ["username", "password"])
@@ -127,3 +140,17 @@ class LoginFormTests(DjangoTest):
         self.assertEqual(password.__class__.input_type, "password")
         self.assertEqual(password.attrs, {"placeholder": "Password"})
         self.assertTrue(password.is_required)
+
+
+    def test_can_validate_login_form(self):
+        self.mock_auth.return_value = "USER"
+        form = LoginForm(data={"username": "u", "password": "p"})
+        self.assertTrue(form.is_valid())
+        self.mock_auth.assert_called_with(username="u", password="p")
+
+
+    def test_can_reject_login_form(self):
+        self.mock_auth.return_value = None
+        form = LoginForm(data={"username": "u", "password": "p"})
+        self.assertFalse(form.is_valid())
+        self.mock_auth.assert_called_with(username="u", password="p")

@@ -158,3 +158,9 @@ class LoginTests(FunctionalTest):
         username.send_keys("sarah")
         password.send_keys("password")
         submit = form.find_elements_by_tag_name("input")[-1]
+
+        # They submit and are logged in
+        self.click(submit)
+        self.check_page("/")
+        nav = self.browser.find_element_by_tag_name("nav")
+        self.assertIn("sarah", nav.text)

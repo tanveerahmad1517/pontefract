@@ -10,7 +10,7 @@ class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
         User.objects.create_user(
          username="sarah",
          email="sarah@gmail.com",
-         password="passwords"
+         password="password"
         )
 
 
