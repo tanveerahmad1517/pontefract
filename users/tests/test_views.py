@@ -8,13 +8,16 @@ class SignupViewTests(DjangoTest):
     def setUp(self):
         self.patch1 = patch("users.views.SignupForm")
         self.patch2 = patch("django.contrib.auth.login")
+        self.patch3 = patch("users.views.User.objects.create")
         self.mock_form = self.patch1.start()
         self.mock_login = self.patch2.start()
+        self.mock_user = self.patch3.start()
 
 
     def tearDown(self):
         self.patch1.stop()
         self.patch2.stop()
+        self.patch3.stop()
 
 
     def test_signup_view_redirects_to_home_on_get(self):
@@ -31,15 +34,18 @@ class SignupViewTests(DjangoTest):
         form = Mock()
         self.mock_form.return_value = form
         form.is_valid.return_value = True
-        form.save.return_value = "USER"
+        form.data = {"username": "u", "email": "e", "password": "p"}
+        user = Mock()
+        self.mock_user.return_value = user
         request = self.make_request(
          "---", method="post", data={"username": "u", "email": "e"}
         )
         signup(request)
         self.mock_form.assert_called_with(QueryDict("username=u&email=e"))
         form.is_valid.assert_called_with()
-        form.save.assert_called_with()
-        self.mock_login.assert_called_with(request, "USER")
+        self.mock_user.assert_called_with(username="u", email="e")
+        user.set_password.assert_called_with("p")
+        self.mock_login.assert_called_with(request, user)
 
 
     def test_can_return_form_if_errors(self):

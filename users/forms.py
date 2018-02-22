@@ -39,3 +39,11 @@ class SignupForm(forms.ModelForm):
         confirm_password = cleaned_data.get("confirm_password")
         if password != confirm_password:
             self.add_error("password", "Passwords don't match")
+
+
+    def save(self):
+        User.objects.create_user(
+         username="user",
+         email="a@b.com",
+         password="password"
+        )

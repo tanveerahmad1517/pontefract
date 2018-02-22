@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 import django.contrib.auth as auth
+from django.contrib.auth.models import User
 from users.forms import SignupForm
 
 def signup(request):
@@ -14,7 +15,12 @@ def signup(request):
     if request.method == "POST":
         form = SignupForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            user = User.objects.create(
+             username=form.data["username"],
+             email=form.data["email"]
+            )
+            user.set_password(form.data["password"])
+            user.save()
             auth.login(request, user)
         else:
             return form

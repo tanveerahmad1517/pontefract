@@ -146,3 +146,11 @@ class SignupTests(FunctionalTest):
         self.assertEqual(password2.get_attribute("value"), "")
         error = form.find_element_by_id("password-error")
         self.assertIn("don't match", error.text)
+
+
+
+class LoginTests(FunctionalTest):
+
+    def test_user_can_login(self):
+        # The user goes to the landing page
+        self.get("/")
