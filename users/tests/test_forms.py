@@ -101,3 +101,29 @@ class SignupFormTests(DjangoTest):
         })
         self.assertFalse(form.is_valid())
         self.assertIn("password", form.errors)
+
+
+
+class LoginFormTests(DjangoTest):
+
+    def test_login_form_has_correct_fields(self):
+        form = LoginForm()
+        self.assertEqual(list(form.fields.keys()), ["username", "password"])
+
+
+    def test_username_widget_is_correct(self):
+        form = LoginForm()
+        username = form.fields["username"].widget
+        self.assertEqual(username.__class__.input_type, "text")
+        self.assertEqual(
+         username.attrs, {"autocomplete": "off", "placeholder": "Username"}
+        )
+        self.assertTrue(username.is_required)
+
+
+    def test_password_field_is_correct(self):
+        form = LoginForm()
+        password = form.fields["password"].widget
+        self.assertEqual(password.__class__.input_type, "password")
+        self.assertEqual(password.attrs, {"placeholder": "Password"})
+        self.assertTrue(password.is_required)

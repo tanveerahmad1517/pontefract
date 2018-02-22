@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 import django.contrib.auth as auth
 from django.contrib.auth.models import User
-from users.forms import SignupForm
+from users.forms import SignupForm, LoginForm
 
 def signup(request):
     """This view handles requests to create an account.
@@ -25,3 +25,13 @@ def signup(request):
         else:
             return form
     return redirect("/")
+
+
+def login(request):
+    """This view serves the login page on GET requests, and handles requests to
+    log in on POST requests.
+
+    It expects there to be a template called 'login.html' somewhere."""
+    
+    form = LoginForm()
+    return render(request, "login.html", {"form": form})

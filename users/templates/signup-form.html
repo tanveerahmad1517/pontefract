@@ -11,4 +11,5 @@
     {{ form.confirm_password }}
     {% csrf_token %}
     <input type="submit" value="Sign Up">
+    <div class="login">Or alternatively, <a href="{% url 'login' %}">log in to your account</a></div>
 </form>

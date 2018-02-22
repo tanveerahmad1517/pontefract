@@ -1,5 +1,4 @@
 from .base import FunctionalTest
-from django.contrib.auth.models import User
 
 class SignupTests(FunctionalTest):
 
@@ -38,12 +37,6 @@ class SignupTests(FunctionalTest):
 
 
     def test_usernames_must_be_unique(self):
-        User.objects.create_user(
-         username="user",
-         email="a@b.com",
-         password="password"
-        )
-
         # User goes to the landing page
         self.get("/")
 
@@ -53,7 +46,7 @@ class SignupTests(FunctionalTest):
         email = form.find_elements_by_tag_name("input")[1]
         password1 = form.find_elements_by_tag_name("input")[2]
         password2 = form.find_elements_by_tag_name("input")[3]
-        username.send_keys("user")
+        username.send_keys("sarah")
         email.send_keys("joe@gmail.com")
         password1.send_keys("swordfish")
         password2.send_keys("swordfish")
@@ -68,7 +61,7 @@ class SignupTests(FunctionalTest):
         email = form.find_elements_by_tag_name("input")[1]
         password1 = form.find_elements_by_tag_name("input")[2]
         password2 = form.find_elements_by_tag_name("input")[3]
-        self.assertEqual(username.get_attribute("value"), "user")
+        self.assertEqual(username.get_attribute("value"), "sarah")
         self.assertEqual(email.get_attribute("value"), "joe@gmail.com")
         self.assertEqual(password1.get_attribute("value"), "")
         self.assertEqual(password2.get_attribute("value"), "")
@@ -77,12 +70,6 @@ class SignupTests(FunctionalTest):
 
 
     def test_emails_must_be_unique(self):
-        User.objects.create_user(
-         username="user",
-         email="a@b.com",
-         password="password"
-        )
-
         # User goes to the landing page
         self.get("/")
 
@@ -93,7 +80,7 @@ class SignupTests(FunctionalTest):
         password1 = form.find_elements_by_tag_name("input")[2]
         password2 = form.find_elements_by_tag_name("input")[3]
         username.send_keys("joe23")
-        email.send_keys("a@b.com")
+        email.send_keys("sarah@gmail.com")
         password1.send_keys("swordfish")
         password2.send_keys("swordfish")
         submit = form.find_elements_by_tag_name("input")[-1]
@@ -108,7 +95,7 @@ class SignupTests(FunctionalTest):
         password1 = form.find_elements_by_tag_name("input")[2]
         password2 = form.find_elements_by_tag_name("input")[3]
         self.assertEqual(username.get_attribute("value"), "joe23")
-        self.assertEqual(email.get_attribute("value"), "a@b.com")
+        self.assertEqual(email.get_attribute("value"), "sarah@gmail.com")
         self.assertEqual(password1.get_attribute("value"), "")
         self.assertEqual(password2.get_attribute("value"), "")
         error = form.find_element_by_id("email-error")
@@ -154,3 +141,20 @@ class LoginTests(FunctionalTest):
     def test_user_can_login(self):
         # The user goes to the landing page
         self.get("/")
+
+        # The signup form has a link to login
+        signup = self.browser.find_element_by_id("signup-panel")
+        form = signup.find_element_by_tag_name("form")
+        login_link = form.find_elements_by_tag_name("a")[-1]
+
+        # They click it and go to the login page
+        self.click(login_link)
+        self.check_page("/login/")
+
+        # There is a form, which they fill in
+        form = self.browser.find_element_by_tag_name("form")
+        username = form.find_elements_by_tag_name("input")[0]
+        password = form.find_elements_by_tag_name("input")[1]
+        username.send_keys("sarah")
+        password.send_keys("password")
+        submit = form.find_elements_by_tag_name("input")[-1]

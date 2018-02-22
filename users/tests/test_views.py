@@ -59,3 +59,27 @@ class SignupViewTests(DjangoTest):
         self.mock_form.assert_called_with(QueryDict("username=u&email=e"))
         form.is_valid.assert_called_with()
         self.assertIs(form, response)
+
+
+
+class LoginViewTests(DjangoTest):
+
+    def setUp(self):
+        self.patch1 = patch("users.views.LoginForm")
+        self.mock_form = self.patch1.start()
+
+
+    def tearDown(self):
+        self.patch1.stop()
+
+
+    def test_login_view_uses_login_template(self):
+        request = self.make_request("---")
+        self.check_view_uses_template(login, request, "login.html")
+
+
+    def test_login_view_sends_signup_form(self):
+        self.mock_form.return_value = "FORM"
+        request = self.make_request("---")
+        self.check_view_has_context(login, request, {"form": "FORM"})
+        self.mock_form.assert_called_with()

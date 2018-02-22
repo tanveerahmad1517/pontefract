@@ -44,6 +44,11 @@ form input[type=submit] {
     color: #ffffff;
 }
 
+.login {
+    font-size: 50%;
+    margin-top: 30px;
+}
+
 
 @media only screen and (min-width: 568px) {
     /* iPad and up */

@@ -1,0 +1,7 @@
+<form>
+    <h2>Sign in to your account</h2>
+    {{ form.username }}
+    {{ form.password }}
+    {% csrf_token %}
+    <input type="submit" value="Sign In">
+</form>

@@ -8,5 +8,5 @@ class UrlTests(DjangoTest):
         self.check_url_returns_view("/", core_views.root)
 
 
-    def test_signup_url(self):
-        self.check_url_returns_view("/signup/", user_views.signup)
+    def test_login_url(self):
+        self.check_url_returns_view("/login/", user_views.login)

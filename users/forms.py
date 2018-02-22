@@ -47,3 +47,13 @@ class SignupForm(forms.ModelForm):
          email="a@b.com",
          password="password"
         )
+
+
+class LoginForm(forms.Form):
+
+    username = forms.CharField(widget=forms.TextInput(attrs={
+     "placeholder": "Username", "autocomplete": "off"
+    }))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={
+     "placeholder": "Password"
+    }))
