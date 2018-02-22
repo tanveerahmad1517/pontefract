@@ -4,5 +4,6 @@ import users.views as user_views
 
 urlpatterns = [
  path(r"login/", user_views.login, name="login"),
+ path(r"logout/", user_views.logout),
  path(r"", core_views.root),
 ]

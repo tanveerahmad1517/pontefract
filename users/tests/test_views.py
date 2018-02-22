@@ -124,3 +124,26 @@ class LoginViewTests(DjangoTest):
         form.is_valid.assert_called_with()
         self.check_view_uses_template(login, request, "login.html")
         self.check_view_has_context(login, request, {"form": form})
+
+
+
+class LogoutViewTests(DjangoTest):
+
+    @patch("django.contrib.auth.logout")
+    def test_logout_view_logs_out_on_post(self, mock_logout):
+        request = self.make_request("---", method="post")
+        logout(request)
+        mock_logout.assert_called_with(request)
+
+
+    @patch("django.contrib.auth.logout")
+    def test_logout_view_does_nothing_on_get(self, mock_logout):
+        request = self.make_request("---")
+        logout(request)
+        self.assertFalse(mock_logout.called)
+
+
+    @patch("django.contrib.auth.logout")
+    def test_logout_view_redirects_home(self, mock_logout):
+        request = self.make_request("---", method="post")
+        self.check_view_redirects(logout, request, "/")

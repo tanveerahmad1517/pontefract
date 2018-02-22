@@ -10,3 +10,7 @@ class UrlTests(DjangoTest):
 
     def test_login_url(self):
         self.check_url_returns_view("/login/", user_views.login)
+
+
+    def test_logout_url(self):
+        self.check_url_returns_view("/logout/", user_views.logout)

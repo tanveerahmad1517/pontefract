@@ -16,3 +16,13 @@ class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
 
     def tearDown(self):
         self.browser.close()
+
+
+    def login(self):
+        self.client.login(username="sarah", password="password")
+        cookie = self.client.cookies["sessionid"].value
+        self.browser.get(self.live_server_url + "/")
+        self.browser.add_cookie({
+         "name": "sessionid", "value": cookie, "secure": False, "path": "/"
+        })
+        self.browser.refresh()

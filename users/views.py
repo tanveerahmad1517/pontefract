@@ -45,3 +45,9 @@ def login(request):
             return render(request, "login.html", {"form": form})
     form = LoginForm()
     return render(request, "login.html", {"form": form})
+
+
+def logout(request):
+    if request.method == "POST":
+        auth.logout(request)
+    return redirect("/")

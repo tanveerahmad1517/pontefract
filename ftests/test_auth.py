@@ -193,3 +193,19 @@ class LoginTests(FunctionalTest):
         self.assertEqual(password.get_attribute("value"), "")
         error = form.find_element_by_id("username-error")
         self.assertIn("credentials", error.text)
+
+
+
+class LogoutTests(FunctionalTest):
+
+    def test_can_logout(self):
+        # The user goes to their home page
+        self.login()
+        self.get("/")
+
+        # They can log out
+        nav = self.browser.find_element_by_tag_name("nav")
+        logout_link = nav.find_element_by_id("logout-link")
+        self.click(logout_link)
+        self.check_page("/")
+        signup = self.browser.find_element_by_id("signup-panel")
