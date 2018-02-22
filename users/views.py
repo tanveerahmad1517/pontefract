@@ -48,6 +48,9 @@ def login(request):
 
 
 def logout(request):
+    """The logout view logs out any user who makes a POSt request to this
+    view."""
+    
     if request.method == "POST":
         auth.logout(request)
     return redirect("/")
