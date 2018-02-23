@@ -5,10 +5,13 @@
 
 {% block body %}
 <nav>
-    {{ user.username }}
-    <form id="logout-form" method="POST" action="/logout/">
-        <a id="logout-link" href="javascript:void(0)" onclick="$(this).parent().submit()">Log Out</a>
-        {% csrf_token %}
-    </form>
+    <div id="logo">pontefract</div>
+    <div id="nav-links">
+        <a>{{ user.username }}</a>
+        <form id="logout-form" method="POST" action="/logout/">
+            <a id="logout-link" href="javascript:void(0)" onclick="$(this).parent().submit()">Log Out</a>
+            {% csrf_token %}
+        </form>
+    </div>
 </nav>
 {% endblock %}
