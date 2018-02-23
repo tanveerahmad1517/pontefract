@@ -10,10 +10,8 @@ nav {
     background-color: #a7d0f9;
     color: #561a3e;
     height: auto;
-    padding-left: 20px;
-    padding-right: 20px;
     display: flex;
-    align-items: center;
+    position: relative;
 }
 
 nav #logo {
@@ -21,25 +19,49 @@ nav #logo {
     font-family: Shrikhand;
     font-size: 200%;
     line-height: 2;
+    margin-left: 30px;
 }
 
 nav #nav-links {
-    display: inline-block;
-    text-align: right;
-    flex-grow: 5;
+    display: none;
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    background-color: inherit;
 }
 
-nav a {
-    text-decoration: none;
-    color: inherit;
-    font-weight: bold;
-    margin-left: 15px;
-    margin-right: 15px;
-}
-
-nav form {
+#nav-links form {
     display: inline;
 }
+
+#nav-links a {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    font-size: 140%;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #a7d0f9;
+    background-color: #8fbeea;
+}
+
+nav #mobile-menu {
+    text-align: right;
+    flex-grow: 5;
+    font-size: 170%;
+    height: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 30px;
+}
+
+#mobile-menu-icon {
+    cursor: pointer;
+    padding-bottom: 6px;
+}
+
+
 
 form {
     text-align: center;
@@ -74,4 +96,43 @@ input[type=submit] {
     width: auto;
     margin-left: auto;
     margin-right: auto;
+}
+
+
+@media only screen and (min-width: 568px) {
+    /* iPad and up */
+}
+
+
+@media only screen and (min-width: 769px) {
+    /* Small Desktop screens and up */
+    nav #mobile-menu {
+        display: none;
+    }
+
+    nav #nav-links {
+        display: flex;
+        position: inherit;
+        flex-grow: 5;
+        justify-content: flex-end;
+        align-items: center;
+        margin-right: 30px;
+
+    }
+
+    #nav-links a {
+        display: inline;
+
+        text-align: center;
+        padding: 0px;
+        font-size: 110%;
+        margin-left: 10px;
+        margin-right: 10px;
+        background-color: inherit;
+    }
+}
+
+
+@media only screen and (min-width: 1025px) {
+    /* Big Desktop screens */
 }
