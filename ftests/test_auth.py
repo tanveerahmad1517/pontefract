@@ -35,6 +35,13 @@ class SignupTests(FunctionalTest):
         nav = self.browser.find_element_by_tag_name("nav")
         self.assertIn("joe23", nav.text)
 
+        # There is a starter section for time tracking
+        time = self.browser.find_element_by_id("user-time-tracking")
+        self.assertEqual(time.find_element_by_tag_name("h2").text, "Time Tracking")
+        self.assertIn("no projects", time.text)
+        link = time.find_element_by_tag_name("a")
+        self.assertEqual(link.text, "New Project")
+
 
     def test_usernames_must_be_unique(self):
         # User goes to the landing page

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block head %}
+<link rel="stylesheet" type="text/css" href="/static/css/user-main.css">
 <script src="/static/js/main.js"></script>
 {% endblock %}
 
@@ -16,4 +17,9 @@
         </form>
     </div>
 </nav>
+
+<main>
+{% block main %}
+{% endblock %}
+</main>
 {% endblock %}

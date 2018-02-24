@@ -61,7 +61,10 @@ nav #mobile-menu {
     padding-bottom: 6px;
 }
 
-
+a {
+    color: #0074D9;
+    text-decoration: none;
+}
 
 form {
     text-align: center;
