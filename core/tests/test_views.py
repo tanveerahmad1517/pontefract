@@ -65,6 +65,22 @@ class LandingViewTests(DjangoTest):
 
 class HomeViewTests(DjangoTest):
 
+    def setUp(self):
+        self.patch1 = patch("core.views.SessionForm")
+        self.mock_form = self.patch1.start()
+
+
+    def tearDown(self):
+        self.patch1.stop()
+
+
     def test_home_view_uses_home_template(self):
         request = self.make_request("---", loggedin=True)
         self.check_view_uses_template(home, request, "home.html")
+
+
+    def test_home_view_sends_session_form(self):
+        self.mock_form.return_value = "FORM"
+        request = self.make_request("---")
+        self.check_view_has_context(home, request, {"form": "FORM"})
+        self.mock_form.assert_called_with()

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from users.forms import SignupForm
 from users.views import signup
+from projects.forms import SessionForm
 
 def root(request):
     """The view that handles requests to the root URL. It hands the request to
@@ -26,4 +27,5 @@ def landing(request):
 
 
 def home(request):
-    return render(request, "home.html")
+    form = SessionForm()
+    return render(request, "home.html", {"form": form})

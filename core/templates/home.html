@@ -3,7 +3,7 @@
 {% block main %}
 <div id="user-time-tracking">
     <h2>Time Tracking</h2>
-    <div class="information">You currently have no projects.</div>
-    <a href="#">New Project</a>
+
+    {% include "session-form.html" %}
 </div>
 {% endblock %}
