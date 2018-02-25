@@ -38,9 +38,7 @@ class SignupTests(FunctionalTest):
         # There is a starter section for time tracking
         time = self.browser.find_element_by_id("user-time-tracking")
         self.assertEqual(time.find_element_by_tag_name("h2").text, "Time Tracking")
-        self.assertIn("no projects", time.text)
-        link = time.find_element_by_tag_name("a")
-        self.assertEqual(link.text, "New Project")
+        new_session = time.find_element_by_tag_name("form")
 
 
     def test_usernames_must_be_unique(self):

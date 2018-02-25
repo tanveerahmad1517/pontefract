@@ -12,7 +12,8 @@ INSTALLED_APPS = [
  "django.contrib.auth",
  "django.contrib.sessions",
  "core",
- "users"
+ "users",
+ "projects"
 ]
 
 MIDDLEWARE = [
@@ -34,5 +35,3 @@ TEMPLATES = [{
   ],
  },
 }]
-
-USE_TZ = True
