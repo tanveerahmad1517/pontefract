@@ -26,54 +26,56 @@ class SignupFormTests(DjangoTest):
         )
 
 
-    def test_username_widget_is_correct(self):
+    def test_username_field(self):
         form = SignupForm()
-        username = form.fields["username"].widget
-        self.assertEqual(username.__class__.input_type, "text")
-        self.assertEqual(
-         username.attrs, {
-          "autocomplete": "off",
-          "placeholder": "Your unique username..."
-         }
-        )
-        self.assertTrue(username.is_required)
+        username = form.fields["username"]
+        self.assertTrue(username.required)
+        self.assertIsNone(username.max_length)
+        widget = username.widget
+        self.assertEqual(widget.input_type, "text")
+        self.assertEqual(widget.attrs, {
+         "autocomplete": "off", "placeholder": "Your unique username"
+        })
+        self.assertTrue(widget.is_required)
 
 
-    def test_email_widget_is_correct(self):
+    def test_email_field(self):
         form = SignupForm()
-        email = form.fields["email"].widget
-        self.assertEqual(email.__class__.input_type, "email")
-        self.assertEqual(
-         email.attrs, {
-          "autocomplete": "off",
-          "placeholder": "richard@pomfret.org"
-         }
-        )
-        self.assertTrue(email.is_required)
+        email = form.fields["email"]
+        self.assertTrue(email.required)
+        self.assertIsNone(email.max_length)
+        widget = email.widget
+        self.assertEqual(widget.input_type, "email")
+        self.assertEqual(widget.attrs, {
+         "autocomplete": "off",  "placeholder": "richard@pomfret.org"
+        })
+        self.assertTrue(widget.is_required)
 
 
-    def test_password1_field_is_correct(self):
+    def test_password_1_field(self):
         form = SignupForm()
-        password = form.fields["password"].widget
-        self.assertEqual(password.__class__.input_type, "password")
-        self.assertEqual(
-         password.attrs, {
-          "placeholder": "Enter a password"
-         }
-        )
-        self.assertTrue(password.is_required)
+        password = form.fields["password"]
+        self.assertTrue(password.required)
+        self.assertIsNone(password.max_length)
+        widget = password.widget
+        self.assertEqual(widget.input_type, "password")
+        self.assertEqual(widget.attrs, {
+         "placeholder": "Enter a password"
+        })
+        self.assertTrue(widget.is_required)
 
 
-    def test_password2_field_is_correct(self):
+    def test_password_2_field(self):
         form = SignupForm()
-        password = form.fields["confirm_password"].widget
-        self.assertEqual(password.__class__.input_type, "password")
-        self.assertEqual(
-         password.attrs, {
-          "placeholder": "Confirm password"
-         }
-        )
-        self.assertTrue(password.is_required)
+        password = form.fields["confirm_password"]
+        self.assertTrue(password.required)
+        self.assertIsNone(password.max_length)
+        widget = password.widget
+        self.assertEqual(widget.input_type, "password")
+        self.assertEqual(widget.attrs, {
+         "placeholder": "Confirm password"
+        })
+        self.assertTrue(widget.is_required)
 
 
     def test_can_validate_signup_form(self):
@@ -124,22 +126,26 @@ class LoginFormTests(DjangoTest):
         self.assertEqual(list(form.fields.keys()), ["username", "password"])
 
 
-    def test_username_widget_is_correct(self):
+    def test_username_field_is_correct(self):
         form = LoginForm()
-        username = form.fields["username"].widget
-        self.assertEqual(username.__class__.input_type, "text")
+        username = form.fields["username"]
+        self.assertTrue(username.required)
+        widget = username.widget
+        self.assertEqual(widget.input_type, "text")
         self.assertEqual(
-         username.attrs, {"autocomplete": "off", "placeholder": "Username"}
+         widget.attrs, {"autocomplete": "off", "placeholder": "Username"}
         )
-        self.assertTrue(username.is_required)
+        self.assertTrue(widget.is_required)
 
 
     def test_password_field_is_correct(self):
         form = LoginForm()
-        password = form.fields["password"].widget
-        self.assertEqual(password.__class__.input_type, "password")
-        self.assertEqual(password.attrs, {"placeholder": "Password"})
-        self.assertTrue(password.is_required)
+        password = form.fields["password"]
+        self.assertTrue(password.required)
+        widget = password.widget
+        self.assertEqual(widget.input_type, "password")
+        self.assertEqual(widget.attrs, {"placeholder": "Password"})
+        self.assertTrue(widget.is_required)
 
 
     def test_can_validate_login_form(self):

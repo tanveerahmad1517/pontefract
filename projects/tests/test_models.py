@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 from mixer.backend.django import mixer
 from testarsenal import DjangoTest
 from django.contrib.auth.models import User
@@ -27,20 +27,26 @@ class SessionTests(DjangoTest):
 
     def setUp(self):
         self.project = mixer.blend(Project)
-        self.time1 = datetime(2008, 1, 1, 12, 0, 0)
-        self.time2 = datetime(2008, 1, 1, 12, 15, 0)
+        self.date1 = datetime(2008, 1, 1)
+        self.date2 = datetime(2008, 1, 2)
+        self.time1 = time(12, 15, 0)
+        self.time2 = time(12, 30, 0)
 
 
     def test_can_create_session(self):
         session = Session(
-         start=self.time1, end=self.time2, breaks=5, project=self.project
+         start_date=self.date1, end_date=self.date2,
+         start_time=self.time1, end_time=self.time2,
+         breaks=5, project=self.project
         )
         session.full_clean()
 
 
     def test_default_break_is_0(self):
         session = Session(
-         start=self.time1, end=self.time2, project=self.project
+         start_date=self.date1, end_date=self.date2,
+         start_time=self.time1, end_time=self.time2,
+         project=self.project
         )
         session.full_clean()
         self.assertEqual(session.breaks, 0)
@@ -48,6 +54,8 @@ class SessionTests(DjangoTest):
 
     def test_breaks_must_be_positive(self):
         session = Session(
-         start=self.time1, end=self.time2, breaks=-5, project=self.project
+         start_date=self.date1, end_date=self.date2,
+         start_time=self.time1, end_time=self.time2,
+         breaks=-5, project=self.project
         )
         with self.assertRaises(ValidationError): session.full_clean()

@@ -14,7 +14,7 @@ class SignupForm(forms.ModelForm):
 
         widgets = {
          "username": forms.TextInput(attrs={
-          "autocomplete": "off", "placeholder": "Your unique username..."
+          "autocomplete": "off", "placeholder": "Your unique username"
          }),
          "email": forms.EmailInput(attrs={
           "autocomplete": "off", "placeholder": "richard@pomfret.org"
@@ -28,7 +28,9 @@ class SignupForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
         for field in self.fields:
+            self.fields[field].required = True
             self.fields[field].widget.is_required = True
+            self.fields[field].max_length = None
             del self.fields[field].widget.attrs["maxlength"]
 
 
@@ -53,7 +55,7 @@ class LoginForm(forms.Form):
     }))
 
     def clean(self):
-        cleaned_data = forms.ModelForm.clean(self)
+        cleaned_data = forms.Form.clean(self)
         user = authenticate(
          username=cleaned_data.get("username"),
          password=cleaned_data.get("password")

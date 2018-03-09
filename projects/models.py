@@ -19,7 +19,9 @@ class Session(models.Model):
     class Meta:
         db_table = "sessions"
 
-    start = models.DateTimeField()
-    end = models.DateTimeField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
     breaks = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
