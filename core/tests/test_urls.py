@@ -1,6 +1,5 @@
 from testarsenal import DjangoTest
 import core.views as core_views
-import users.views as user_views
 
 class UrlTests(DjangoTest):
 
@@ -9,8 +8,8 @@ class UrlTests(DjangoTest):
 
 
     def test_login_url(self):
-        self.check_url_returns_view("/login/", user_views.login)
+        self.check_url_returns_view("/login/", core_views.login)
 
 
     def test_logout_url(self):
-        self.check_url_returns_view("/logout/", user_views.logout)
+        self.check_url_returns_view("/logout/", core_views.logout)

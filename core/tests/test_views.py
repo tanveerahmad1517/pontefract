@@ -1,5 +1,5 @@
 from unittest.mock import patch, Mock, MagicMock
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from testarsenal import DjangoTest
 from core.views import *
 
@@ -26,11 +26,14 @@ class LandingViewTests(DjangoTest):
 
     def setUp(self):
         self.patch1 = patch("core.views.SignupForm")
+        self.patch2 = patch("django.contrib.auth.login")
         self.mock_form = self.patch1.start()
+        self.mock_login = self.patch2.start()
 
 
     def tearDown(self):
         self.patch1.stop()
+        self.patch2.stop()
 
 
     def test_landing_view_uses_landing_template(self):
@@ -45,21 +48,33 @@ class LandingViewTests(DjangoTest):
         self.mock_form.assert_called_with()
 
 
-    @patch("core.views.signup")
-    def test_landing_view_uses_signup_view_on_post(self, mock_signup):
-        response = Mock(HttpResponse)
-        mock_signup.return_value = response
-        request = self.make_request("---", method="post")
-        self.assertEqual(landing(request), response)
-        mock_signup.assert_called_with(request)
+    def test_landing_view_processes_signup_view_on_post(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = True
+        form.save.return_value = "USER"
+        request = self.make_request(
+         "---", method="post", data={"username": "u", "email": "e"}
+        )
+        self.check_view_redirects(landing, request, "/")
+        self.mock_form.assert_called_with(QueryDict("username=u&email=e"))
+        form.is_valid.assert_called_with()
+        form.save.assert_called_with()
+        self.mock_login.assert_called_with(request, "USER")
 
 
-    @patch("core.views.signup")
-    def test_landing_view_can_send_incorrect_form(self, mock_signup):
-        mock_signup.return_value = "FORM"
-        request = self.make_request("---", method="post")
+    def test_landing_view_can_send_incorrect_form(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = False
+        request = self.make_request(
+         "---", method="post", data={"username": "u", "email": "e"}
+        )
         self.check_view_uses_template(landing, request, "landing.html")
-        self.check_view_has_context(landing, request, {"form": "FORM"})
+        self.check_view_has_context(landing, request, {"form": form})
+        self.mock_form.assert_called_with(QueryDict("username=u&email=e"))
+        form.is_valid.assert_called_with()
+        self.assertFalse(form.save.called)
 
 
 
@@ -81,6 +96,118 @@ class HomeViewTests(DjangoTest):
 
     def test_home_view_sends_session_form(self):
         self.mock_form.return_value = "FORM"
-        request = self.make_request("---")
+        request = self.make_request("---", loggedin=True)
+        request.user.minutes_worked_today.return_value = 19
         self.check_view_has_context(home, request, {"form": "FORM"})
         self.mock_form.assert_called_with()
+
+
+    def test_home_view_sends_minutes_worked(self):
+        request = self.make_request("---", loggedin=True)
+        request.user.minutes_worked_today.return_value = 19
+        self.check_view_has_context(home, request, {"minutes_today": 19})
+        request.user.minutes_worked_today.assert_called_with()
+
+
+    def test_home_view_can_save_session(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = True
+        request = self.make_request(
+         "---", method="post", data={"id": "xxx", "b": "C"}, loggedin=True
+        )
+        home(request)
+        self.mock_form.assert_called_with(QueryDict("id=xxx&b=C"))
+        form.is_valid.assert_called_with()
+        form.save.assert_called_with(request.user)
+
+
+
+class LoginViewTests(DjangoTest):
+
+    def setUp(self):
+        self.patch1 = patch("core.views.LoginForm")
+        self.mock_form = self.patch1.start()
+        self.patch2 = patch("django.contrib.auth.login")
+        self.patch3 = patch("django.contrib.auth.authenticate")
+        self.mock_login = self.patch2.start()
+        self.mock_authenticate = self.patch3.start()
+
+
+    def tearDown(self):
+        self.patch1.stop()
+        self.patch2.stop()
+        self.patch3.stop()
+
+
+    def test_login_view_uses_login_template(self):
+        request = self.make_request("---")
+        self.check_view_uses_template(login, request, "login.html")
+
+
+    def test_login_view_sends_signup_form(self):
+        self.mock_form.return_value = "FORM"
+        request = self.make_request("---")
+        self.check_view_has_context(login, request, {"form": "FORM"})
+        self.mock_form.assert_called_with()
+
+
+    def test_login_view_can_login(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = True
+        form.data = {"username": "u", "password": "p"}
+        self.mock_authenticate.return_value = "USER"
+        request = self.make_request(
+         "---", method="post", data={"username": "u", "password": "p"}
+        )
+        self.check_view_redirects(login, request, "/")
+        self.mock_form.assert_called_with(QueryDict("username=u&password=p"))
+        form.is_valid.assert_called_with()
+        self.mock_authenticate.assert_called_with(username="u", password="p")
+        self.mock_login.assert_called_with(request, "USER")
+
+
+    def test_login_view_can_return_incorrect_form(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = False
+        form.data = {"username": "u", "password": "p"}
+        self.mock_authenticate.return_value = "USER"
+        request = self.make_request(
+         "---", method="post", data={"username": "u", "password": "p"}
+        )
+        self.check_view_uses_template(login, request, "login.html")
+        self.check_view_has_context(login, request, {"form": form})
+        self.mock_form.assert_called_with(QueryDict("username=u&password=p"))
+        form.is_valid.assert_called_with()
+        self.assertFalse(self.mock_login.called)
+
+
+
+class LogoutViewTests(DjangoTest):
+
+    def setUp(self):
+        self.patch1 = patch("django.contrib.auth.logout")
+        self.mock_logout = self.patch1.start()
+
+
+    def tearDown(self):
+        self.patch1.stop()
+
+
+    def test_logout_view_logs_out_on_post(self):
+        request = self.make_request("---", method="post")
+        logout(request)
+        self.mock_logout.assert_called_with(request)
+
+
+    def test_logout_view_does_nothing_on_get(self):
+        request = self.make_request("---")
+        logout(request)
+        self.assertFalse(self.mock_logout.called)
+
+
+    def test_logout_view_redirects_home(self):
+        request = self.make_request("---", method="post")
+        self.check_view_redirects(logout, request, "/")

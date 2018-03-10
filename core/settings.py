@@ -12,7 +12,6 @@ INSTALLED_APPS = [
  "django.contrib.auth",
  "django.contrib.sessions",
  "core",
- "users",
  "projects"
 ]
 
@@ -25,6 +24,8 @@ MIDDLEWARE = [
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, "../static"))
+
+AUTH_USER_MODEL = "core.User"
 
 TEMPLATES = [{
  "BACKEND": "django.template.backends.django.DjangoTemplates",

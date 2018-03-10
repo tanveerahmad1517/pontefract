@@ -1,5 +1,6 @@
 from datetime import datetime, time
 from mixer.backend.django import mixer
+from unittest.mock import Mock, patch
 from testarsenal import DjangoTest
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -59,3 +60,34 @@ class SessionTests(DjangoTest):
          breaks=-5, project=self.project
         )
         with self.assertRaises(ValidationError): session.full_clean()
+
+
+    def test_can_get_start(self):
+        session = Session(
+         start_date=self.date1, end_date=self.date2,
+         start_time=self.time1, end_time=self.time2,
+         breaks=5, project=self.project
+        )
+        self.assertEqual(session.start(), datetime(2008, 1, 1, 12, 15))
+
+
+    def test_can_get_end(self):
+        session = Session(
+         start_date=self.date1, end_date=self.date2,
+         start_time=self.time1, end_time=self.time2,
+         breaks=5, project=self.project
+        )
+        self.assertEqual(session.end(), datetime(2008, 1, 2, 12, 30))
+
+
+    @patch("projects.models.Session.start")
+    @patch("projects.models.Session.end")
+    def test_can_get_duration(self, mock_end, mock_start):
+        mock_start.return_value = datetime(2009, 5, 3, 15, 20)
+        mock_end.return_value = datetime(2009, 5, 3, 16, 50)
+        session = Session(
+         start_date=self.date1, end_date=self.date2,
+         start_time=self.time1, end_time=self.time2,
+         breaks=5, project=self.project
+        )
+        self.assertEqual(session.duration(), 85)

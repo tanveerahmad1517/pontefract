@@ -6,6 +6,18 @@ from projects.forms import *
 
 class SessionFormTests(DjangoTest):
 
+    def setUp(self):
+        self.patch1 = patch("django.forms.ModelForm.save")
+        self.patch2 = patch("projects.forms.Project.objects.create")
+        self.mock_save = self.patch1.start()
+        self.mock_create = self.patch2.start()
+
+
+    def tearDown(self):
+        self.patch1.stop()
+        self.patch2.stop()
+
+
     def test_session_form_has_correct_fields(self):
         form = SessionForm()
         self.assertEqual(
@@ -14,46 +26,55 @@ class SessionFormTests(DjangoTest):
         )
 
 
-    def test_start_date_field(self):
-        form = SessionForm()
-        start_date = form.fields["start_date"]
+    def test_start_date(self):
+        start_date = SessionForm().fields["start_date"]
         self.assertEqual(start_date.initial, datetime.now().date())
         widget = start_date.widget
         self.assertEqual(widget.input_type, "date")
 
 
-    def test_end_date_field(self):
-        form = SessionForm()
-        end_date = form.fields["end_date"]
+    def test_start_time(self):
+        start_time = SessionForm().fields["start_time"]
+        widget = start_time.widget
+        self.assertEqual(widget.input_type, "time")
+
+
+    def test_end_date(self):
+        end_date = SessionForm().fields["end_date"]
         self.assertEqual(end_date.initial, datetime.now().date())
         widget = end_date.widget
         self.assertEqual(widget.input_type, "date")
 
 
-    def test_start_time_field(self):
-        form = SessionForm()
-        start_time = form.fields["start_time"]
-        widget = start_time.widget
-        self.assertEqual(widget.input_type, "time")
-
-
-    def test_end_time_field(self):
-        form = SessionForm()
-        end_time = form.fields["end_time"]
+    def test_end_time(self):
+        end_time = SessionForm().fields["end_time"]
         widget = end_time.widget
         self.assertEqual(widget.input_type, "time")
 
 
     def test_breaks_field(self):
-        form = SessionForm()
-        breaks = form.fields["breaks"]
+        breaks = SessionForm().fields["breaks"]
         self.assertEqual(breaks.initial, 0)
         widget = breaks.widget
         self.assertEqual(widget.input_type, "number")
 
 
     def test_new_project_field(self):
-        form = SessionForm()
-        new_project = form.fields["new_project"]
+        new_project = SessionForm().fields["new_project"]
         widget = new_project.widget
         self.assertEqual(widget.input_type, "text")
+
+
+    def test_session_saving_creates_new_project(self):
+        user = "USER"
+        session, project = Mock(), Mock()
+        self.mock_save.return_value = session
+        self.mock_create.return_value = project
+        form = SessionForm(data={"a": "b"})
+        form.cleaned_data = {"new_project": "PPP"}
+        form.save(user)
+        self.mock_save.assert_called_with(form, commit=False)
+        self.mock_create.assert_called_with(name="PPP", user="USER")
+        project.save.assert_called_with()
+        self.assertIs(session.project, project)
+        session.save.assert_called_with()

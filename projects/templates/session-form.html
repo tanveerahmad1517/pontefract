@@ -1,8 +1,10 @@
-<form>
+<form method="POST">
     {{ form.start_date }}
     {{ form.start_time }}
     {{ form.end_date }}
     {{ form.end_time }}
     {{ form.breaks }}
     {{ form.new_project }}
+    {% csrf_token %}
+    <input type="submit">
 </form>

@@ -1,16 +1,14 @@
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 from testarsenal import DjangoTest
-from users.forms import *
+from core.forms import *
 
 class SignupFormTests(DjangoTest):
 
     def setUp(self):
-        self.patch1 = patch("users.forms.User.objects.filter")
-        self.patch2 = patch("django.forms.ModelForm.clean")
-        self.mock_filter = self.patch1.start()
-        self.mock_clean = self.patch2.start()
-        self.mock_filter.return_value = []
-        self.mock_clean.side_effect = lambda x: x.data
+        self.patch1 = patch("django.forms.ModelForm.clean")
+        self.patch2 = patch("core.forms.User.objects.create")
+        self.mock_clean = self.patch1.start()
+        self.mock_create = self.patch2.start()
 
 
     def tearDown(self):
@@ -26,56 +24,36 @@ class SignupFormTests(DjangoTest):
         )
 
 
-    def test_username_field(self):
-        form = SignupForm()
-        username = form.fields["username"]
-        self.assertTrue(username.required)
-        self.assertIsNone(username.max_length)
+    def test_username(self):
+        username = SignupForm().fields["username"]
         widget = username.widget
         self.assertEqual(widget.input_type, "text")
         self.assertEqual(widget.attrs, {
          "autocomplete": "off", "placeholder": "Your unique username"
         })
-        self.assertTrue(widget.is_required)
 
 
-    def test_email_field(self):
-        form = SignupForm()
-        email = form.fields["email"]
-        self.assertTrue(email.required)
-        self.assertIsNone(email.max_length)
+    def test_email(self):
+        email = SignupForm().fields["email"]
         widget = email.widget
         self.assertEqual(widget.input_type, "email")
         self.assertEqual(widget.attrs, {
          "autocomplete": "off",  "placeholder": "richard@pomfret.org"
         })
-        self.assertTrue(widget.is_required)
 
 
-    def test_password_1_field(self):
-        form = SignupForm()
-        password = form.fields["password"]
-        self.assertTrue(password.required)
-        self.assertIsNone(password.max_length)
+    def test_password_1(self):
+        password = SignupForm().fields["password"]
         widget = password.widget
         self.assertEqual(widget.input_type, "password")
-        self.assertEqual(widget.attrs, {
-         "placeholder": "Enter a password"
-        })
-        self.assertTrue(widget.is_required)
+        self.assertEqual(widget.attrs, {"placeholder": "Password"})
 
 
-    def test_password_2_field(self):
-        form = SignupForm()
-        password = form.fields["confirm_password"]
-        self.assertTrue(password.required)
-        self.assertIsNone(password.max_length)
+    def test_password_2(self):
+        password = SignupForm().fields["confirm_password"]
         widget = password.widget
         self.assertEqual(widget.input_type, "password")
-        self.assertEqual(widget.attrs, {
-         "placeholder": "Confirm password"
-        })
-        self.assertTrue(widget.is_required)
+        self.assertEqual(widget.attrs, {"placeholder": "Confirm Password"})
 
 
     def test_can_validate_signup_form(self):
@@ -84,16 +62,7 @@ class SignupFormTests(DjangoTest):
          "password": "p", "confirm_password": "p"
         })
         self.assertTrue(form.is_valid())
-
-
-    def test_form_rejects_duplicate_email(self):
-        self.mock_filter.return_value = ["user"]
-        form = SignupForm(data={
-         "username": "u", "email": "E@X.com",
-         "password": "p", "confirm_password": "p"
-        })
-        self.assertFalse(form.is_valid())
-        self.assertIn("email", form.errors)
+        self.mock_clean.assert_called_with(form)
 
 
     def test_form_rejects_mismatched_passwords(self):
@@ -103,17 +72,32 @@ class SignupFormTests(DjangoTest):
         })
         self.assertFalse(form.is_valid())
         self.assertIn("password", form.errors)
+        self.mock_clean.assert_called_with(form)
+
+
+    def test_saving_saves_user_properly(self):
+        user = Mock()
+        self.mock_create.return_value = user
+        form = SignupForm(data={
+         "username": "u", "email": "E@X.com",
+         "password": "p", "confirm_password": "p"
+        })
+        form.is_valid()
+        returned = form.save()
+        self.mock_create.assert_called_with(username="u", email="E@X.com")
+        user.set_password.assert_called_with("p")
+        user.save.assert_called_with()
+        self.assertIs(returned, user)
 
 
 
 class LoginFormTests(DjangoTest):
 
     def setUp(self):
-        self.patch1 = patch("users.forms.authenticate")
-        self.patch2 = patch("django.forms.ModelForm.clean")
+        self.patch1 = patch("core.forms.authenticate")
+        self.patch2 = patch("django.forms.Form.clean")
         self.mock_auth = self.patch1.start()
         self.mock_clean = self.patch2.start()
-        self.mock_clean.side_effect = lambda x: x.data
 
 
     def tearDown(self):
@@ -126,32 +110,27 @@ class LoginFormTests(DjangoTest):
         self.assertEqual(list(form.fields.keys()), ["username", "password"])
 
 
-    def test_username_field_is_correct(self):
-        form = LoginForm()
-        username = form.fields["username"]
-        self.assertTrue(username.required)
+    def test_username(self):
+        username = LoginForm().fields["username"]
         widget = username.widget
         self.assertEqual(widget.input_type, "text")
-        self.assertEqual(
-         widget.attrs, {"autocomplete": "off", "placeholder": "Username"}
-        )
-        self.assertTrue(widget.is_required)
+        self.assertEqual(widget.attrs, {
+         "autocomplete": "off", "placeholder": "Username"
+        })
 
 
-    def test_password_field_is_correct(self):
-        form = LoginForm()
-        password = form.fields["password"]
-        self.assertTrue(password.required)
+    def test_password(self):
+        password = LoginForm().fields["password"]
         widget = password.widget
         self.assertEqual(widget.input_type, "password")
         self.assertEqual(widget.attrs, {"placeholder": "Password"})
-        self.assertTrue(widget.is_required)
 
 
     def test_can_validate_login_form(self):
         self.mock_auth.return_value = "USER"
         form = LoginForm(data={"username": "u", "password": "p"})
         self.assertTrue(form.is_valid())
+        self.mock_clean.assert_called_with(form)
         self.mock_auth.assert_called_with(username="u", password="p")
 
 
@@ -159,4 +138,5 @@ class LoginFormTests(DjangoTest):
         self.mock_auth.return_value = None
         form = LoginForm(data={"username": "u", "password": "p"})
         self.assertFalse(form.is_valid())
+        self.mock_clean.assert_called_with(form)
         self.mock_auth.assert_called_with(username="u", password="p")
