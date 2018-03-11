@@ -38,7 +38,7 @@ def home(request):
         return redirect("/")
     form = SessionForm()
     return render(request, "home.html", {
-     "form": form, "minutes_today": request.user.minutes_worked_today()
+     "form": form,
     })
 
 

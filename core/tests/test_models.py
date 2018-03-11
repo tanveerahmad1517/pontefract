@@ -31,15 +31,24 @@ class UserTests(DjangoTest):
 
 
     @patch("projects.models.Session.objects.filter")
-    def test_user_minutes_done_today(self, mock_filter):
+    def test_user_sessions_done_today(self, mock_filter):
+        sessions = [Mock(), Mock(), Mock()]
+        mock_filter.return_value = sessions
+        user = User(username="sam", email="sam@sam.sam", password="p")
+        self.assertEqual(sessions, user.sessions_today())
+        mock_filter.assert_called_with(
+         project__user=user, start_date=datetime.now().date()
+        )
+
+
+    @patch("core.models.User.sessions_today")
+    def test_user_minutes_done_today(self, mock_sessions):
         sessions = [Mock(), Mock(), Mock()]
         sessions[0].duration.return_value = 4
         sessions[1].duration.return_value = 5
         sessions[2].duration.return_value = 6
-        mock_filter.return_value = sessions
+        mock_sessions.return_value = sessions
         user = User(username="sam", email="sam@sam.sam", password="p")
         minutes = user.minutes_worked_today()
-        mock_filter.assert_called_with(
-         project__user=user, start_date=datetime.now().date()
-        )
+        mock_sessions.assert_called_with()
         self.assertEqual(minutes, 15)

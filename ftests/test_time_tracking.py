@@ -31,9 +31,9 @@ class SessionAddingTests(FunctionalTest):
 
         # They enter some values and submit
         start_time.send_keys("16-05")
-        end_time.send_keys("16-25")
+        end_time.send_keys("16-35")
         breaks.clear()
-        breaks.send_keys("5")
+        breaks.send_keys("10")
         project.send_keys("Dog Walking")
         submit = form.find_elements_by_tag_name("input")[-1]
         self.click(submit)
@@ -44,4 +44,13 @@ class SessionAddingTests(FunctionalTest):
         # The total for the day is updated
         time = self.browser.find_element_by_id("user-time-tracking")
         today = time.find_element_by_id("today-time-tracking")
-        self.assertIn("15 minutes", today.text)
+        self.assertIn("20 minutes", today.text)
+
+        # The session is there
+        sessions = today.find_elements_by_class_name("session")
+        self.assertEqual(len(sessions), 1)
+        self.assertIn("Dog Walking", sessions[0].text)
+        self.assertIn("16:05", sessions[0].text)
+        self.assertIn("16:35", sessions[0].text)
+        self.assertIn("10 minute", sessions[0].text)
+        self.assertIn("20 minute", sessions[0].text)

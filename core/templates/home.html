@@ -5,7 +5,16 @@
     <h2>Time Tracking</h2>
 
     <div id="today-time-tracking">
-        {{ minutes_today }} minutes.
+        <h3>{% now "jS F Y" %}</h3>
+        {{ user.minutes_worked_today }} minutes.
+        {% for session in user.sessions_today %}
+        <div class="session">
+            {{ session.start_time }} - {{ session.end_time }}:
+            {{ session.project.name }}
+            {{ session.duration }} minutes
+            ({{ session.breaks }} minute break)
+        </div>
+        {% endfor %}
     </div>
     {% include "session-form.html" %}
 </div>

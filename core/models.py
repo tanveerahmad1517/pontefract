@@ -11,11 +11,16 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
 
 
+    def sessions_today(self):
+        """What sessions has the user done today?"""
+        from projects.models import Session
+        today = datetime.now().date()
+        return Session.objects.filter(project__user=self, start_date=today)
+
+
     def minutes_worked_today(self):
         """How many minutes of work has the user done in sessions across all
         projects?"""
-        
-        from projects.models import Session
-        today = datetime.now().date()
-        sessions = Session.objects.filter(project__user=self, start_date=today)
+
+        sessions = self.sessions_today()
         return sum([session.duration() for session in sessions])

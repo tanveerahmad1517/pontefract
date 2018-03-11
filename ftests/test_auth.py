@@ -1,3 +1,4 @@
+from datetime import datetime
 from .base import FunctionalTest
 
 class SignupTests(FunctionalTest):
@@ -31,6 +32,7 @@ class SignupTests(FunctionalTest):
         self.click(submit)
 
         # They are on their own homepage
+        now = datetime.now()
         self.check_page("/")
         nav = self.browser.find_element_by_tag_name("nav")
         self.assertIn("joe23", nav.text)
@@ -39,6 +41,13 @@ class SignupTests(FunctionalTest):
         time = self.browser.find_element_by_id("user-time-tracking")
         self.assertEqual(time.find_element_by_tag_name("h2").text, "Time Tracking")
         new_session = time.find_element_by_tag_name("form")
+        today = time.find_element_by_id("today-time-tracking")
+        self.assertIn("0 minutes", today.text)
+        self.assertIn(str(now.year), today.text)
+        self.assertIn(str(now.day), today.text)
+        self.assertIn(str(now.strftime("%B")), today.text)
+        sessions = today.find_elements_by_class_name("session")
+        self.assertEqual(len(sessions), 0)
 
 
     def test_usernames_must_be_unique(self):

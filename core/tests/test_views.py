@@ -102,13 +102,6 @@ class HomeViewTests(DjangoTest):
         self.mock_form.assert_called_with()
 
 
-    def test_home_view_sends_minutes_worked(self):
-        request = self.make_request("---", loggedin=True)
-        request.user.minutes_worked_today.return_value = 19
-        self.check_view_has_context(home, request, {"minutes_today": 19})
-        request.user.minutes_worked_today.assert_called_with()
-
-
     def test_home_view_can_save_session(self):
         form = Mock()
         self.mock_form.return_value = form

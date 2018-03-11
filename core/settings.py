@@ -27,6 +27,9 @@ STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, "../static"))
 
 AUTH_USER_MODEL = "core.User"
 
+TIME_ZONE = "GMT"
+TIME_FORMAT = "H:i"
+
 TEMPLATES = [{
  "BACKEND": "django.template.backends.django.DjangoTemplates",
  "APP_DIRS": True,
