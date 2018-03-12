@@ -17,10 +17,14 @@ class SessionForm(forms.ModelForm):
 
     They can provide a new project at the same time."""
 
-    start_date = forms.DateField(initial=datetime.now().date(), widget=DateInput())
-    end_date = forms.DateField(initial=datetime.now().date(), widget=DateInput())
+    start_date = forms.DateField(
+     initial=datetime.now().date(), widget=DateInput(attrs={"tabindex": "1"})
+    )
+    end_date = forms.DateField(
+     initial=datetime.now().date(), widget=DateInput(attrs={"tabindex": "2"})
+    )
     new_project = forms.CharField(widget=forms.widgets.TextInput(
-     attrs={"autocomplete": "off"}
+     attrs={"autocomplete": "off", "tabindex": "7"}
     ))
 
     class Meta:
@@ -28,8 +32,9 @@ class SessionForm(forms.ModelForm):
         exclude = []
 
         widgets = {
-         "start_time": TimeInput(),
-         "end_time": TimeInput()
+         "start_time": TimeInput(attrs={"tabindex": "3"}),
+         "end_time": TimeInput(attrs={"tabindex": "4"}),
+         "breaks": forms.widgets.NumberInput(attrs={"tabindex": "5"}),
         }
 
 
@@ -38,6 +43,7 @@ class SessionForm(forms.ModelForm):
         self.fields["project"].required = False
         self.fields["new_project"].required = False
         self.fields["project"].empty_label = None
+        self.fields["project"].widget.attrs["tabindex"] = "6"
 
 
     def save(self, user, commit=True, **kwargs):
@@ -47,7 +53,9 @@ class SessionForm(forms.ModelForm):
 
         session = forms.ModelForm.save(self, commit=False)
         if self.cleaned_data.get("new_project"):
-            project = Project.objects.create(name=self.cleaned_data["new_project"], user=user)
+            project = Project.objects.create(
+             name=self.cleaned_data["new_project"], user=user
+            )
             project.save()
         else:
             project = self.cleaned_data["project"]

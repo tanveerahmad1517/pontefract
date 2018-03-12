@@ -1,8 +1,6 @@
 <form method="POST">
-    {{ form.start_date }}
-    {{ form.start_time }}
-    {{ form.end_date }}
-    {{ form.end_time }}
+    <div class="datetime">{{ form.start_date }}{{ form.start_time }}</div>
+    <div class="datetime">{{ form.end_date }}{{ form.end_time }}</div>
     {{ form.breaks }}
     {% if user.project_set.count %}{{ form.project }}{% endif %}
     {{ form.new_project }}

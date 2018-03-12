@@ -32,12 +32,14 @@ class SessionFormTests(DjangoTest):
         self.assertEqual(start_date.initial, datetime.now().date())
         widget = start_date.widget
         self.assertEqual(widget.input_type, "date")
+        self.assertEqual(widget.attrs, {"tabindex": "1"})
 
 
     def test_start_time(self):
         start_time = SessionForm().fields["start_time"]
         widget = start_time.widget
         self.assertEqual(widget.input_type, "time")
+        self.assertEqual(widget.attrs, {"tabindex": "3"})
 
 
     def test_end_date(self):
@@ -45,12 +47,14 @@ class SessionFormTests(DjangoTest):
         self.assertEqual(end_date.initial, datetime.now().date())
         widget = end_date.widget
         self.assertEqual(widget.input_type, "date")
+        self.assertEqual(widget.attrs, {"tabindex": "2"})
 
 
     def test_end_time(self):
         end_time = SessionForm().fields["end_time"]
         widget = end_time.widget
         self.assertEqual(widget.input_type, "time")
+        self.assertEqual(widget.attrs, {"tabindex": "4"})
 
 
     def test_breaks_field(self):
@@ -58,6 +62,7 @@ class SessionFormTests(DjangoTest):
         self.assertEqual(breaks.initial, 0)
         widget = breaks.widget
         self.assertEqual(widget.input_type, "number")
+        self.assertEqual(widget.attrs, {"tabindex": "5"})
 
 
     def test_project_field(self):
@@ -66,6 +71,7 @@ class SessionFormTests(DjangoTest):
         self.assertIsNone(project.empty_label)
         widget = project.widget
         self.assertEqual(widget.input_type, "select")
+        self.assertEqual(widget.attrs, {"tabindex": "6"})
 
 
     def test_new_project_field(self):
@@ -73,7 +79,7 @@ class SessionFormTests(DjangoTest):
         self.assertFalse(new_project.required)
         widget = new_project.widget
         self.assertEqual(widget.input_type, "text")
-        self.assertEqual(widget.attrs, {"autocomplete": "off"})
+        self.assertEqual(widget.attrs, {"autocomplete": "off", "tabindex": "7"})
 
 
     def test_session_saving_can_create_new_project(self):

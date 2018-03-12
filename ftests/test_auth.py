@@ -34,6 +34,7 @@ class SignupTests(FunctionalTest):
         # They are on their own homepage
         now = datetime.now()
         self.check_page("/")
+        self.check_title("Home")
         nav = self.browser.find_element_by_tag_name("nav")
         self.assertIn("joe23", nav.text)
 

@@ -76,7 +76,7 @@ form {
     text-align: left;
 }
 
-input {
+input, select {
     display: block;
     font-size: 18px;
     margin-top: 10px;
@@ -99,6 +99,26 @@ input[type=submit] {
     width: auto;
     margin-left: auto;
     margin-right: auto;
+}
+
+.datetime {
+    text-align: left;
+}
+
+.datetime input {
+    display: inline;
+}
+
+.datetime input[type=date] {
+    border-right-width: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    width: auto;
+}
+
+.datetime input[type=time] {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
 }
 
 table {
