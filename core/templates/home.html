@@ -7,14 +7,16 @@
     <div id="today-time-tracking">
         <h3>{% now "jS F Y" %}</h3>
         {{ user.minutes_worked_today }} minutes.
+        <table>
         {% for session in user.sessions_today %}
-        <div class="session">
-            {{ session.start_time }} - {{ session.end_time }}:
-            {{ session.project.name }}
-            {{ session.duration }} minutes
-            ({{ session.breaks }} minute break)
-        </div>
+        <tr class="session">
+            <td>{{ session.start_time }} - {{ session.end_time }}:</td>
+            <td>{{ session.project.name }}</td>
+            <td>{{ session.duration }} minutes</td>
+            <td>{% if session.breaks %}({{ session.breaks }} minute break){% endif %}</td>
+        </tr>
         {% endfor %}
+        </table>
     </div>
     {% include "session-form.html" %}
 </div>

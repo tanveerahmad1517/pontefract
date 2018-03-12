@@ -73,6 +73,7 @@ class SessionFormTests(DjangoTest):
         self.assertFalse(new_project.required)
         widget = new_project.widget
         self.assertEqual(widget.input_type, "text")
+        self.assertEqual(widget.attrs, {"autocomplete": "off"})
 
 
     def test_session_saving_can_create_new_project(self):

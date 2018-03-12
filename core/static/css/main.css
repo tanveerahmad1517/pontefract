@@ -101,6 +101,13 @@ input[type=submit] {
     margin-right: auto;
 }
 
+table {
+    margin-top: 30px;
+    margin-bottom: 20px;
+    width: 100%;
+    text-align: center;
+}
+
 
 @media only screen and (min-width: 568px) {
     /* iPad and up */

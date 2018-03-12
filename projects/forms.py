@@ -19,7 +19,9 @@ class SessionForm(forms.ModelForm):
 
     start_date = forms.DateField(initial=datetime.now().date(), widget=DateInput())
     end_date = forms.DateField(initial=datetime.now().date(), widget=DateInput())
-    new_project = forms.CharField()
+    new_project = forms.CharField(widget=forms.widgets.TextInput(
+     attrs={"autocomplete": "off"}
+    ))
 
     class Meta:
         model = Session

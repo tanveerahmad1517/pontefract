@@ -100,3 +100,4 @@ class SessionAddingTests(FunctionalTest):
         self.assertIn("16:05", sessions[0].text)
         self.assertIn("16:35", sessions[0].text)
         self.assertIn("30 minute", sessions[0].text)
+        self.assertNotIn("break", sessions[0].text)
