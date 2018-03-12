@@ -23,7 +23,7 @@ class SessionForm(forms.ModelForm):
 
     class Meta:
         model = Session
-        exclude = ["project"]
+        exclude = []
 
         widgets = {
          "start_time": TimeInput(),
@@ -31,13 +31,23 @@ class SessionForm(forms.ModelForm):
         }
 
 
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        self.fields["project"].required = False
+        self.fields["new_project"].required = False
+        self.fields["project"].empty_label = None
+
+
     def save(self, user, commit=True, **kwargs):
         """Gets a model object from the form data without saving it to the
         database, quickly creates a project object for it to belong to, adds the
         project to the session, and then commits the session to the database."""
-        
+
         session = forms.ModelForm.save(self, commit=False)
-        project = Project.objects.create(name=self.cleaned_data["new_project"], user=user)
-        project.save()
+        if self.cleaned_data.get("new_project"):
+            project = Project.objects.create(name=self.cleaned_data["new_project"], user=user)
+            project.save()
+        else:
+            project = self.cleaned_data["project"]
         session.project = project
         session.save()

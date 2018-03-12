@@ -23,6 +23,11 @@ class ProjectTests(DjangoTest):
             project.full_clean()
 
 
+    def test_project_string_representation(self):
+        project = Project(name="Basement Excavation", user=self.user)
+        self.assertEqual(str(project), "Basement Excavation")
+
+
 
 class SessionTests(DjangoTest):
 

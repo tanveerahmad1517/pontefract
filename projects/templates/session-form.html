@@ -4,6 +4,7 @@
     {{ form.end_date }}
     {{ form.end_time }}
     {{ form.breaks }}
+    {% if user.project_set.count %}{{ form.project }}{% endif %}
     {{ form.new_project }}
     {% csrf_token %}
     <input type="submit">

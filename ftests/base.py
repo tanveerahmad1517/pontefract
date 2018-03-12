@@ -7,7 +7,7 @@ class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
 
     def setUp(self):
         self.browser = webdriver.Chrome()
-        User.objects.create_user(
+        self.user = User.objects.create_user(
          username="sarah",
          email="sarah@gmail.com",
          password="password"
