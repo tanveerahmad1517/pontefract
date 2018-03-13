@@ -102,6 +102,20 @@ class HomeViewTests(DjangoTest):
         self.mock_form.assert_called_with()
 
 
+    def test_home_view_can_return_incorrect_form(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = False
+        form.data = {"a": "u", "b": "p"}
+        request = self.make_request(
+         "---", method="post", data={"a": "u", "b": "p"}
+        )
+        self.check_view_uses_template(home, request, "home.html")
+        self.check_view_has_context(home, request, {"form": form})
+        self.mock_form.assert_called_with(QueryDict("a=u&b=p"))
+        form.is_valid.assert_called_with()
+
+
     def test_home_view_can_save_session(self):
         form = Mock()
         self.mock_form.return_value = form

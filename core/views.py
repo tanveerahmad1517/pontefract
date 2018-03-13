@@ -31,12 +31,12 @@ def landing(request):
 def home(request):
     """The view that serves the home page to logged in users."""
 
+    form = SessionForm()
     if request.method == "POST":
         form = SessionForm(request.POST)
         if form.is_valid():
             form.save(request.user)
-        return redirect("/")
-    form = SessionForm()
+            return redirect("/")
     return render(request, "home.html", {
      "form": form,
     })

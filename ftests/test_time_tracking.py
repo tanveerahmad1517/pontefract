@@ -101,3 +101,29 @@ class SessionAddingTests(FunctionalTest):
         self.assertIn("16:35", sessions[0].text)
         self.assertIn("30 minute", sessions[0].text)
         self.assertNotIn("break", sessions[0].text)
+
+
+    def test_second_time_must_be_after_first(self):
+        # User goes to the home page
+        self.login()
+        self.get("/")
+        now = datetime.now()
+
+        # They fill out the session form that is there
+        self.fill_in_session_form(
+         now, "0605AM", "0505AM", "10", "Dog Walking", projects=False
+        )
+
+        # They are still on the home page and there are no sessions
+        self.check_page("/")
+        self.assertEqual(self.browser.find_elements_by_class_name("session"), [])
+
+        # There is an error message and the form is still filled in
+        time = self.browser.find_element_by_id("user-time-tracking")
+        form = time.find_element_by_tag_name("form")
+        start_time_input = form.find_elements_by_tag_name("input")[1]
+        end_time_input = form.find_elements_by_tag_name("input")[3]
+        self.assertEqual(start_time_input.get_attribute("value"), "06:05")
+        self.assertEqual(end_time_input.get_attribute("value"), "05:05")
+        error = form.find_element_by_id("end-time-error")
+        self.assertIn("before", error.text)

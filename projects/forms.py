@@ -46,6 +46,16 @@ class SessionForm(forms.ModelForm):
         self.fields["project"].widget.attrs["tabindex"] = "6"
 
 
+    def clean(self):
+        forms.ModelForm.clean(self)
+        if datetime.combine(
+         self.cleaned_data["start_date"], self.cleaned_data["start_time"]
+        ) > datetime.combine(
+         self.cleaned_data["end_date"], self.cleaned_data["end_time"]
+        ):
+            self.add_error("end_date", "End time is before start time")
+
+
     def save(self, user, commit=True, **kwargs):
         """Gets a model object from the form data without saving it to the
         database, quickly creates a project object for it to belong to, adds the

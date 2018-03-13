@@ -1,6 +1,20 @@
 <form method="POST">
-    <div class="datetime">{{ form.start_date }}{{ form.start_time }}</div>
-    <div class="datetime">{{ form.end_date }}{{ form.end_time }}</div>
+  <div class="datetime">
+    {% if form.errors.start_date or form.errors.start_time %}
+    <div class="error" id="start-time-error">
+      {{ form.errors.start_date.0 }}{{ form.errors.start_time.0 }}
+    </div>
+    {% endif %}
+    {{ form.start_date }}{{ form.start_time }}
+  </div>
+    <div class="datetime">
+      {% if form.errors.end_date or form.errors.end_time %}
+      <div class="error" id="end-time-error">
+        {{ form.errors.end_date.0 }}{{ form.errors.end_time.0 }}
+      </div>
+      {% endif %}
+      {{ form.end_date }}{{ form.end_time }}
+    </div>
     {{ form.breaks }}
     {% if user.project_set.count %}{{ form.project }}{% endif %}
     {{ form.new_project }}

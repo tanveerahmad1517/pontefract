@@ -9,13 +9,16 @@ class SessionFormTests(DjangoTest):
     def setUp(self):
         self.patch1 = patch("django.forms.ModelForm.save")
         self.patch2 = patch("projects.forms.Project.objects.create")
+        self.patch3 = patch("django.forms.ModelForm.clean")
         self.mock_save = self.patch1.start()
         self.mock_create = self.patch2.start()
+        self.mock_clean = self.patch3.start()
 
 
     def tearDown(self):
         self.patch1.stop()
         self.patch2.stop()
+        self.patch3.stop()
 
 
     def test_session_form_has_correct_fields(self):
@@ -80,6 +83,17 @@ class SessionFormTests(DjangoTest):
         widget = new_project.widget
         self.assertEqual(widget.input_type, "text")
         self.assertEqual(widget.attrs, {"autocomplete": "off", "tabindex": "7"})
+
+
+    def test_can_reject_mismatched_times(self):
+        form = SessionForm(data={
+         "start_date": "2018-01-02", "start_time": "13:00",
+         "end_date": "2018-01-02", "end_time": "12:00",
+         "breaks": 10
+        })
+        self.assertFalse(form.is_valid())
+        self.mock_clean.assert_called_with(form)
+        self.assertIn("end_date", form.errors)
 
 
     def test_session_saving_can_create_new_project(self):
