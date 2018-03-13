@@ -50,7 +50,7 @@ class SessionAddingTests(FunctionalTest):
 
         # They fill out the session form that is there
         self.fill_in_session_form(
-         now, "16-05", "16-35", "10", "Dog Walking", projects=False
+         now, "0605AM", "0635AM", "10", "Dog Walking", projects=False
         )
 
         # They are still on the main page
@@ -65,8 +65,8 @@ class SessionAddingTests(FunctionalTest):
         sessions = today.find_elements_by_class_name("session")
         self.assertEqual(len(sessions), 1)
         self.assertIn("Dog Walking", sessions[0].text)
-        self.assertIn("16:05", sessions[0].text)
-        self.assertIn("16:35", sessions[0].text)
+        self.assertIn("06:05", sessions[0].text)
+        self.assertIn("06:35", sessions[0].text)
         self.assertIn("10 minute", sessions[0].text)
         self.assertIn("20 minute", sessions[0].text)
 
@@ -81,7 +81,7 @@ class SessionAddingTests(FunctionalTest):
         self.get("/")
         now = datetime.now()
         self.fill_in_session_form(
-         now, "16-05", "16-35", "0", project="Cycling",
+         now, "1605PM", "1635PM", "0", project="Cycling",
          projects=["Running", "Cycling", "Swimming"]
         )
 
