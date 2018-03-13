@@ -107,6 +107,8 @@ input[type=submit] {
 
 .datetime input {
     display: inline;
+    margin-left: 0px;
+    margin-right: 0px;
 }
 
 .datetime input[type=date] {
