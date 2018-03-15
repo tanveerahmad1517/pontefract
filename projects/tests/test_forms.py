@@ -63,6 +63,7 @@ class SessionFormTests(DjangoTest):
     def test_breaks_field(self):
         breaks = SessionForm().fields["breaks"]
         self.assertEqual(breaks.initial, 0)
+        self.assertFalse(breaks.required)
         widget = breaks.widget
         self.assertEqual(widget.input_type, "number")
         self.assertEqual(widget.attrs, {"tabindex": "5"})
@@ -89,7 +90,7 @@ class SessionFormTests(DjangoTest):
         form = SessionForm(data={
          "start_date": "2018-01-02", "start_time": "13:00",
          "end_date": "2018-01-02", "end_time": "12:00",
-         "breaks": 10
+         "breaks": -10
         })
         self.assertFalse(form.is_valid())
         self.mock_clean.assert_called_with(form)
@@ -97,13 +98,12 @@ class SessionFormTests(DjangoTest):
 
 
     def test_session_saving_can_create_new_project(self):
-        user = "USER"
         session, project = Mock(), Mock()
         self.mock_save.return_value = session
         self.mock_create.return_value = project
         form = SessionForm(data={"a": "b"})
         form.cleaned_data = {"new_project": "PPP"}
-        form.save(user)
+        form.save("USER")
         self.mock_save.assert_called_with(form, commit=False)
         self.mock_create.assert_called_with(name="PPP", user="USER")
         project.save.assert_called_with()
@@ -112,13 +112,22 @@ class SessionFormTests(DjangoTest):
 
 
     def test_session_saving_can_create_use_project(self):
-        user = "USER"
         session = Mock()
         self.mock_save.return_value = session
         form = SessionForm(data={"a": "b"})
         form.cleaned_data = {"project": "PPP"}
-        form.save(user)
+        form.save("USER")
         self.mock_save.assert_called_with(form, commit=False)
         self.assertFalse(self.mock_create.called)
         self.assertEqual(session.project, "PPP")
         session.save.assert_called_with()
+
+
+    def test_session_saving_adds_0_break_if_none_given(self):
+        session = Mock(name="session")
+        session.breaks = None
+        self.mock_save.return_value = session
+        form = SessionForm(data={"a": "b"})
+        form.cleaned_data = {"project": "PPP"}
+        form.save("USER")
+        self.assertEqual(session.breaks, 0)

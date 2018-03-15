@@ -37,9 +37,14 @@ class SessionForm(forms.ModelForm):
          "breaks": forms.widgets.NumberInput(attrs={"tabindex": "5"}),
         }
 
+        error_messages = {
+         "breaks": {"min_value": "Breaks must be positive"}
+        }
+
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
+        self.fields["breaks"].required = False
         self.fields["project"].required = False
         self.fields["new_project"].required = False
         self.fields["project"].empty_label = None
@@ -70,4 +75,5 @@ class SessionForm(forms.ModelForm):
         else:
             project = self.cleaned_data["project"]
         session.project = project
+        if session.breaks is None: session.breaks = 0
         session.save()
