@@ -97,6 +97,17 @@ class SessionFormTests(DjangoTest):
         self.assertIn("end_date", form.errors)
 
 
+    def test_can_reject_break_longer_than_session(self):
+        form = SessionForm(data={
+         "start_date": "2018-01-02", "start_time": "12:00",
+         "end_date": "2018-01-02", "end_time": "13:00",
+         "breaks": 61
+        })
+        self.assertFalse(form.is_valid())
+        self.mock_clean.assert_called_with(form)
+        self.assertIn("breaks", form.errors)
+
+
     def test_session_saving_can_create_new_project(self):
         session, project = Mock(), Mock()
         self.mock_save.return_value = session

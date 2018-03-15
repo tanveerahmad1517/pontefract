@@ -59,6 +59,12 @@ class SessionForm(forms.ModelForm):
          self.cleaned_data["end_date"], self.cleaned_data["end_time"]
         ):
             self.add_error("end_date", "End time is before start time")
+        elif (datetime.combine(
+         self.cleaned_data["end_date"], self.cleaned_data["end_time"]
+        ) - datetime.combine(
+         self.cleaned_data["start_date"], self.cleaned_data["start_time"]
+        )).seconds <= self.instance.breaks if self.instance.breaks else 0 * 60:
+            self.add_error("breaks", "Break cannot cancel out session")
 
 
     def save(self, user, commit=True, **kwargs):
