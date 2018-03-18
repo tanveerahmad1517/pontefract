@@ -49,13 +49,8 @@ def login(request):
     form = LoginForm()
     if request.method == "POST":
         form = LoginForm(request.POST)
-        if form.is_valid():
-            user = auth.authenticate(
-             username=form.data["username"], password=form.data["password"]
-            )
-            auth.login(request, user)
-            return redirect("/")
-
+        valid = form.validate_and_login(request)
+        if valid: return redirect("/")
     return render(request, "login.html", {"form": form})
 
 

@@ -1,20 +1,9 @@
 from unittest.mock import patch, Mock
 from testarsenal import DjangoTest
+from django.core.exceptions import ValidationError
 from core.forms import *
 
 class SignupFormTests(DjangoTest):
-
-    def setUp(self):
-        self.patch1 = patch("django.forms.ModelForm.clean")
-        self.patch2 = patch("core.forms.User.objects.create")
-        self.mock_clean = self.patch1.start()
-        self.mock_create = self.patch2.start()
-
-
-    def tearDown(self):
-        self.patch1.stop()
-        self.patch2.stop()
-
 
     def test_signup_form_has_correct_fields(self):
         form = SignupForm()
@@ -24,67 +13,112 @@ class SignupFormTests(DjangoTest):
         )
 
 
-    def test_username(self):
-        username = SignupForm().fields["username"]
-        widget = username.widget
+    def test_username_widget(self):
+        widget = SignupForm().fields["username"].widget
         self.assertEqual(widget.input_type, "text")
         self.assertEqual(widget.attrs, {
          "autocomplete": "off", "placeholder": "Your unique username"
         })
 
 
-    def test_email(self):
-        email = SignupForm().fields["email"]
-        widget = email.widget
+    def test_username_validation(self):
+        username = LoginForm().fields["username"]
+        self.assertTrue(username.required)
+        with self.assertRaises(ValidationError):
+            username.clean("")
+        with self.assertRaises(ValidationError):
+            username.clean(None)
+        with self.assertRaises(ValidationError):
+            username.clean("us\x00er")
+
+
+    def test_email_widget(self):
+        widget = SignupForm().fields["email"].widget
         self.assertEqual(widget.input_type, "email")
         self.assertEqual(widget.attrs, {
          "autocomplete": "off",  "placeholder": "richard@pomfret.org"
         })
 
 
-    def test_password_1(self):
-        password = SignupForm().fields["password"]
-        widget = password.widget
+    def test_email_validation(self):
+        email = SignupForm().fields["email"]
+        self.assertTrue(email.required)
+        with self.assertRaises(ValidationError):
+            email.clean("")
+        with self.assertRaises(ValidationError):
+            email.clean(None)
+        with self.assertRaises(ValidationError):
+            email.clean("us\x00er")
+
+
+    def test_password_1_widget(self):
+        widget = SignupForm().fields["password"].widget
         self.assertEqual(widget.input_type, "password")
         self.assertEqual(widget.attrs, {"placeholder": "Password"})
 
 
+    def test_password_1_validation(self):
+        password = SignupForm().fields["password"]
+        self.assertTrue(password.required)
+        with self.assertRaises(ValidationError):
+            password.clean("")
+        with self.assertRaises(ValidationError):
+            password.clean(None)
+        with self.assertRaises(ValidationError):
+            password.clean("us\x00er")
+
+
     def test_password_2(self):
-        password = SignupForm().fields["confirm_password"]
-        widget = password.widget
+        widget = SignupForm().fields["confirm_password"].widget
         self.assertEqual(widget.input_type, "password")
         self.assertEqual(widget.attrs, {"placeholder": "Confirm Password"})
 
 
-    def test_can_validate_signup_form(self):
-        form = SignupForm(data={
-         "username": "u", "email": "e@b.com",
-         "password": "p", "confirm_password": "p"
-        })
-        self.assertTrue(form.is_valid())
-        self.mock_clean.assert_called_with(form)
+    def test_password_2_validation(self):
+        password = SignupForm().fields["confirm_password"]
+        self.assertTrue(password.required)
+        with self.assertRaises(ValidationError):
+            password.clean("")
+        with self.assertRaises(ValidationError):
+            password.clean(None)
+        with self.assertRaises(ValidationError):
+            password.clean("us\x00er")
 
 
-    def test_form_rejects_mismatched_passwords(self):
-        form = SignupForm(data={
-         "username": "u", "email": "E@X.com",
-         "password": "p", "confirm_password": "p2"
-        })
-        self.assertFalse(form.is_valid())
-        self.assertIn("password", form.errors)
-        self.mock_clean.assert_called_with(form)
+    @patch("django.forms.ModelForm.clean")
+    @patch("core.forms.SignupForm.add_error")
+    def test_form_accepts_mismatched_passwords(self, mock_add, mock_clean):
+        form = SignupForm(data={"password": "p", "confirm_password": "p2"})
+        form.cleaned_data = {"password": "p", "confirm_password": "p"}
+        form.clean()
+        mock_clean.assert_called_with(form)
+        self.assertFalse(mock_add.called)
 
 
-    def test_saving_saves_user_properly(self):
+    @patch("django.forms.ModelForm.clean")
+    @patch("core.forms.SignupForm.add_error")
+    def test_form_rejects_mismatched_passwords(self, mock_add, mock_clean):
+        form = SignupForm(data={"password": "p", "confirm_password": "p2"})
+        form.cleaned_data = {"password": "p", "confirm_password": "p2"}
+        form.clean()
+        mock_clean.assert_called_with(form)
+        mock_add.assert_called_with("password", "Passwords don't match")
+
+
+    @patch("core.forms.User.objects.create")
+    def test_saving_saves_user_properly(self, mock_create):
         user = Mock()
-        self.mock_create.return_value = user
+        mock_create.return_value = user
         form = SignupForm(data={
          "username": "u", "email": "E@X.com",
          "password": "p", "confirm_password": "p"
         })
-        form.is_valid()
+        form.cleaned_data = {
+         "username": "u", "email": "E@X.com",
+         "password": "p", "confirm_password": "p"
+        }
         returned = form.save()
-        self.mock_create.assert_called_with(username="u", email="E@X.com")
+        mock_create.assert_called_with(username="u", email="E@X.com")
         user.set_password.assert_called_with("p")
         user.save.assert_called_with()
         self.assertIs(returned, user)
@@ -93,50 +127,87 @@ class SignupFormTests(DjangoTest):
 
 class LoginFormTests(DjangoTest):
 
-    def setUp(self):
-        self.patch1 = patch("core.forms.authenticate")
-        self.patch2 = patch("django.forms.Form.clean")
-        self.mock_auth = self.patch1.start()
-        self.mock_clean = self.patch2.start()
-
-
-    def tearDown(self):
-        self.patch1.stop()
-        self.patch2.stop()
-
-
     def test_login_form_has_correct_fields(self):
         form = LoginForm()
         self.assertEqual(list(form.fields.keys()), ["username", "password"])
 
 
-    def test_username(self):
-        username = LoginForm().fields["username"]
-        widget = username.widget
+    def test_username_widget(self):
+        widget = LoginForm().fields["username"].widget
         self.assertEqual(widget.input_type, "text")
         self.assertEqual(widget.attrs, {
          "autocomplete": "off", "placeholder": "Username"
         })
 
 
-    def test_password(self):
-        password = LoginForm().fields["password"]
-        widget = password.widget
+    def test_username_validation(self):
+        username = LoginForm().fields["username"]
+        self.assertTrue(username.required)
+        with self.assertRaises(ValidationError):
+            username.clean("")
+        with self.assertRaises(ValidationError):
+            username.clean(None)
+        with self.assertRaises(ValidationError):
+            username.clean("us\x00er")
+
+
+    def test_password_widget(self):
+        widget = LoginForm().fields["password"].widget
         self.assertEqual(widget.input_type, "password")
         self.assertEqual(widget.attrs, {"placeholder": "Password"})
 
 
-    def test_can_validate_login_form(self):
-        self.mock_auth.return_value = "USER"
-        form = LoginForm(data={"username": "u", "password": "p"})
-        self.assertTrue(form.is_valid())
-        self.mock_clean.assert_called_with(form)
-        self.mock_auth.assert_called_with(username="u", password="p")
+    def test_password_validation(self):
+        password = LoginForm().fields["password"]
+        self.assertTrue(password.required)
+        with self.assertRaises(ValidationError):
+            password.clean("")
+        with self.assertRaises(ValidationError):
+            password.clean(None)
+        with self.assertRaises(ValidationError):
+            password.clean("us\x00er")
 
 
-    def test_can_reject_login_form(self):
-        self.mock_auth.return_value = None
-        form = LoginForm(data={"username": "u", "password": "p"})
-        self.assertFalse(form.is_valid())
-        self.mock_clean.assert_called_with(form)
-        self.mock_auth.assert_called_with(username="u", password="p")
+    @patch("core.forms.LoginForm.is_valid")
+    @patch("core.forms.authenticate")
+    @patch("core.forms.login")
+    def test_can_validate_and_login(self, mock_login, mock_auth, mock_valid):
+        mock_valid.return_value = True
+        request = Mock()
+        mock_auth.return_value = "USER"
+        form = LoginForm(data={"a": 1, "b": 2})
+        form.cleaned_data = {"username": "u", "password": "p"}
+        self.assertTrue(form.validate_and_login(request))
+        mock_valid.assert_called_with()
+        mock_auth.assert_called_with(username="u", password="p")
+        mock_login.assert_called_with(request, "USER")
+
+
+    @patch("core.forms.LoginForm.is_valid")
+    @patch("core.forms.authenticate")
+    @patch("core.forms.login")
+    def test_can_reject_validation(self, mock_login, mock_auth, mock_valid):
+        mock_valid.return_value = False
+        request = Mock()
+        form = LoginForm(data={"a": 1, "b": 2})
+        self.assertFalse(form.validate_and_login(request))
+        mock_valid.assert_called_with()
+        self.assertFalse(mock_auth.called)
+        self.assertFalse(mock_login.called)
+
+
+    @patch("core.forms.LoginForm.is_valid")
+    @patch("core.forms.authenticate")
+    @patch("core.forms.login")
+    @patch("core.forms.LoginForm.add_error")
+    def test_can_reject_credentials(self, mock_add, mock_login, mock_auth, mock_valid):
+        mock_valid.return_value = True
+        request = Mock()
+        mock_auth.return_value = None
+        form = LoginForm(data={"a": 1, "b": 2})
+        form.cleaned_data = {"username": "u", "password": "p"}
+        self.assertFalse(form.validate_and_login(request))
+        mock_valid.assert_called_with()
+        mock_auth.assert_called_with(username="u", password="p")
+        self.assertFalse(mock_login.called)
+        mock_add.assert_called_with("username", "Invalid credentials")

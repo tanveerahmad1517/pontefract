@@ -152,43 +152,36 @@ class LoginViewTests(DjangoTest):
         self.check_view_uses_template(login, request, "login.html")
 
 
-    def test_login_view_sends_signup_form(self):
+    def test_login_view_sends_login_form(self):
         self.mock_form.return_value = "FORM"
         request = self.make_request("---")
         self.check_view_has_context(login, request, {"form": "FORM"})
         self.mock_form.assert_called_with()
 
 
-    def test_login_view_can_login(self):
+    def test_login_view_logs_inn(self):
         form = Mock()
         self.mock_form.return_value = form
-        form.is_valid.return_value = True
-        form.data = {"username": "u", "password": "p"}
-        self.mock_authenticate.return_value = "USER"
+        form.validate_and_login.return_value = True
         request = self.make_request(
          "---", method="post", data={"username": "u", "password": "p"}
         )
         self.check_view_redirects(login, request, "/")
         self.mock_form.assert_called_with(QueryDict("username=u&password=p"))
-        form.is_valid.assert_called_with()
-        self.mock_authenticate.assert_called_with(username="u", password="p")
-        self.mock_login.assert_called_with(request, "USER")
+        form.validate_and_login.assert_called_with(request)
 
 
     def test_login_view_can_return_incorrect_form(self):
         form = Mock()
         self.mock_form.return_value = form
-        form.is_valid.return_value = False
-        form.data = {"username": "u", "password": "p"}
-        self.mock_authenticate.return_value = "USER"
+        form.validate_and_login.return_value = False
         request = self.make_request(
          "---", method="post", data={"username": "u", "password": "p"}
         )
         self.check_view_uses_template(login, request, "login.html")
         self.check_view_has_context(login, request, {"form": form})
         self.mock_form.assert_called_with(QueryDict("username=u&password=p"))
-        form.is_valid.assert_called_with()
-        self.assertFalse(self.mock_login.called)
+        form.validate_and_login.assert_called_with(request)
 
 
 

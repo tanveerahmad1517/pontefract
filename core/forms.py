@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from .models import User
 
 class SignupForm(forms.ModelForm):
@@ -12,9 +12,10 @@ class SignupForm(forms.ModelForm):
     Some fields of the User model have maximum lengths, but these are removed
     from the HTML widgets themselves."""
 
-    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={
+    confirm_password_widget = forms.PasswordInput(attrs={
      "placeholder": "Confirm Password"
-    }))
+    })
+    confirm_password = forms.CharField(widget=confirm_password_widget)
 
     class Meta:
         model = User
@@ -35,10 +36,9 @@ class SignupForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
-        for field in self.fields:
-            try:
-                del self.fields[field].widget.attrs["maxlength"]
-            except KeyError: pass
+        del self.fields["username"].widget.attrs["maxlength"]
+        del self.fields["email"].widget.attrs["maxlength"]
+        del self.fields["password"].widget.attrs["maxlength"]
 
 
     def clean(self):
@@ -67,25 +67,31 @@ class SignupForm(forms.ModelForm):
 
 
 class LoginForm(forms.Form):
-    """The form users use to log into their account.
+    """The form users use to log into their account."""
 
-    In addition to the usual Form validation, the form will also check that a
-    user with the supplied actually exists."""
-
-    username = forms.CharField(widget=forms.TextInput(attrs={
+    username_widget = forms.TextInput(attrs={
      "placeholder": "Username", "autocomplete": "off"
-    }))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={
-     "placeholder": "Password"
-    }))
+    })
+    password_widget = forms.PasswordInput(attrs={"placeholder": "Password"})
 
+    username = forms.CharField(widget=username_widget)
+    password = forms.CharField(widget=password_widget)
 
-    def clean(self):
-        """Does this user exist?"""
+    def validate_and_login(self, request):
+        """Validates the form using full_clean, and if it's valid, tries to log
+        in using the credentials. If that succeeds, ``True`` is returned.
 
-        forms.Form.clean(self)
-        user = authenticate(
-         username=self.cleaned_data.get("username"),
-         password=self.cleaned_data.get("password")
-        )
-        if not user: self.add_error("username", "Invalid credentials")
+        If the form is invalid, or the credentials incorrect, ``False`` is
+        returned."""
+
+        if self.is_valid():
+            user = authenticate(
+             username=self.cleaned_data.get("username"),
+             password=self.cleaned_data.get("password")
+            )
+            if user:
+                login(request, user)
+                return True
+            else:
+                self.add_error("username", "Invalid credentials")
+        return False
