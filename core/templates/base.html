@@ -12,6 +12,7 @@
     <link href='https://fonts.googleapis.com/css?family=Shrikhand'
       rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    {% block css %}{% endblock %}
     <link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png">
@@ -21,6 +22,7 @@
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
     <script src="https://code.jquery.com/jquery.min.js"></script>
+    {% block scripts %}{% endblock %}
     {% block head %}{% endblock %}
 </head>
 

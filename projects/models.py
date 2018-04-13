@@ -9,12 +9,20 @@ class Project(models.Model):
 
     class Meta:
         db_table = "projects"
+        unique_together = (("name", "user"),)
 
     name = models.CharField(max_length=256)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
+
+
+    @classmethod
+    def by_name(cls, user):
+        return Project.objects.filter(user=user).order_by(
+         models.functions.Lower("name")
+        )
 
 
 

@@ -1,4 +1,14 @@
 <form method="POST">
+
+ <script>
+  $( function() {
+    var availableTags = {{ project_list|safe }};
+    $( "#id_project" ).autocomplete({
+      source: availableTags
+    });
+  } );
+  </script>
+
     <div class="datetime">
         {% if form.errors.start_date or form.errors.start_time %}
         <div class="error" id="start-time-error">
@@ -22,8 +32,8 @@
     {% endif %}
     {{ form.breaks }}
 
-    {% if user.project_set.count %}{{ form.project }}{% endif %}
-    {{ form.new_project }}
+    {{ form.project }}
+
     {% csrf_token %}
     <input type="submit">
 </form>

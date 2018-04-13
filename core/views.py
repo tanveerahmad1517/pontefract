@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import django.contrib.auth as auth
 from core.forms import SignupForm, LoginForm
-from projects.forms import SessionForm
-from projects.models import Session
+from projects.forms import SessionForm, ProjectForm
+from projects.models import Session, Project
 
 def root(request):
     """The view that handles requests to the root URL. It hands the request to
@@ -20,6 +20,7 @@ def landing(request):
 
     form = SignupForm()
     if request.method == "POST":
+
         form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -33,12 +34,16 @@ def home(request):
 
     form = SessionForm()
     if request.method == "POST":
-        form = SessionForm(request.POST)
+        try:
+            ProjectForm(request.user, request.POST).save()
+        except: pass
+        form = SessionForm(request.POST, user=request.user)
         if form.is_valid():
             form.save(request.user)
             return redirect("/")
     return render(request, "home.html", {
      "form": form,
+     "project_list": [str(p) for p in Project.by_name(request.user)]
     })
 
 

@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 from testarsenal import DjangoTest
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from projects.models import *
 
 class ProjectTests(DjangoTest):
@@ -23,9 +24,33 @@ class ProjectTests(DjangoTest):
             project.full_clean()
 
 
+    def test_project_name_must_be_unique_for_user(self):
+        Project.objects.create(name="ABC", user=self.user)
+        user2 = mixer.blend(User)
+        Project.objects.create(name="ABCD", user=self.user)
+        Project.objects.create(name="ABC", user=user2)
+        with self.assertRaises(IntegrityError):
+            Project.objects.create(name="ABC", user=self.user)
+
+
     def test_project_string_representation(self):
         project = Project(name="Basement Excavation", user=self.user)
         self.assertEqual(str(project), "Basement Excavation")
+
+
+    def test_can_get_ordered_projects(self):
+        user2 = mixer.blend(User)
+        project1 = Project.objects.create(name="AAA", user=self.user)
+        project2 = Project.objects.create(name="BBB", user=self.user)
+        project3 = Project.objects.create(name="bbb", user=self.user)
+        project4 = Project.objects.create(name="aaa", user=self.user)
+        project5 = Project.objects.create(name="ccc", user=user2)
+        projects = Project.by_name(self.user)
+        self.assertEqual(projects.count(), 4)
+        self.assertEqual(projects[0], project1)
+        self.assertEqual(projects[1], project4)
+        self.assertEqual(projects[2], project2)
+        self.assertEqual(projects[3], project3)
 
 
 

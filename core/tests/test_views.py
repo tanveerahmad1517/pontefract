@@ -81,12 +81,19 @@ class LandingViewTests(DjangoTest):
 class HomeViewTests(DjangoTest):
 
     def setUp(self):
-        self.patch1 = patch("core.views.SessionForm")
-        self.mock_form = self.patch1.start()
+        self.patch1 = patch("core.views.ProjectForm")
+        self.mock_project_form = self.patch1.start()
+        self.patch2 = patch("core.views.SessionForm")
+        self.mock_form = self.patch2.start()
+        self.patch3 = patch("core.views.Project.by_name")
+        self.mock_by = self.patch3.start()
+        self.mock_by.return_value = [1, 2, 3]
 
 
     def tearDown(self):
         self.patch1.stop()
+        self.patch2.stop()
+        self.patch3.stop()
 
 
     def test_home_view_uses_home_template(self):
@@ -102,6 +109,11 @@ class HomeViewTests(DjangoTest):
         self.mock_form.assert_called_with()
 
 
+    def test_home_view_sends_session_user_projects(self):
+        request = self.make_request("---", loggedin=True)
+        self.check_view_has_context(home, request, {"project_list": ["1", "2", "3"]})
+
+
     def test_home_view_can_return_incorrect_form(self):
         form = Mock()
         self.mock_form.return_value = form
@@ -112,7 +124,7 @@ class HomeViewTests(DjangoTest):
         )
         self.check_view_uses_template(home, request, "home.html")
         self.check_view_has_context(home, request, {"form": form})
-        self.mock_form.assert_called_with(QueryDict("a=u&b=p"))
+        self.mock_form.assert_called_with(QueryDict("a=u&b=p"), user=request.user)
         form.is_valid.assert_called_with()
 
 
@@ -124,7 +136,8 @@ class HomeViewTests(DjangoTest):
          "---", method="post", data={"id": "xxx", "b": "C"}, loggedin=True
         )
         home(request)
-        self.mock_form.assert_called_with(QueryDict("id=xxx&b=C"))
+        self.mock_form.assert_called_with(QueryDict("id=xxx&b=C"), user=request.user)
+        self.mock_project_form.assert_called_with(request.user, QueryDict("id=xxx&b=C"))
         form.is_valid.assert_called_with()
         form.save.assert_called_with(request.user)
 

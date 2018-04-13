@@ -16,39 +16,36 @@ class SignupFormTests(DjangoTest):
     def test_username_widget(self):
         widget = SignupForm().fields["username"].widget
         self.assertEqual(widget.input_type, "text")
+        self.assertTrue(widget.is_required)
         self.assertEqual(widget.attrs, {
          "autocomplete": "off", "placeholder": "Your unique username"
+        })
+
+
+    def test_email_widget(self):
+        widget = SignupForm().fields["email"].widget
+        self.assertEqual(widget.input_type, "email")
+        self.assertTrue(widget.is_required)
+        self.assertEqual(widget.attrs, {
+         "autocomplete": "off",  "placeholder": "richard@pomfret.org"
         })
 
 
     def test_username_validation(self):
         username = LoginForm().fields["username"]
         self.assertTrue(username.required)
-        with self.assertRaises(ValidationError):
-            username.clean("")
-        with self.assertRaises(ValidationError):
-            username.clean(None)
-        with self.assertRaises(ValidationError):
-            username.clean("us\x00er")
+        for invalid in ("", None, "a\x00b"):
+            with self.assertRaises(ValidationError):
+                username.clean(invalid)
 
-
-    def test_email_widget(self):
-        widget = SignupForm().fields["email"].widget
-        self.assertEqual(widget.input_type, "email")
-        self.assertEqual(widget.attrs, {
-         "autocomplete": "off",  "placeholder": "richard@pomfret.org"
-        })
 
 
     def test_email_validation(self):
         email = SignupForm().fields["email"]
         self.assertTrue(email.required)
-        with self.assertRaises(ValidationError):
-            email.clean("")
-        with self.assertRaises(ValidationError):
-            email.clean(None)
-        with self.assertRaises(ValidationError):
-            email.clean("us\x00er")
+        for invalid in ("", None, "a\x00b"):
+            with self.assertRaises(ValidationError):
+                email.clean(invalid)
 
 
     def test_password_1_widget(self):
@@ -60,12 +57,9 @@ class SignupFormTests(DjangoTest):
     def test_password_1_validation(self):
         password = SignupForm().fields["password"]
         self.assertTrue(password.required)
-        with self.assertRaises(ValidationError):
-            password.clean("")
-        with self.assertRaises(ValidationError):
-            password.clean(None)
-        with self.assertRaises(ValidationError):
-            password.clean("us\x00er")
+        for invalid in ("", None, "a\x00b"):
+            with self.assertRaises(ValidationError):
+                password.clean(invalid)
 
 
     def test_password_2(self):
@@ -77,17 +71,14 @@ class SignupFormTests(DjangoTest):
     def test_password_2_validation(self):
         password = SignupForm().fields["confirm_password"]
         self.assertTrue(password.required)
-        with self.assertRaises(ValidationError):
-            password.clean("")
-        with self.assertRaises(ValidationError):
-            password.clean(None)
-        with self.assertRaises(ValidationError):
-            password.clean("us\x00er")
+        for invalid in ("", None, "a\x00b"):
+            with self.assertRaises(ValidationError):
+                password.clean(invalid)
 
 
     @patch("django.forms.ModelForm.clean")
     @patch("core.forms.SignupForm.add_error")
-    def test_form_accepts_mismatched_passwords(self, mock_add, mock_clean):
+    def test_form_accepts_matched_passwords(self, mock_add, mock_clean):
         form = SignupForm(data={"password": "p", "confirm_password": "p2"})
         form.cleaned_data = {"password": "p", "confirm_password": "p"}
         form.clean()
@@ -135,37 +126,27 @@ class LoginFormTests(DjangoTest):
     def test_username_widget(self):
         widget = LoginForm().fields["username"].widget
         self.assertEqual(widget.input_type, "text")
+        self.assertTrue(widget.is_required)
         self.assertEqual(widget.attrs, {
          "autocomplete": "off", "placeholder": "Username"
         })
 
 
-    def test_username_validation(self):
-        username = LoginForm().fields["username"]
-        self.assertTrue(username.required)
-        with self.assertRaises(ValidationError):
-            username.clean("")
-        with self.assertRaises(ValidationError):
-            username.clean(None)
-        with self.assertRaises(ValidationError):
-            username.clean("us\x00er")
-
-
     def test_password_widget(self):
         widget = LoginForm().fields["password"].widget
         self.assertEqual(widget.input_type, "password")
+        self.assertTrue(widget.is_required)
         self.assertEqual(widget.attrs, {"placeholder": "Password"})
+
+
+    def test_username_validation(self):
+        username = LoginForm().fields["username"]
+        self.assertTrue(username.required)
 
 
     def test_password_validation(self):
         password = LoginForm().fields["password"]
         self.assertTrue(password.required)
-        with self.assertRaises(ValidationError):
-            password.clean("")
-        with self.assertRaises(ValidationError):
-            password.clean(None)
-        with self.assertRaises(ValidationError):
-            password.clean("us\x00er")
 
 
     @patch("core.forms.LoginForm.is_valid")

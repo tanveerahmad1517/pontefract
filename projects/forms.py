@@ -1,14 +1,26 @@
 from datetime import datetime
 from django import forms
+from django.core.validators import MinValueValidator
 from .models import Session, Project
 
-class DateInput(forms.widgets.DateInput):
-    input_type = "date"
+class ProjectForm(forms.ModelForm):
+
+    class Meta:
+        model = Project
+        exclude = []
 
 
+    def __init__(self, user, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        self.fields["user"].required = False
+        self.fields["name"].widget.value_from_datadict = lambda d, f, n: d.get("project")
+        self.user = user
 
-class TimeInput(forms.widgets.TimeInput):
-    input_type = "time"
+
+    def save(self, *args, **kwargs):
+        model = forms.ModelForm.save(self, *args, commit=False, **kwargs)
+        model.user = self.user
+        model.save()
 
 
 
@@ -17,38 +29,43 @@ class SessionForm(forms.ModelForm):
 
     They can provide a new project at the same time."""
 
-    start_date = forms.DateField(
-     initial=datetime.now().date(), widget=DateInput(attrs={"tabindex": "1"})
+    project = forms.ModelChoiceField(
+     queryset=Project.objects,
+     widget=forms.widgets.TextInput(attrs={"tabindex": "6"})
     )
-    end_date = forms.DateField(
-     initial=datetime.now().date(), widget=DateInput(attrs={"tabindex": "2"})
-    )
-    new_project = forms.CharField(widget=forms.widgets.TextInput(
-     attrs={"autocomplete": "off", "tabindex": "7"}
-    ))
 
     class Meta:
         model = Session
         exclude = []
 
         widgets = {
-         "start_time": TimeInput(attrs={"tabindex": "3"}),
-         "end_time": TimeInput(attrs={"tabindex": "4"}),
-         "breaks": forms.widgets.NumberInput(attrs={"tabindex": "5"}),
+         "start_date": forms.widgets.DateInput(attrs={"tabindex": "1"}),
+         "start_time": forms.widgets.TimeInput(attrs={"tabindex": "3"}),
+         "end_date": forms.widgets.DateInput(attrs={"tabindex": "2"}),
+         "end_time": forms.widgets.TimeInput(attrs={"tabindex": "4"}),
+         "breaks": forms.widgets.NumberInput(attrs={"tabindex": "5"})
         }
 
-        error_messages = {
-         "breaks": {"min_value": "Breaks must be positive"}
-        }
+        widgets["start_date"].input_type = "date"
+        widgets["start_time"].input_type = "time"
+        widgets["end_date"].input_type = "date"
+        widgets["end_time"].input_type = "time"
+        widgets["breaks"].value_from_datadict = lambda d, f, n: d.get(n) or "0"
 
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
+        self.user = user
+        self.fields["start_date"].initial = datetime.now().date()
+        self.fields["end_date"].initial = datetime.now().date()
         self.fields["breaks"].required = False
-        self.fields["project"].required = False
-        self.fields["new_project"].required = False
-        self.fields["project"].empty_label = None
-        self.fields["project"].widget.attrs["tabindex"] = "6"
+        self.fields["breaks"].widget.is_required = False
+        self.fields["breaks"].validators.append(MinValueValidator(
+         0, message="The break must be positive."
+        ))
+        self.fields["project"].to_python = lambda v: Project.objects.get(
+         user=self.user, name=v
+        )
 
 
     def clean(self):
@@ -63,23 +80,5 @@ class SessionForm(forms.ModelForm):
          self.cleaned_data["end_date"], self.cleaned_data["end_time"]
         ) - datetime.combine(
          self.cleaned_data["start_date"], self.cleaned_data["start_time"]
-        )).seconds <= self.instance.breaks if self.instance.breaks else 0 * 60:
+        )).seconds <= self.cleaned_data.get("breaks", 0) * 60:
             self.add_error("breaks", "Break cannot cancel out session")
-
-
-    def save(self, user, commit=True, **kwargs):
-        """Gets a model object from the form data without saving it to the
-        database, quickly creates a project object for it to belong to, adds the
-        project to the session, and then commits the session to the database."""
-
-        session = forms.ModelForm.save(self, commit=False)
-        if self.cleaned_data.get("new_project"):
-            project = Project.objects.create(
-             name=self.cleaned_data["new_project"], user=user
-            )
-            project.save()
-        else:
-            project = self.cleaned_data["project"]
-        session.project = project
-        if session.breaks is None: session.breaks = 0
-        session.save()
