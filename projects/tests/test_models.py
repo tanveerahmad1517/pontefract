@@ -121,3 +121,26 @@ class SessionTests(DjangoTest):
          breaks=5, project=self.project
         )
         self.assertEqual(session.duration(), 85)
+
+
+    @patch("projects.models.Session.duration")
+    def test_can_get_duration_string(self, mock_duration):
+        session = Session(
+         start_date=self.date1, end_date=self.date2,
+         start_time=self.time1, end_time=self.time2,
+         breaks=5, project=self.project
+        )
+        mock_duration.return_value = 1
+        self.assertEqual(session.duration_string(), "1 minute")
+        mock_duration.return_value = 30
+        self.assertEqual(session.duration_string(), "30 minutes")
+        mock_duration.return_value = 60
+        self.assertEqual(session.duration_string(), "1 hour")
+        mock_duration.return_value = 61
+        self.assertEqual(session.duration_string(), "1 hour, 1 minute")
+        mock_duration.return_value = 90
+        self.assertEqual(session.duration_string(), "1 hour, 30 minutes")
+        mock_duration.return_value = 120
+        self.assertEqual(session.duration_string(), "2 hours")
+        mock_duration.return_value = 130
+        self.assertEqual(session.duration_string(), "2 hours, 10 minutes")

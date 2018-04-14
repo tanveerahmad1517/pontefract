@@ -13,13 +13,13 @@
 
     <div id="today-time-tracking">
         <h3>{% now "jS F Y" %}</h3>
-        {{ user.minutes_worked_today }} minutes.
+        <div class="total-time">{{ user.hours_worked_today }}.</div>
         <table>
         {% for session in user.sessions_today %}
         <tr class="session">
             <td>{{ session.start_time }} - {{ session.end_time }}:</td>
             <td>{{ session.project.name }}</td>
-            <td>{{ session.duration }} minutes</td>
+            <td>{{ session.duration_string }}</td>
             <td>{% if session.breaks %}({{ session.breaks }} minute break){% endif %}</td>
         </tr>
         {% endfor %}

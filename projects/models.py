@@ -56,3 +56,19 @@ class Session(models.Model):
         """The length of the session in minutes, accounting for breaks."""
 
         return int(((self.end() - self.start()).seconds / 60) - self.breaks)
+
+
+    def duration_string(self):
+        """The length of the session in minutes, accounting for breaks, as as
+        string."""
+
+        minutes = self.duration()
+        if minutes < 60:
+            return "{} minute{}".format(minutes, "" if minutes == 1 else "s")
+        else:
+            hours = minutes // 60
+            mins = minutes - (hours * 60)
+            text = "{} hour{}".format(hours, "" if hours == 1 else "s")
+            if mins:
+                text += ", {} minute{}".format(mins, "" if mins == 1 else "s")
+            return text

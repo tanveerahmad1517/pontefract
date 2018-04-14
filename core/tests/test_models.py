@@ -32,13 +32,16 @@ class UserTests(DjangoTest):
 
     @patch("projects.models.Session.objects.filter")
     def test_user_sessions_done_today(self, mock_filter):
+        filtered = Mock()
         sessions = [Mock(), Mock(), Mock()]
-        mock_filter.return_value = sessions
+        filtered.order_by.return_value = sessions
+        mock_filter.return_value = filtered
         user = User(username="sam", email="sam@sam.sam", password="p")
         self.assertEqual(sessions, user.sessions_today())
         mock_filter.assert_called_with(
          project__user=user, start_date=datetime.now().date()
         )
+        filtered.order_by.assert_called_with("start_time")
 
 
     @patch("core.models.User.sessions_today")
@@ -52,3 +55,22 @@ class UserTests(DjangoTest):
         minutes = user.minutes_worked_today()
         mock_sessions.assert_called_with()
         self.assertEqual(minutes, 15)
+
+
+    @patch("core.models.User.minutes_worked_today")
+    def test_user_hours_done_today(self, mock_minutes):
+        user = User(username="sam", email="sam@sam.sam", password="p")
+        mock_minutes.return_value = 1
+        self.assertEqual(user.hours_worked_today(), "1 minute")
+        mock_minutes.return_value = 30
+        self.assertEqual(user.hours_worked_today(), "30 minutes")
+        mock_minutes.return_value = 60
+        self.assertEqual(user.hours_worked_today(), "1 hour")
+        mock_minutes.return_value = 61
+        self.assertEqual(user.hours_worked_today(), "1 hour, 1 minute")
+        mock_minutes.return_value = 90
+        self.assertEqual(user.hours_worked_today(), "1 hour, 30 minutes")
+        mock_minutes.return_value = 120
+        self.assertEqual(user.hours_worked_today(), "2 hours")
+        mock_minutes.return_value = 130
+        self.assertEqual(user.hours_worked_today(), "2 hours, 10 minutes")
