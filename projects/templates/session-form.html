@@ -4,7 +4,7 @@
   $( function() {
     var availableTags = {{ project_list|safe }};
     $( "#id_project" ).autocomplete({
-      source: availableTags
+      source: availableTags, delay: 0
     });
   } );
   </script>

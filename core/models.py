@@ -11,26 +11,26 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
 
 
-    def sessions_today(self):
+    def sessions_today(self, today=None):
         """What sessions has the user done today?"""
         from projects.models import Session
-        today = date.today()
+        today = date.today() if today is None else today
         return Session.objects.filter(project__user=self, start_date=today).order_by("start_time")
 
 
-    def minutes_worked_today(self):
+    def minutes_worked_today(self, *args, **kwargs):
         """How many minutes of work has the user done in sessions across all
         projects?"""
 
-        sessions = self.sessions_today()
+        sessions = self.sessions_today(*args, **kwargs)
         return sum([session.duration() for session in sessions])
 
 
-    def hours_worked_today(self):
+    def hours_worked_today(self, *args, **kwargs):
         """How many hours of work has the user done in sessions accross all
         projects, as a human readable string?"""
 
-        minutes = self.minutes_worked_today()
+        minutes = self.minutes_worked_today(*args, **kwargs)
         if minutes < 60:
             return "{} minute{}".format(minutes, "" if minutes == 1 else "s")
         else:

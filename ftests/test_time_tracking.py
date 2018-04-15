@@ -391,3 +391,54 @@ class SessionViewingTests(TimeTrackingTests):
          ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
          ["23:45 - 00:30", "Reading", "45 minutes", None]
         ], date="27th October 1962")
+
+        # They can view the work done in October
+        link = today.find_element_by_class_name("month-link")
+        self.click(link)
+        self.check_page("/time/1962/10/")
+        self.check_title("October 1962")
+        self.check_h1("October 1962")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 27)
+        for index, day in enumerate(days):
+            if index == 0:
+                self.check_day_report(day, "4 hours, 30 minutes", [
+                 ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
+                 ["11:00 - 11:30", "Reading", "30 minutes", None],
+                 ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
+                 ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
+                 ["23:45 - 00:30", "Reading", "45 minutes", None]
+                ], date="27th October 1962")
+            elif index == 1:
+                self.check_day_report(day, "6 hours", [
+                 ["06:20 - 07:40", "Running", "1 hour", None],
+                 ["17:20 - 17:40", "Archery", "20 minutes", None],
+                 ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
+                ], date="26th October 1962")
+            elif index == 7:
+                self.check_day_report(day, "8 hours", [
+                 ["09:00 - 17:00", "Project Ultra", "8 hours", None],
+                ], date="20th October 1962")
+            elif index == 11:
+                self.check_day_report(day, "12 hours", [
+                 ["09:00 - 17:00", "Project Ultra", "8 hours", None],
+                 ["18:00 - 22:00", "Project Ultra", "4 hours", None],
+                ], date="16th October 1962")
+            elif index == 15:
+                self.check_day_report(day, "12 hours", [
+                 ["09:00 - 17:00", "Project Ultra", "8 hours", None],
+                 ["18:00 - 22:00", "Project Ultra", "4 hours", None],
+                ], date="12th October 1962")
+            elif index == 19:
+                self.check_day_report(day, "12 hours", [
+                 ["09:00 - 17:00", "Project Ultra", "8 hours", None],
+                 ["18:00 - 22:00", "Project Ultra", "4 hours", None],
+                ], date="8th October 1962")
+            elif index == 24:
+                self.check_day_report(day, "6 hours, 20 minutes", [
+                 ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
+                 ["17:20 - 17:40", "Archery", "20 minutes", None],
+                 ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
+                ], date="3rd October 1962")
+            else:
+                self.check_day_report(day, "0 minutes", [])

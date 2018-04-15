@@ -1,3 +1,5 @@
+from datetime import date
+from calendar import monthrange
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import django.contrib.auth as auth
@@ -66,3 +68,11 @@ def logout(request):
     if request.method == "POST":
         auth.logout(request)
     return redirect("/")
+
+
+def time_month(request, year, month):
+    days = [date(year, month, day) for day in range(
+     1, monthrange(year, month)[1] + 1
+    ) if date(year, month, day) <= date.today()]
+    days = [(day, request.user.hours_worked_today(day), request.user.sessions_today(day)) for day in days]
+    return render(request, "time-month.html", {"month": date(year, month, 1), "days": days[::-1]})

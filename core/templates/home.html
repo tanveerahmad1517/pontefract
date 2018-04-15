@@ -11,7 +11,7 @@
 <div id="user-time-tracking">
     <h2>Time Tracking</h2>
 
-    <div id="today-time-tracking">
+    <div id="today-time-tracking" class="day-time-tracking">
         <h3>{% now "jS F Y" %}</h3>
         <div class="total-time">{{ user.hours_worked_today }}.</div>
         <table>
@@ -24,6 +24,7 @@
         </tr>
         {% endfor %}
         </table>
+        <a href="/time/{% now  'Y/m/'%}" class="month-link">See work done this month</a>
     </div>
     {% include "session-form.html" %}
 </div>

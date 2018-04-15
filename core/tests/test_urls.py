@@ -13,3 +13,7 @@ class UrlTests(DjangoTest):
 
     def test_logout_url(self):
         self.check_url_returns_view("/logout/", core_views.logout)
+
+
+    def test_time_tracking_month_url(self):
+        self.check_url_returns_view("/time/1990/09/", core_views.time_month)
