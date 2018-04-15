@@ -14,7 +14,8 @@ nav {
     position: relative;
 }
 
-nav #logo {
+nav #logo a {
+    color: inherit;
     display: inline;
     font-family: Shrikhand;
     font-size: 200%;

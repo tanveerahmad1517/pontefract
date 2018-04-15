@@ -26,3 +26,8 @@ class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
          "name": "sessionid", "value": cookie, "secure": False, "path": "/"
         })
         self.browser.refresh()
+
+
+    def logout(self):
+        self.browser.get(self.live_server_url + "/")
+        self.click(self.browser.find_element_by_id("logout-link"))

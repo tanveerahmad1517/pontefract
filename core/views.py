@@ -1,8 +1,9 @@
 from datetime import date
 from calendar import monthrange
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 import django.contrib.auth as auth
+from django.contrib.auth.decorators import login_required
 from core.forms import SignupForm, LoginForm
 from projects.forms import SessionForm, ProjectForm
 from projects.models import Session, Project
@@ -70,7 +71,11 @@ def logout(request):
     return redirect("/")
 
 
+@login_required(login_url="/", redirect_field_name=None)
 def time_month(request, year, month):
+    month_date = date(year, month, 1)
+    if month_date < request.user.first_month():
+        raise Http404
     today = date.today()
     days = [date(year, month, day) for day in range(
      1, monthrange(year, month)[1] + 1

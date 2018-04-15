@@ -556,3 +556,15 @@ class SessionViewingTests(TimeTrackingTests):
         self.check_page("/time/1962/10/")
         self.check_title("October 1962")
         self.check_h1("October 1962")
+
+
+    def test_month_view_404(self):
+        self.logout()
+        self.get("/time/1962/10/")
+        self.check_page("/")
+        self.login()
+        self.get("/time/1962/10/")
+        self.check_page("/time/1962/10/")
+        self.check_h1("October 1962")
+        self.get("/time/1952/10/")
+        self.check_title("Not Found")

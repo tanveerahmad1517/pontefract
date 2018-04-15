@@ -285,3 +285,13 @@ class TimeTrackingMonthViewTests(DjangoTest):
         self.check_view_has_context(
          time_month, self.request, {"previous": None}, 1983, 6
         )
+
+
+    def test_month_view_requires_auth(self):
+        request = self.make_request("---")
+        self.check_view_redirects(time_month, request, "/", 1962, 4)
+
+
+    def test_month_view_raises_404_on_month_out_of_bounds(self):
+        with self.assertRaises(Http404):
+            time_month(self.request, 1961, 6)
