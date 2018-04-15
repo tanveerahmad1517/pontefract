@@ -91,11 +91,17 @@ def time_month(request, year, month):
      year - 1 if month == 1 else year, 12 if month == 1 else month - 1, 1
     )
     if previous < request.user.first_month(): previous = None
-
-
     return render(request, "time-month.html", {
      "month": date(year, month, 1),
      "days": days[::-1],
      "next": next,
      "previous": previous
     })
+
+
+@login_required(login_url="/", redirect_field_name=None)
+def time_projects(request, pk):
+    try:
+        project = Project.objects.get(id=pk, user=request.user)
+    except Project.DoesNotExist: raise Http404
+    return render(request, "time-projects.html", {"project": project})

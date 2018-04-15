@@ -18,7 +18,7 @@
         {% for session in user.sessions_today %}
         <tr class="session">
             <td>{{ session.start_time }} - {{ session.end_time }}:</td>
-            <td>{{ session.project.name }}</td>
+            <td><a class="project-link" href="/projects/{{ session.project.id }}/">{{ session.project.name }}<a></td>
             <td>{{ session.duration_string }}</td>
             <td>{% if session.breaks %}({{ session.breaks }} minute break){% endif %}</td>
         </tr>

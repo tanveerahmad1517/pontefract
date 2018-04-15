@@ -376,6 +376,8 @@ class SessionViewingTests(TimeTrackingTests):
          start_time="11:00", end_time="11:30", breaks=0, project=health
         )
         self.login()
+        self.ultra_id = ultra.id
+        self.health_id = health.id
 
 
     @freeze_time("1962-10-27")
@@ -567,4 +569,33 @@ class SessionViewingTests(TimeTrackingTests):
         self.check_page("/time/1962/10/")
         self.check_h1("October 1962")
         self.get("/time/1952/10/")
+        self.check_title("Not Found")
+
+
+    @freeze_time("1962-10-27")
+    def test_can_view_projects(self):
+        # User goes to home page
+        self.get("/")
+
+        # They decide to look at Project Ultra in more detail
+        today = self.browser.find_element_by_id("today-time-tracking")
+        table = today.find_element_by_tag_name("table")
+        for row in table.find_elements_by_tag_name("tr"):
+            if "Project Ultra" in row.text:
+                link = row.find_element_by_class_name("project-link")
+                self.click(link)
+                break
+        self.check_page("/projects/{}/".format(self.ultra_id))
+        self.check_title("Project Ultra")
+        self.check_h1("Project Ultra")
+
+
+    def test_project_view_404(self):
+        self.logout()
+        self.get("/projects/{}/".format(self.ultra_id))
+        self.check_page("/")
+        self.login()
+        self.get("/projects/{}/".format(self.health_id))
+        self.check_title("Not Found")
+        self.get("/projects/9999999/")
         self.check_title("Not Found")

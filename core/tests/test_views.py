@@ -295,3 +295,37 @@ class TimeTrackingMonthViewTests(DjangoTest):
     def test_month_view_raises_404_on_month_out_of_bounds(self):
         with self.assertRaises(Http404):
             time_month(self.request, 1961, 6)
+
+
+
+class TimeTrackingProjectViewTests(DjangoTest):
+
+    def setUp(self):
+        self.request = self.make_request("---", loggedin=True)
+        self.patch1 = patch("core.views.Project.objects.get")
+        self.mock_get = self.patch1.start()
+        self.mock_get.return_value = "PROJECT"
+
+
+    def test_project_view_uses_project_template(self):
+        self.check_view_uses_template(
+         time_projects, self.request, "time-projects.html", 3
+        )
+
+
+    def test_project_view_sends_project(self):
+        self.check_view_has_context(
+         time_projects, self.request, {"project": "PROJECT"}, 3
+        )
+        self.mock_get.assert_called_with(id=3, user=self.request.user)
+
+
+    def test_project_view_requires_auth(self):
+        request = self.make_request("---")
+        self.check_view_redirects(time_projects, request, "/", 3)
+
+
+    def test_project_view_raises_404_on_non_project(self):
+        self.mock_get.side_effect = Project.DoesNotExist
+        with self.assertRaises(Http404):
+            time_projects(self.request, 3)

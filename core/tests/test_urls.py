@@ -17,3 +17,7 @@ class UrlTests(DjangoTest):
 
     def test_time_tracking_month_url(self):
         self.check_url_returns_view("/time/1990/09/", core_views.time_month)
+
+
+    def test_time_tracking_projects_url(self):
+        self.check_url_returns_view("/projects/199/", core_views.time_projects)
