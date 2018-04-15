@@ -9,6 +9,14 @@
 
 <h1>{{ month|date:'F Y'}}</h1>
 
+{% if previous %}
+<a id="previous-month" href="/time/{{ previous|date:'Y/m/'}}">{{ previous|date:'F Y'}}</a>
+{% endif %}
+
+{% if next %}
+<a id="next-month" href="/time/{{ next|date:'Y/m/'}}">{{ next|date:'F Y'}}</a>
+{% endif %}
+
 {% for day in days %}
 <div class="day-time-tracking">
     <h3>{{ day.0|date:"jS F Y"}}</h3>

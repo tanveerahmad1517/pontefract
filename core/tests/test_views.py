@@ -231,28 +231,57 @@ class LogoutViewTests(DjangoTest):
 
 class TimeTrackingMonthViewTests(DjangoTest):
 
+    def setUp(self):
+        self.request = self.make_request("---", loggedin=True)
+        self.request.user.sessions_today.side_effect = lambda d: d.day
+        self.request.user.hours_worked_today.side_effect = lambda d: d.day * 2
+        self.request.user.first_month.return_value = date(1983, 6, 1)
+
+
     def test_month_view_uses_month_template(self):
-        request = self.make_request("---", loggedin=True)
         self.check_view_uses_template(
-         time_month, request, "time-month.html", 1990, 10
+         time_month, self.request, "time-month.html", 1990, 10
         )
 
 
     def test_month_view_sends_date(self):
-        request = self.make_request("---", loggedin=True)
         self.check_view_has_context(
-         time_month, request, {"month": date(1990, 10, 1)}, 1990, 10
+         time_month, self.request, {"month": date(1990, 10, 1)}, 1990, 10
         )
 
 
     @freeze_time("1984-10-3")
     def test_month_view_sends_days(self):
-        request = self.make_request("---", loggedin=True)
-        request.user.sessions_today.side_effect = lambda d: d.day
-        request.user.hours_worked_today.side_effect = lambda d: d.day * 2
-        self.check_view_has_context(time_month, request, {"days": [
+        self.check_view_has_context(time_month, self.request, {"days": [
          (date(1984, 10, 3), 6, 3), (date(1984, 10, 2), 4, 2), (date(1984, 10, 1), 2, 1)
         ]}, 1984, 10)
-        self.check_view_has_context(time_month, request, {"days": [
+        self.check_view_has_context(time_month, self.request, {"days": [
          (date(1984, 9, n), n * 2, n) for n in range(1, 31)
         ][::-1]}, 1984, 9)
+
+
+    @freeze_time("1984-10-3")
+    def test_month_view_sends_next_month(self):
+        self.check_view_has_context(time_month, self.request, {"next": None}, 1984, 10)
+        self.check_view_has_context(
+         time_month, self.request, {"next": date(1984, 10, 1)}, 1984, 9
+        )
+        self.check_view_has_context(
+         time_month, self.request, {"next": date(1984, 2, 1)}, 1984, 1
+        )
+        self.check_view_has_context(
+         time_month, self.request, {"next": date(1984, 1, 1)}, 1983, 12
+        )
+
+
+    @freeze_time("1984-10-3")
+    def test_month_view_sends_previous_month(self):
+        self.check_view_has_context(
+         time_month, self.request, {"previous": date(1984, 9, 1)}, 1984, 10
+        )
+        self.check_view_has_context(
+         time_month, self.request, {"previous": date(1983, 12, 1)}, 1984, 1
+        )
+        self.check_view_has_context(
+         time_month, self.request, {"previous": None}, 1983, 6
+        )

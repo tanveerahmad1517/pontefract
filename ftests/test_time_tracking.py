@@ -442,3 +442,117 @@ class SessionViewingTests(TimeTrackingTests):
                 ], date="3rd October 1962")
             else:
                 self.check_day_report(day, "0 minutes", [])
+
+        # They can view the previous months
+        previous = self.browser.find_element_by_id("previous-month")
+        with self.assertRaises(self.NoElement):
+            self.browser.find_element_by_id("next-month")
+        self.click(previous)
+        self.check_page("/time/1962/09/")
+        self.check_title("September 1962")
+        self.check_h1("September 1962")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 30)
+        for index, day in enumerate(days):
+            if index == 0:
+                self.check_day_report(day, "6 hours, 20 minutes", [
+                ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
+                ["17:20 - 17:40", "Archery", "20 minutes", None],
+                ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
+                ], date="30th September 1962")
+            else:
+                self.check_day_report(day, "0 minutes", [])
+        previous = self.browser.find_element_by_id("previous-month")
+        self.click(previous)
+        self.check_page("/time/1962/08/")
+        self.check_title("August 1962")
+        self.check_h1("August 1962")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 31)
+        for day in days: self.check_day_report(day, "0 minutes", [])
+        previous = self.browser.find_element_by_id("previous-month")
+        self.click(previous)
+        self.check_page("/time/1962/07/")
+        self.check_title("July 1962")
+        self.check_h1("July 1962")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 31)
+        previous = self.browser.find_element_by_id("previous-month")
+        self.click(previous)
+        self.check_page("/time/1962/06/")
+        self.check_title("June 1962")
+        self.check_h1("June 1962")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 30)
+        previous = self.browser.find_element_by_id("previous-month")
+        self.click(previous)
+        self.check_page("/time/1962/05/")
+        self.check_title("May 1962")
+        self.check_h1("May 1962")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 31)
+        previous = self.browser.find_element_by_id("previous-month")
+        self.click(previous)
+        self.check_page("/time/1962/04/")
+        self.check_title("April 1962")
+        self.check_h1("April 1962")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 30)
+        previous = self.browser.find_element_by_id("previous-month")
+        self.click(previous)
+        self.check_page("/time/1962/03/")
+        self.check_title("March 1962")
+        self.check_h1("March 1962")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 31)
+        for index, day in enumerate(days):
+            if index == 0:
+                self.check_day_report(day, "6 hours, 20 minutes", [
+                ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
+                ["17:20 - 17:40", "Archery", "20 minutes", None],
+                ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
+                ], date="31st March 1962")
+            elif index == 28:
+                self.check_day_report(day, "1 hour, 40 minutes", [
+                ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
+                ["17:20 - 17:40", "Archery", "20 minutes", None],
+                ], date="3rd March 1962")
+            else:
+                self.check_day_report(day, "0 minutes", [])
+        previous = self.browser.find_element_by_id("previous-month")
+        self.click(previous)
+        self.check_page("/time/1962/02/")
+        self.check_title("February 1962")
+        self.check_h1("February 1962")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 28)
+        previous = self.browser.find_element_by_id("previous-month")
+        self.click(previous)
+        self.check_page("/time/1962/01/")
+        self.check_title("January 1962")
+        self.check_h1("January 1962")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 31)
+        previous = self.browser.find_element_by_id("previous-month")
+        self.click(previous)
+        self.check_page("/time/1961/12/")
+        self.check_title("December 1961")
+        self.check_h1("December 1961")
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 31)
+        for index, day in enumerate(days):
+            if index == 28:
+                self.check_day_report(day, "1 hour, 40 minutes", [
+                ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
+                ["17:20 - 17:40", "Archery", "20 minutes", None],
+                ], date="3rd December 1961")
+            else:
+                self.check_day_report(day, "0 minutes", [])
+        with self.assertRaises(self.NoElement):
+            self.browser.find_element_by_id("previous-month")
+        for n in range(10):
+            next = self.browser.find_element_by_id("next-month")
+            self.click(next)
+        self.check_page("/time/1962/10/")
+        self.check_title("October 1962")
+        self.check_h1("October 1962")

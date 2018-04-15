@@ -89,3 +89,14 @@ class UserTests(DjangoTest):
         self.assertEqual(user.hours_worked_today(), "2 hours")
         mock_minutes.return_value = 130
         self.assertEqual(user.hours_worked_today(), "2 hours, 10 minutes")
+
+
+    @patch("projects.models.Session.objects.filter")
+    def test_user_first_session_month(self, mock_filter):
+        filtered = Mock()
+        sessions = [Mock(), Mock(), Mock()]
+        filtered.order_by.return_value = sessions
+        mock_filter.return_value = filtered
+        sessions[0].start_date.year, sessions[0].start_date.month = 1998, 6
+        user = User(username="sam", email="sam@sam.sam", password="p")
+        self.assertEqual(user.first_month(), date(1998, 6, 1))

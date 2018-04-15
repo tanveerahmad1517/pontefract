@@ -71,8 +71,26 @@ def logout(request):
 
 
 def time_month(request, year, month):
+    today = date.today()
     days = [date(year, month, day) for day in range(
      1, monthrange(year, month)[1] + 1
-    ) if date(year, month, day) <= date.today()]
-    days = [(day, request.user.hours_worked_today(day), request.user.sessions_today(day)) for day in days]
-    return render(request, "time-month.html", {"month": date(year, month, 1), "days": days[::-1]})
+    ) if date(year, month, day) <= today]
+    days = [(
+     day, request.user.hours_worked_today(day), request.user.sessions_today(day)
+    ) for day in days]
+    next = date(
+     year + 1 if month == 12 else year, 1 if month == 12 else month + 1, 1
+    )
+    if next > today: next = None
+    previous = date(
+     year - 1 if month == 1 else year, 12 if month == 1 else month - 1, 1
+    )
+    if previous < request.user.first_month(): previous = None
+
+
+    return render(request, "time-month.html", {
+     "month": date(year, month, 1),
+     "days": days[::-1],
+     "next": next,
+     "previous": previous
+    })

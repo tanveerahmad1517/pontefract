@@ -15,7 +15,9 @@ class User(AbstractUser):
         """What sessions has the user done today?"""
         from projects.models import Session
         today = date.today() if today is None else today
-        return Session.objects.filter(project__user=self, start_date=today).order_by("start_time")
+        return Session.objects.filter(
+         project__user=self, start_date=today
+        ).order_by("start_time")
 
 
     def minutes_worked_today(self, *args, **kwargs):
@@ -40,3 +42,11 @@ class User(AbstractUser):
             if mins:
                 text += ", {} minute{}".format(mins, "" if mins == 1 else "s")
             return text
+
+
+    def first_month(self):
+        """What was the first month that the user has sessions for?"""
+        
+        from projects.models import Session
+        s = Session.objects.filter(project__user=self).order_by("start_date")[0]
+        return date(s.start_date.year, s.start_date.month, 1)
