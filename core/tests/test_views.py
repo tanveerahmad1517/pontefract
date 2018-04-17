@@ -359,3 +359,16 @@ class TimeTrackingProjectViewTests(DjangoTest):
         self.mock_get.side_effect = Project.DoesNotExist
         with self.assertRaises(Http404):
             time_projects(self.request, 3)
+
+
+
+class ProjectsViewTests(DjangoTest):
+
+    def test_projects_view_uses_projects_template(self):
+        request = self.make_request("---", loggedin=True)
+        self.check_view_uses_template(projects, request, "projects.html")
+
+
+    def test_projects_view_requires_auth(self):
+        request = self.make_request("---")
+        self.check_view_redirects(projects, request, "/")

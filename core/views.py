@@ -102,3 +102,8 @@ def time_projects(request, pk):
     except Project.DoesNotExist: raise Http404
     days = Session.group_by_date(request.user, project=project)
     return render(request, "time-projects.html", {"project": project, "days": days})
+
+
+@login_required(login_url="/", redirect_field_name=None)
+def projects(request):
+    return render(request, "projects.html")

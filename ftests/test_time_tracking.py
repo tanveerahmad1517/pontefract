@@ -634,3 +634,22 @@ class SessionViewingTests(TimeTrackingTests):
         self.check_title("Not Found")
         self.get("/projects/9999999/")
         self.check_title("Not Found")
+
+
+    def test_can_browse_all_projects(self):
+        # User goes to main page
+        self.get("/")
+
+        # There is a link to the projects
+        time = self.browser.find_element_by_id("user-time-tracking")
+        link = time.find_element_by_class_name("projects-link")
+        self.click(link)
+        self.check_page("/projects/")
+        self.check_title("All Projects")
+        self.check_h1("All Projects")
+
+
+    def test_projects_are_out_of_bounds(self):
+        self.logout()
+        self.get("/projects/")
+        self.check_page("/")

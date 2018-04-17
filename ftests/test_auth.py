@@ -49,6 +49,8 @@ class SignupTests(FunctionalTest):
         self.assertIn(str(now.strftime("%B")), today.text)
         sessions = today.find_elements_by_class_name("session")
         self.assertEqual(len(sessions), 0)
+        with self.assertRaises(self.NoElement):
+            self.browser.find_element_by_class_name("projects-link")
 
 
     def test_usernames_must_be_unique(self):
