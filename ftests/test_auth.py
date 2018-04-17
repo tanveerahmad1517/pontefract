@@ -42,7 +42,7 @@ class SignupTests(FunctionalTest):
         time = self.browser.find_element_by_id("user-time-tracking")
         self.assertEqual(time.find_element_by_tag_name("h2").text, "Time Tracking")
         new_session = time.find_element_by_tag_name("form")
-        today = time.find_element_by_id("today-time-tracking")
+        today = time.find_element_by_class_name("day-time-tracking")
         self.assertIn("0 minutes", today.text)
         self.assertIn(str(now.year), today.text)
         self.assertIn(str(now.day), today.text)

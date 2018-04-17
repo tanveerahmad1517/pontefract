@@ -90,12 +90,16 @@ class HomeViewTests(DjangoTest):
         self.patch3 = patch("core.views.Project.by_name")
         self.mock_by = self.patch3.start()
         self.mock_by.return_value = [1, 2, 3]
+        self.patch4 = patch("core.views.Session.sessions_from")
+        self.mock_from = self.patch4.start()
+        self.mock_from.return_value = ["A", "B", "C"]
 
 
     def tearDown(self):
         self.patch1.stop()
         self.patch2.stop()
         self.patch3.stop()
+        self.patch4.stop()
 
 
     def test_home_view_uses_home_template(self):
@@ -114,6 +118,12 @@ class HomeViewTests(DjangoTest):
     def test_home_view_sends_session_user_projects(self):
         request = self.make_request("---", loggedin=True)
         self.check_view_has_context(home, request, {"project_list": ["1", "2", "3"]})
+
+
+    def test_home_view_sends_sessions_from_today(self):
+        request = self.make_request("---", loggedin=True)
+        self.check_view_has_context(home, request, {"day": ["A", "B", "C"]})
+        self.mock_from.assert_called_with(request.user, date.today())
 
 
     def test_home_view_can_return_incorrect_form(self):
@@ -236,6 +246,13 @@ class TimeTrackingMonthViewTests(DjangoTest):
         self.request.user.sessions_today.side_effect = lambda d: d.day
         self.request.user.hours_worked_today.side_effect = lambda d: d.day * 2
         self.request.user.first_month.return_value = date(1983, 6, 1)
+        self.patch1 = patch("core.views.Session.group_by_date")
+        self.mock_group = self.patch1.start()
+        self.mock_group.return_value = [1, 2, 3]
+
+
+    def tearDown(self):
+        self.patch1.stop()
 
 
     def test_month_view_uses_month_template(self):
@@ -252,12 +269,10 @@ class TimeTrackingMonthViewTests(DjangoTest):
 
     @freeze_time("1984-10-3")
     def test_month_view_sends_days(self):
-        self.check_view_has_context(time_month, self.request, {"days": [
-         (date(1984, 10, 3), 6, 3), (date(1984, 10, 2), 4, 2), (date(1984, 10, 1), 2, 1)
-        ]}, 1984, 10)
-        self.check_view_has_context(time_month, self.request, {"days": [
-         (date(1984, 9, n), n * 2, n) for n in range(1, 31)
-        ][::-1]}, 1984, 9)
+        self.check_view_has_context(
+         time_month, self.request, {"days": [1, 2, 3]}, 1984, 10
+        )
+        self.mock_group.assert_called_with(self.request.user, month=date(1984, 10, 1))
 
 
     @freeze_time("1984-10-3")
@@ -305,6 +320,14 @@ class TimeTrackingProjectViewTests(DjangoTest):
         self.patch1 = patch("core.views.Project.objects.get")
         self.mock_get = self.patch1.start()
         self.mock_get.return_value = "PROJECT"
+        self.patch2 = patch("core.views.Session.group_by_date")
+        self.mock_group = self.patch2.start()
+        self.mock_group.return_value = [1, 2, 3]
+
+
+    def tearDown(self):
+        self.patch1.stop()
+        self.patch2.stop()
 
 
     def test_project_view_uses_project_template(self):
@@ -318,6 +341,13 @@ class TimeTrackingProjectViewTests(DjangoTest):
          time_projects, self.request, {"project": "PROJECT"}, 3
         )
         self.mock_get.assert_called_with(id=3, user=self.request.user)
+
+
+    def test_project_view_sends_days(self):
+        self.check_view_has_context(
+         time_projects, self.request, {"days": [1, 2, 3]}, 3
+        )
+        self.mock_group.assert_called_with(self.request.user, project="PROJECT")
 
 
     def test_project_view_requires_auth(self):

@@ -46,7 +46,8 @@ def home(request):
             return redirect("/")
     return render(request, "home.html", {
      "form": form,
-     "project_list": [str(p) for p in Project.by_name(request.user)]
+     "project_list": [str(p) for p in Project.by_name(request.user)],
+     "day": Session.sessions_from(request.user, date.today())
     })
 
 
@@ -77,12 +78,7 @@ def time_month(request, year, month):
     if month_date < request.user.first_month():
         raise Http404
     today = date.today()
-    days = [date(year, month, day) for day in range(
-     1, monthrange(year, month)[1] + 1
-    ) if date(year, month, day) <= today]
-    days = [(
-     day, request.user.hours_worked_today(day), request.user.sessions_today(day)
-    ) for day in days]
+    days = Session.group_by_date(request.user, month=date(year, month, 1))
     next = date(
      year + 1 if month == 12 else year, 1 if month == 12 else month + 1, 1
     )
@@ -93,7 +89,7 @@ def time_month(request, year, month):
     if previous < request.user.first_month(): previous = None
     return render(request, "time-month.html", {
      "month": date(year, month, 1),
-     "days": days[::-1],
+     "days": days,
      "next": next,
      "previous": previous
     })
@@ -104,4 +100,5 @@ def time_projects(request, pk):
     try:
         project = Project.objects.get(id=pk, user=request.user)
     except Project.DoesNotExist: raise Http404
-    return render(request, "time-projects.html", {"project": project})
+    days = Session.group_by_date(request.user, project=project)
+    return render(request, "time-projects.html", {"project": project, "days": days})

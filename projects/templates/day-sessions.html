@@ -1,0 +1,16 @@
+<div class="day-time-tracking">
+    <h3>{{ day.0|date:"jS F Y" }}</h3>
+    <div class="total-time">{{ day.1 }}.</div>
+    <table>
+    {% for session in day.2 %}
+    <tr class="session">
+        <td>{{ session.start_time }} - {{ session.end_time }}:</td>
+        <td><a class="project-link" href="/projects/{{ session.project.id }}/">
+            {{ session.project.name }}
+        <a></td>
+        <td>{{ session.duration_string }}</td>
+        <td>{% if session.breaks %}({{ session.breaks }} minute break){% endif %}</td>
+    </tr>
+    {% endfor %}
+    </table>
+</div>

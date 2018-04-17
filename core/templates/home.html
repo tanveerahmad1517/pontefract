@@ -10,22 +10,8 @@
 {% block main %}
 <div id="user-time-tracking">
     <h2>Time Tracking</h2>
-
-    <div id="today-time-tracking" class="day-time-tracking">
-        <h3>{% now "jS F Y" %}</h3>
-        <div class="total-time">{{ user.hours_worked_today }}.</div>
-        <table>
-        {% for session in user.sessions_today %}
-        <tr class="session">
-            <td>{{ session.start_time }} - {{ session.end_time }}:</td>
-            <td><a class="project-link" href="/projects/{{ session.project.id }}/">{{ session.project.name }}<a></td>
-            <td>{{ session.duration_string }}</td>
-            <td>{% if session.breaks %}({{ session.breaks }} minute break){% endif %}</td>
-        </tr>
-        {% endfor %}
-        </table>
-        <a href="/time/{% now  'Y/m/'%}" class="month-link">See work done this month</a>
-    </div>
+    {% include "day-sessions.html" %}
+    <a href="/time/{% now  'Y/m/'%}" class="month-link">See work done this month</a>
     {% include "session-form.html" %}
 </div>
 {% endblock %}

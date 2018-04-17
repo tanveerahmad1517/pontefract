@@ -6,4 +6,8 @@
 
 <h1>{{ project.name }}</h1>
 
+{% for day in days %}
+{% include "day-sessions.html" %}
+{% endfor %}
+
 {% endblock %}

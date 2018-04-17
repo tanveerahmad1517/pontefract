@@ -1,4 +1,6 @@
-from datetime import datetime
+from datetime import date, datetime
+from calendar import monthrange
+from itertools import groupby
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
@@ -14,6 +16,7 @@ class Project(models.Model):
     name = models.CharField(max_length=256)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+
     def __str__(self):
         return self.name
 
@@ -23,6 +26,7 @@ class Project(models.Model):
         return Project.objects.filter(user=user).order_by(
          models.functions.Lower("name")
         )
+
 
 
 
@@ -38,6 +42,44 @@ class Session(models.Model):
     end_time = models.TimeField()
     breaks = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    @classmethod
+    def sessions_from(cls, user, day):
+        """Gets all the user's sessions from a given day, as a
+        (date, duration_string, sessions) tuple."""
+
+        sessions = cls.objects.filter(
+         project__user=user, start_date=day
+        ).order_by("start_time")
+        return (day, cls.duration_string(*sessions), sessions)
+
+
+    @classmethod
+    def group_by_date(cls, user, project=None, month=None):
+        """Gets the user's sessions and groups them by date. You can restrict
+        these to those from a particular project, or to a particular month. If
+        the latter, it will also fill out the rest of the month."""
+
+        sessions = cls.objects.filter(project__user=user)
+        if project: sessions = sessions.filter(project=project)
+        if month:
+            sessions = sessions.filter(
+             start_date__year=month.year, start_date__month=month.month
+            )
+        sessions = sessions.order_by("-start_date", "start_time")
+        groups = [(a, list(b)) for a, b in groupby(
+         sessions, key=lambda s: s.start_date
+        )]
+        if month:
+            today, accounted = date.today(), [day[0] for day in groups]
+            month_days = [date(
+             month.year, month.month, day
+            ) for day in range(1, monthrange(month.year, month.month)[1] + 1)]
+            for day in month_days:
+                if day not in accounted and day < today:
+                    groups.append((day, []))
+            groups.sort(key=lambda x: x[0]), groups.reverse()
+        return [(d[0], cls.duration_string(*d[1]), d[1]) for d in groups]
 
 
     def start(self):
@@ -58,11 +100,11 @@ class Session(models.Model):
         return int(((self.end() - self.start()).seconds / 60) - self.breaks)
 
 
-    def duration_string(self):
-        """The length of the session in minutes, accounting for breaks, as as
-        string."""
+    def duration_string(*sessions):
+        """Adds up the durations of multiple sessions and returns this duration
+        as a human readable string."""
 
-        minutes = self.duration()
+        minutes = sum(session.duration() for session in sessions)
         if minutes < 60:
             return "{} minute{}".format(minutes, "" if minutes == 1 else "s")
         else:
