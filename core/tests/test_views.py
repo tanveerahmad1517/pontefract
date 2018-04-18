@@ -87,9 +87,6 @@ class HomeViewTests(DjangoTest):
         self.mock_project_form = self.patch1.start()
         self.patch2 = patch("core.views.SessionForm")
         self.mock_form = self.patch2.start()
-        self.patch3 = patch("core.views.Project.by_name")
-        self.mock_by = self.patch3.start()
-        self.mock_by.return_value = [1, 2, 3]
         self.patch4 = patch("core.views.Session.sessions_from")
         self.mock_from = self.patch4.start()
         self.mock_from.return_value = ["A", "B", "C"]
@@ -98,7 +95,6 @@ class HomeViewTests(DjangoTest):
     def tearDown(self):
         self.patch1.stop()
         self.patch2.stop()
-        self.patch3.stop()
         self.patch4.stop()
 
 
@@ -113,11 +109,6 @@ class HomeViewTests(DjangoTest):
         request.user.minutes_worked_today.return_value = 19
         self.check_view_has_context(home, request, {"form": "FORM"})
         self.mock_form.assert_called_with()
-
-
-    def test_home_view_sends_session_user_projects(self):
-        request = self.make_request("---", loggedin=True)
-        self.check_view_has_context(home, request, {"project_list": ["1", "2", "3"]})
 
 
     def test_home_view_sends_sessions_from_today(self):

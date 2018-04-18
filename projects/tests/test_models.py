@@ -45,12 +45,34 @@ class ProjectTests(DjangoTest):
         project3 = Project.objects.create(name="bbb", user=self.user)
         project4 = Project.objects.create(name="aaa", user=self.user)
         project5 = Project.objects.create(name="ccc", user=user2)
-        projects = Project.by_name(self.user)
+        projects = Project.objects.filter(user=self.user)
         self.assertEqual(projects.count(), 4)
         self.assertEqual(projects[0], project1)
         self.assertEqual(projects[1], project4)
         self.assertEqual(projects[2], project2)
         self.assertEqual(projects[3], project3)
+
+
+    @patch("projects.models.Project.session_set")
+    @patch("projects.models.Session.duration_string")
+    def test_total_project_time(self, mock_str, mock_set):
+        mock_set.all.return_value = [1, 2, 3]
+        mock_str.return_value = "STRING"
+        project = Project.objects.create(name="AAA", user=self.user)
+        self.assertEqual(project.total_time_string(), "STRING")
+        mock_set.all.assert_called_with()
+        mock_str.assert_called_with(1, 2, 3)
+
+
+    @patch("projects.models.Project.session_set")
+    def test_most_recent_session(self, mock_set):
+        ordered = Mock()
+        mock_set.order_by.return_value = ordered
+        ordered.last.return_value = "SESSION"
+        project = Project.objects.create(name="AAA", user=self.user)
+        self.assertEqual(project.most_recent_session(), "SESSION")
+        mock_set.order_by.assert_called_with("end_date", "end_time")
+        ordered.last.assert_called_with()
 
 
 

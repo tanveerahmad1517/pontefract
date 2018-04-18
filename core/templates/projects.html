@@ -1,9 +1,18 @@
 {% extends "user-base.html" %}
 {% block title %}All Projects{% endblock %}
+{% load humanize %}
 
 
 {% block main %}
 
 <h1>All Projects</h1>
+
+{% for project in user.project_set.all %}
+<div class="project">
+    <h3><a href="/projects/{{ project.id }}/">{{ project.name }}</a></h3>
+    <div class="total-time"><strong>Total</strong>: {{ project.total_time_string }}</div>
+    <div class="last-done"><strong>Last Done</strong>: {% if project.session_set.all %}{{ project.most_recent_session.end_date|naturalday }}{% else %}Never{% endif %}</div>
+</div>
+{% endfor %}
 
 {% endblock %}

@@ -2,7 +2,7 @@
 
  <script>
   $( function() {
-    var availableTags = {{ project_list|safe }};
+    var availableTags = [{% for t in user.project_set.all %}{% if not forloop.first %}, {% endif %}'{{ t }}'{% endfor %}];
     $( "#id_project" ).autocomplete({
       source: availableTags, delay: 0
     });

@@ -200,8 +200,6 @@ class SessionViewingTests(TimeTrackingTests):
 
         # Create some projects for Sarah
         running = Project.objects.create(name="Running", user=self.user)
-        cycling = Project.objects.create(name="Cycling", user=self.user)
-        riding = Project.objects.create(name="Riding", user=self.user)
         archery = Project.objects.create(name="Archery", user=self.user)
         cooking = Project.objects.create(name="Cooking", user=self.user)
         ultra = Project.objects.create(name="Project Ultra", user=self.user)
@@ -378,6 +376,7 @@ class SessionViewingTests(TimeTrackingTests):
         self.login()
         self.ultra_id = ultra.id
         self.health_id = health.id
+        self.archery_id = archery.id
 
 
     @freeze_time("1962-10-27")
@@ -647,6 +646,19 @@ class SessionViewingTests(TimeTrackingTests):
         self.check_page("/projects/")
         self.check_title("All Projects")
         self.check_h1("All Projects")
+
+        # The projects are all there
+        projects = self.browser.find_elements_by_class_name("project")
+        self.assertEqual(len(projects), 5)
+        h31 = projects[0].find_element_by_tag_name("h3")
+        self.assertEqual(h31.text, "Archery")
+        total_time = projects[0].find_element_by_class_name("total-time")
+        self.assertIn("2 hours", total_time.text)
+        last_done = projects[0].find_element_by_class_name("last-done")
+        self.assertIn("26th October 1962", last_done.text)
+        self.click(h31.find_element_by_tag_name("a"))
+        self.check_page("/projects/{}/".format(self.archery_id))
+        self.browser.back()
 
 
     def test_projects_are_out_of_bounds(self):

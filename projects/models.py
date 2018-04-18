@@ -12,6 +12,7 @@ class Project(models.Model):
     class Meta:
         db_table = "projects"
         unique_together = (("name", "user"),)
+        ordering = [models.functions.Lower("name")]
 
     name = models.CharField(max_length=256)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -21,12 +22,17 @@ class Project(models.Model):
         return self.name
 
 
-    @classmethod
-    def by_name(cls, user):
-        return Project.objects.filter(user=user).order_by(
-         models.functions.Lower("name")
-        )
+    def total_time_string(self):
+        """Gets the total number of minutes worked, as a human readable
+        string."""
 
+        return Session.duration_string(*self.session_set.all())
+
+
+    def most_recent_session(self):
+        """Gets the most recently completed session."""
+        
+        return self.session_set.order_by("end_date", "end_time").last()
 
 
 

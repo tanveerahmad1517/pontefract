@@ -46,7 +46,6 @@ def home(request):
             return redirect("/")
     return render(request, "home.html", {
      "form": form,
-     "project_list": [str(p) for p in Project.by_name(request.user)],
      "day": Session.sessions_from(request.user, date.today())
     })
 

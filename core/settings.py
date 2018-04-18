@@ -11,6 +11,7 @@ INSTALLED_APPS = [
  "django.contrib.staticfiles",
  "django.contrib.auth",
  "django.contrib.sessions",
+ "django.contrib.humanize",
  "core",
  "projects"
 ]
@@ -29,7 +30,7 @@ AUTH_USER_MODEL = "core.User"
 
 TIME_ZONE = "GMT"
 TIME_FORMAT = "H:i"
-
+DATE_FORMAT = "jS F Y"
 TEMPLATES = [{
  "BACKEND": "django.template.backends.django.DjangoTemplates",
  "APP_DIRS": True,
