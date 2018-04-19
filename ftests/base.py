@@ -1,6 +1,7 @@
 from selenium import webdriver
 from testarsenal import BrowserTest
 from core.models import User
+from django.utils import timezone
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
@@ -10,8 +11,10 @@ class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
         self.user = User.objects.create_user(
          username="sarah",
          email="sarah@gmail.com",
+         timezone="Pacific/Auckland",
          password="password"
         )
+        timezone.activate(self.user.timezone)
 
 
     def tearDown(self):

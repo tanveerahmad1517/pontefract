@@ -1,5 +1,6 @@
 from datetime import datetime
 from django import forms
+from django.utils import timezone
 from django.core.validators import MinValueValidator
 from .models import Session, Project
 
@@ -24,6 +25,14 @@ class ProjectForm(forms.ModelForm):
 
 
 
+class DateTimeWidget(forms.widgets.SplitDateTimeWidget):
+
+    def decompress(*args, **kwargs):
+        values = forms.widgets.SplitDateTimeWidget.decompress(*args, **kwargs)
+        return (values[0], None)
+
+
+
 class SessionForm(forms.ModelForm):
     """The form which allows a user to enter a session of work they have done.
 
@@ -38,26 +47,28 @@ class SessionForm(forms.ModelForm):
         model = Session
         exclude = []
 
+        field_classes = {
+        "start": forms.SplitDateTimeField, "end": forms.SplitDateTimeField
+        }
         widgets = {
-         "start_date": forms.widgets.DateInput(attrs={"tabindex": "1"}),
-         "start_time": forms.widgets.TimeInput(attrs={"tabindex": "3"}),
-         "end_date": forms.widgets.DateInput(attrs={"tabindex": "2"}),
-         "end_time": forms.widgets.TimeInput(attrs={"tabindex": "4"}),
+         "start": DateTimeWidget(
+          date_attrs={"tabindex": "1"}, time_attrs={"tabindex": "3"}
+         ),
+         "end": DateTimeWidget(
+          date_attrs={"tabindex": "2"}, time_attrs={"tabindex": "4"}
+         ),
          "breaks": forms.widgets.NumberInput(attrs={"tabindex": "5"})
         }
-
-        widgets["start_date"].input_type = "date"
-        widgets["start_time"].input_type = "time"
-        widgets["end_date"].input_type = "date"
-        widgets["end_time"].input_type = "time"
+        widgets["start"].widgets[0].input_type = "date"
+        widgets["start"].widgets[1].input_type = "time"
+        widgets["end"].widgets[0].input_type = "date"
+        widgets["end"].widgets[1].input_type = "time"
         widgets["breaks"].value_from_datadict = lambda d, f, n: d.get(n) or "0"
 
 
     def __init__(self, *args, user=None, **kwargs):
-        forms.ModelForm.__init__(self, *args, **kwargs)
         self.user = user
-        self.fields["start_date"].initial = datetime.now().date()
-        self.fields["end_date"].initial = datetime.now().date()
+        forms.ModelForm.__init__(self, *args, **kwargs)
         self.fields["breaks"].required = False
         self.fields["breaks"].widget.is_required = False
         self.fields["breaks"].validators.append(MinValueValidator(
@@ -67,18 +78,14 @@ class SessionForm(forms.ModelForm):
          user=self.user, name=v
         )
 
+        self.fields["start"].initial = timezone.localtime()
+        self.fields["end"].initial = timezone.localtime()
+
 
     def clean(self):
         forms.ModelForm.clean(self)
-        if datetime.combine(
-         self.cleaned_data["start_date"], self.cleaned_data["start_time"]
-        ) > datetime.combine(
-         self.cleaned_data["end_date"], self.cleaned_data["end_time"]
-        ):
-            self.add_error("end_date", "End time is before start time")
-        elif (datetime.combine(
-         self.cleaned_data["end_date"], self.cleaned_data["end_time"]
-        ) - datetime.combine(
-         self.cleaned_data["start_date"], self.cleaned_data["start_time"]
-        )).seconds <= self.cleaned_data.get("breaks", 0) * 60:
+        if self.cleaned_data["end"] < self.cleaned_data["start"]:
+            self.add_error("end", "End time is before start time")
+        elif (self.cleaned_data["end"] - self.cleaned_data["start"]
+         ).seconds <= self.cleaned_data.get("breaks", 0) * 60:
             self.add_error("breaks", "Break cannot cancel out session")

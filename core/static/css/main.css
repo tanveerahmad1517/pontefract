@@ -88,8 +88,12 @@ input, select {
     border: 1px solid silver;
 }
 
-input[type=text], input[type=email], input[type=password] {
+input[type=text], input[type=email], input[type=password], select {
     width: 100%;
+}
+
+select {
+    height: 40px;
 }
 
 input[type=submit] {

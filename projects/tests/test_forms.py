@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time, date
 from unittest.mock import patch, Mock
 from testarsenal import DjangoTest
 from mixer.backend.django import mixer
@@ -60,38 +60,33 @@ class SessionFormTests(DjangoTest):
     def test_session_form_has_correct_fields(self):
         form = SessionForm()
         self.assertEqual(
-         list(form.fields.keys()), [
-          "start_date", "end_date", "start_time", "end_time",
-          "breaks", "project"
-         ])
+         list(form.fields.keys()), ["start", "end", "breaks", "project"])
 
 
-    def test_start_date_widget(self):
-        widget = SessionForm().fields["start_date"].widget
+    def test_start_widget(self):
+        widget = SessionForm().fields["start"].widget
         self.assertTrue(widget.is_required)
-        self.assertEqual(widget.input_type, "date")
-        self.assertEqual(widget.attrs, {"tabindex": "1"})
+        self.assertEqual(widget.widgets[0].input_type, "date")
+        self.assertEqual(widget.widgets[1].input_type, "time")
+        self.assertEqual(widget.widgets[0].attrs, {"tabindex": "1"})
+        self.assertEqual(widget.widgets[1].attrs, {"tabindex": "3"})
+        self.assertEqual(
+         widget.decompress(datetime(1990, 9, 30, 15, 30)),
+         (date(1990, 9, 30), None)
+        )
 
 
-    def test_start_time_widget(self):
-        widget = SessionForm().fields["start_time"].widget
+    def test_end_widget(self):
+        widget = SessionForm().fields["end"].widget
         self.assertTrue(widget.is_required)
-        self.assertEqual(widget.input_type, "time")
-        self.assertEqual(widget.attrs, {"tabindex": "3"})
-
-
-    def test_end_date_widget(self):
-        widget = SessionForm().fields["end_date"].widget
-        self.assertTrue(widget.is_required)
-        self.assertEqual(widget.input_type, "date")
-        self.assertEqual(widget.attrs, {"tabindex": "2"})
-
-
-    def test_end_time_widget(self):
-        widget = SessionForm().fields["end_time"].widget
-        self.assertTrue(widget.is_required)
-        self.assertEqual(widget.input_type, "time")
-        self.assertEqual(widget.attrs, {"tabindex": "4"})
+        self.assertEqual(widget.widgets[0].input_type, "date")
+        self.assertEqual(widget.widgets[1].input_type, "time")
+        self.assertEqual(widget.widgets[0].attrs, {"tabindex": "2"})
+        self.assertEqual(widget.widgets[1].attrs, {"tabindex": "4"})
+        self.assertEqual(
+         widget.decompress(datetime(1990, 9, 30, 15, 30)),
+         (date(1990, 9, 30), None)
+        )
 
 
     def test_breaks_widget(self):
@@ -111,36 +106,20 @@ class SessionFormTests(DjangoTest):
         self.assertEqual(widget.attrs, {"tabindex": "6"})
 
 
-    def test_start_date_validation(self):
-        start_date = SessionForm().fields["start_date"]
-        self.assertTrue(start_date.required)
+    def test_start_validation(self):
+        start = SessionForm().fields["start"]
+        self.assertTrue(start.required)
         for invalid in ("", None, "a\x00b"):
             with self.assertRaises(ValidationError):
-                start_date.clean(invalid)
+                start.clean(invalid)
 
 
-    def test_start_time_validation(self):
-        start_time = SessionForm().fields["start_time"]
-        self.assertTrue(start_time.required)
+    def test_end_validation(self):
+        end = SessionForm().fields["end"]
+        self.assertTrue(end.required)
         for invalid in ("", None, "a\x00b"):
             with self.assertRaises(ValidationError):
-                start_time.clean(invalid)
-
-
-    def test_end_date_validation(self):
-        end_date = SessionForm().fields["end_date"]
-        self.assertTrue(end_date.required)
-        for invalid in ("", None, "a\x00b"):
-            with self.assertRaises(ValidationError):
-                end_date.clean(invalid)
-
-
-    def test_end_time_validation(self):
-        end_time = SessionForm().fields["end_time"]
-        self.assertTrue(end_time.required)
-        for invalid in ("", None, "a\x00b"):
-            with self.assertRaises(ValidationError):
-                end_time.clean(invalid)
+                end.clean(invalid)
 
 
     def test_breaks_validation(self):
@@ -160,29 +139,29 @@ class SessionFormTests(DjangoTest):
 
     def test_field_default_values(self):
         self.assertEqual(
-         SessionForm().fields["start_date"].initial, datetime.now().date()
+         SessionForm().fields["start"].initial.date(), datetime.utcnow().date()
         )
         self.assertEqual(
-         SessionForm().fields["end_date"].initial, datetime.now().date()
+         SessionForm().fields["end"].initial.date(), datetime.utcnow().date()
         )
         self.assertEqual(SessionForm().fields["breaks"].initial, 0)
 
 
     def test_can_reject_mismatched_times(self):
         form = SessionForm(data={
-         "start_date": "2018-01-02", "start_time": "13:00",
-         "end_date": "2018-01-02", "end_time": "12:00",
+         "start_0": "2018-01-02", "start_1": "13:00",
+         "end_0": "2018-01-02", "end_1": "12:00",
          "breaks": 10
         })
         self.assertFalse(form.is_valid())
         self.mock_clean.assert_called_with(form)
-        self.assertIn("end_date", form.errors)
+        self.assertIn("end", form.errors)
 
 
     def test_can_reject_break_longer_than_session(self):
         form = SessionForm(data={
-         "start_date": "2018-01-02", "start_time": "12:00",
-         "end_date": "2018-01-02", "end_time": "13:00",
+         "start_0": "2018-01-02", "start_1": "12:00",
+         "end_0": "2018-01-02", "end_1": "13:00",
          "breaks": 61
         })
         self.assertFalse(form.is_valid())

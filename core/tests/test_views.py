@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from unittest.mock import patch, Mock, MagicMock
 from freezegun import freeze_time
 from django.http import HttpResponse, QueryDict
@@ -87,9 +87,11 @@ class HomeViewTests(DjangoTest):
         self.mock_project_form = self.patch1.start()
         self.patch2 = patch("core.views.SessionForm")
         self.mock_form = self.patch2.start()
-        self.patch4 = patch("core.views.Session.sessions_from")
+        self.patch4 = patch("core.views.Session.from_day")
         self.mock_from = self.patch4.start()
         self.mock_from.return_value = ["A", "B", "C"]
+        self.request = self.make_request("---", loggedin=True)
+        self.request.now = datetime.now()
 
 
     def tearDown(self):
@@ -99,22 +101,19 @@ class HomeViewTests(DjangoTest):
 
 
     def test_home_view_uses_home_template(self):
-        request = self.make_request("---", loggedin=True)
-        self.check_view_uses_template(home, request, "home.html")
+        self.check_view_uses_template(home, self.request, "home.html")
 
 
     def test_home_view_sends_session_form(self):
         self.mock_form.return_value = "FORM"
-        request = self.make_request("---", loggedin=True)
-        request.user.minutes_worked_today.return_value = 19
-        self.check_view_has_context(home, request, {"form": "FORM"})
+        self.request.user.minutes_worked_today.return_value = 19
+        self.check_view_has_context(home, self.request, {"form": "FORM"})
         self.mock_form.assert_called_with()
 
 
     def test_home_view_sends_sessions_from_today(self):
-        request = self.make_request("---", loggedin=True)
-        self.check_view_has_context(home, request, {"day": ["A", "B", "C"]})
-        self.mock_from.assert_called_with(request.user, date.today())
+        self.check_view_has_context(home, self.request, {"day": ["A", "B", "C"]})
+        self.mock_from.assert_called_with(self.request.user, date.today())
 
 
     def test_home_view_can_return_incorrect_form(self):
@@ -125,6 +124,7 @@ class HomeViewTests(DjangoTest):
         request = self.make_request(
          "---", method="post", data={"a": "u", "b": "p"}
         )
+        request.now = datetime.now()
         self.check_view_uses_template(home, request, "home.html")
         self.check_view_has_context(home, request, {"form": form})
         self.mock_form.assert_called_with(QueryDict("a=u&b=p"), user=request.user)
@@ -138,6 +138,7 @@ class HomeViewTests(DjangoTest):
         request = self.make_request(
          "---", method="post", data={"id": "xxx", "b": "C"}, loggedin=True
         )
+        request.now = datetime.now()
         home(request)
         self.mock_form.assert_called_with(QueryDict("id=xxx&b=C"), user=request.user)
         self.mock_project_form.assert_called_with(request.user, QueryDict("id=xxx&b=C"))
@@ -237,6 +238,7 @@ class TimeTrackingMonthViewTests(DjangoTest):
         self.request.user.sessions_today.side_effect = lambda d: d.day
         self.request.user.hours_worked_today.side_effect = lambda d: d.day * 2
         self.request.user.first_month.return_value = date(1983, 6, 1)
+        self.request.now = datetime(1984, 10, 3)
         self.patch1 = patch("core.views.Session.group_by_date")
         self.mock_group = self.patch1.start()
         self.mock_group.return_value = [1, 2, 3]

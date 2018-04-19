@@ -35,6 +35,7 @@ def landing(request):
 def home(request):
     """The view that serves the home page to logged in users."""
 
+    from django.utils import timezone
     form = SessionForm()
     if request.method == "POST":
         try:
@@ -46,7 +47,7 @@ def home(request):
             return redirect("/")
     return render(request, "home.html", {
      "form": form,
-     "day": Session.sessions_from(request.user, date.today())
+     "day": Session.from_day(request.user, request.now.date())
     })
 
 
@@ -76,7 +77,7 @@ def time_month(request, year, month):
     month_date = date(year, month, 1)
     if month_date < request.user.first_month():
         raise Http404
-    today = date.today()
+    today = request.now.date()
     days = Session.group_by_date(request.user, month=date(year, month, 1))
     next = date(
      year + 1 if month == 12 else year, 1 if month == 12 else month + 1, 1

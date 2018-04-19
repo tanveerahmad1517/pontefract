@@ -1,10 +1,16 @@
 <form method="POST">
+    <script src="https://momentjs.com/downloads/moment.min.js"></script>
+    <script src="https://momentjs.com/downloads/moment-timezone-with-data.min.js"></script>
+    <script>var timezone = moment.tz.guess();</script>
     <h2>Create an account</h2>
     {% if form.errors.username %}<div class="error" id="username-error">{{ form.errors.username.0 }}</div>{% endif %}
     {{ form.username }}
 
     {% if form.errors.email %}<div class="error" id="email-error">{{ form.errors.email.0 }}</div>{% endif %}
     {{ form.email }}
+
+    {{ form.timezone }}
+    <script>$("#id_timezone").val(timezone);</script>
 
     {% if form.errors.password %}<div class="error" id="password-error">{{ form.errors.password.0 }}</div>{% endif %}
     {{ form.password }}

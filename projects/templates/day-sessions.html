@@ -4,7 +4,7 @@
     <table>
     {% for session in day.2 %}
     <tr class="session">
-        <td>{{ session.start_time }} - {{ session.end_time }}:</td>
+        <td>{{ session.start|date:"H:i" }} - {{ session.end|date:"H:i" }}:</td>
         <td><a class="project-link" href="/projects/{{ session.project.id }}/">
             {{ session.project.name }}
         <a></td>

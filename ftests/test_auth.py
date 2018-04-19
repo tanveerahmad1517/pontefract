@@ -1,3 +1,4 @@
+import pytz
 from datetime import datetime
 from .base import FunctionalTest
 
@@ -20,19 +21,21 @@ class SignupTests(FunctionalTest):
         form = signup.find_element_by_tag_name("form")
         username = form.find_elements_by_tag_name("input")[0]
         email = form.find_elements_by_tag_name("input")[1]
+        timezone = form.find_element_by_tag_name("select")
         password1 = form.find_elements_by_tag_name("input")[2]
         password2 = form.find_elements_by_tag_name("input")[3]
 
         # They enter their details
         username.send_keys("joe23")
         email.send_keys("joe@gmail.com")
+        self.select_dropdown(timezone, "Pacific/Auckland")
         password1.send_keys("swordfish")
         password2.send_keys("swordfish")
         submit = form.find_elements_by_tag_name("input")[-1]
         self.click(submit)
 
         # They are on their own homepage
-        now = datetime.now()
+        now = datetime.now(tz=pytz.timezone("Pacific/Auckland"))
         self.check_page("/")
         self.check_title("Home")
         nav = self.browser.find_element_by_tag_name("nav")
@@ -61,10 +64,12 @@ class SignupTests(FunctionalTest):
         form = self.browser.find_element_by_tag_name("form")
         username = form.find_elements_by_tag_name("input")[0]
         email = form.find_elements_by_tag_name("input")[1]
+        timezone = form.find_element_by_tag_name("select")
         password1 = form.find_elements_by_tag_name("input")[2]
         password2 = form.find_elements_by_tag_name("input")[3]
         username.send_keys("sarah")
         email.send_keys("joe@gmail.com")
+        self.select_dropdown(timezone, "Pacific/Auckland")
         password1.send_keys("swordfish")
         password2.send_keys("swordfish")
         submit = form.find_elements_by_tag_name("input")[-1]
@@ -94,10 +99,12 @@ class SignupTests(FunctionalTest):
         form = self.browser.find_element_by_tag_name("form")
         username = form.find_elements_by_tag_name("input")[0]
         email = form.find_elements_by_tag_name("input")[1]
+        timezone = form.find_element_by_tag_name("select")
         password1 = form.find_elements_by_tag_name("input")[2]
         password2 = form.find_elements_by_tag_name("input")[3]
         username.send_keys("joe23")
         email.send_keys("sarah@gmail.com")
+        self.select_dropdown(timezone, "Pacific/Auckland")
         password1.send_keys("swordfish")
         password2.send_keys("swordfish")
         submit = form.find_elements_by_tag_name("input")[-1]
@@ -127,10 +134,12 @@ class SignupTests(FunctionalTest):
         form = self.browser.find_element_by_tag_name("form")
         username = form.find_elements_by_tag_name("input")[0]
         email = form.find_elements_by_tag_name("input")[1]
+        timezone = form.find_element_by_tag_name("select")
         password1 = form.find_elements_by_tag_name("input")[2]
         password2 = form.find_elements_by_tag_name("input")[3]
         username.send_keys("joe23")
         email.send_keys("a@b.com")
+        self.select_dropdown(timezone, "Pacific/Auckland")
         password1.send_keys("swordfish")
         password2.send_keys("swordfishx")
         submit = form.find_elements_by_tag_name("input")[-1]

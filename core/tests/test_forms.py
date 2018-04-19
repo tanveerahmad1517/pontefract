@@ -8,8 +8,8 @@ class SignupFormTests(DjangoTest):
     def test_signup_form_has_correct_fields(self):
         form = SignupForm()
         self.assertEqual(
-         list(form.fields.keys()),
-         ["username", "email", "password", "confirm_password"]
+         set(form.fields.keys()),
+         {"username", "email", "timezone", "password", "confirm_password"}
         )
 
 
@@ -31,6 +31,12 @@ class SignupFormTests(DjangoTest):
         })
 
 
+    def test_timezone_widget(self):
+        widget = SignupForm().fields["timezone"].widget
+        self.assertEqual(widget.input_type, "select")
+        self.assertTrue(widget.is_required)
+
+
     def test_username_validation(self):
         username = LoginForm().fields["username"]
         self.assertTrue(username.required)
@@ -39,13 +45,20 @@ class SignupFormTests(DjangoTest):
                 username.clean(invalid)
 
 
-
     def test_email_validation(self):
         email = SignupForm().fields["email"]
         self.assertTrue(email.required)
         for invalid in ("", None, "a\x00b"):
             with self.assertRaises(ValidationError):
                 email.clean(invalid)
+
+
+    def test_timezone_validation(self):
+        timezone = SignupForm().fields["timezone"]
+        self.assertTrue(timezone.required)
+        for invalid in ("", None, "a\x00b", "wrong"):
+            with self.assertRaises(ValidationError):
+                timezone.clean(invalid)
 
 
     def test_password_1_widget(self):
@@ -101,15 +114,15 @@ class SignupFormTests(DjangoTest):
         user = Mock()
         mock_create.return_value = user
         form = SignupForm(data={
-         "username": "u", "email": "E@X.com",
+         "username": "u", "email": "E@X.com", "timezone": "UTC",
          "password": "p", "confirm_password": "p"
         })
         form.cleaned_data = {
-         "username": "u", "email": "E@X.com",
+         "username": "u", "email": "E@X.com", "timezone": "UTC",
          "password": "p", "confirm_password": "p"
         }
         returned = form.save()
-        mock_create.assert_called_with(username="u", email="E@X.com")
+        mock_create.assert_called_with(username="u", email="E@X.com", timezone="UTC")
         user.set_password.assert_called_with("p")
         user.save.assert_called_with()
         self.assertIs(returned, user)

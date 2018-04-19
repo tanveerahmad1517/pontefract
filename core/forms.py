@@ -19,7 +19,7 @@ class SignupForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["username", "email", "password"]
+        fields = ["username", "timezone", "email", "password"]
 
         widgets = {
          "username": forms.TextInput(attrs={
@@ -58,7 +58,8 @@ class SignupForm(forms.ModelForm):
 
         user = User.objects.create(
          username=self.cleaned_data.get("username"),
-         email=self.cleaned_data.get("email")
+         email=self.cleaned_data.get("email"),
+         timezone=self.cleaned_data.get("timezone"),
         )
         user.set_password(self.cleaned_data.get("password"))
         user.save()
