@@ -137,6 +137,15 @@ class SessionFormTests(DjangoTest):
         self.mock_get.assert_called_with(name="abc", user="USER")
 
 
+    def test_project_validation(self):
+        self.mock_get.side_effect = Project.DoesNotExist
+        project = SessionForm(user="USER").fields["project"]
+        self.assertTrue(project.required)
+        for invalid in ("", None, "a\x00b", "     "):
+            with self.assertRaises(ValidationError):
+                project.to_python(invalid)
+
+
     def test_field_default_values(self):
         self.assertEqual(
          SessionForm().fields["start"].initial.date(), datetime.utcnow().date()

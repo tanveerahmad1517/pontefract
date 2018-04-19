@@ -2,6 +2,7 @@ from datetime import datetime
 from django import forms
 from django.utils import timezone
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 from .models import Session, Project
 
 class ProjectForm(forms.ModelForm):
@@ -74,9 +75,13 @@ class SessionForm(forms.ModelForm):
         self.fields["breaks"].validators.append(MinValueValidator(
          0, message="The break must be positive."
         ))
-        self.fields["project"].to_python = lambda v: Project.objects.get(
-         user=self.user, name=v
-        )
+
+        def to_python(value):
+            try:
+                return Project.objects.get(user=self.user, name=value)
+            except Project.DoesNotExist:
+                raise ValidationError("Invalid project name")
+        self.fields["project"].to_python = to_python
 
         self.fields["start"].initial = timezone.localtime()
         self.fields["end"].initial = timezone.localtime()

@@ -194,6 +194,32 @@ class SessionAddingTests(TimeTrackingTests):
         self.assertIn("cancel", error.text)
 
 
+    def test_project_name_cannot_be_spaces(self):
+        # User goes to the home page
+        self.login()
+        self.get("/")
+        now = timezone.localtime(timezone.now())
+
+        # They fill out the session form that is there
+        self.fill_in_session_form(
+         now, "0605AM", "0705AM", "70", "   "
+        )
+
+        # They are still on the home page and there are no sessions
+        self.check_page("/")
+        self.assertEqual(self.browser.find_elements_by_class_name("session"), [])
+
+        # There is an error message and the form is still filled in
+        time = self.browser.find_element_by_id("user-time-tracking")
+        form = time.find_element_by_tag_name("form")
+        start_time_input = form.find_elements_by_tag_name("input")[1]
+        end_time_input = form.find_elements_by_tag_name("input")[3]
+        self.assertEqual(start_time_input.get_attribute("value"), "06:05")
+        self.assertEqual(end_time_input.get_attribute("value"), "07:05")
+        error = form.find_element_by_id("project-error")
+        self.assertIn("valid", error.text)
+
+
 
 class SessionViewingTests(TimeTrackingTests):
 

@@ -32,6 +32,9 @@
     {% endif %}
     {{ form.breaks }}
 
+    {% if form.errors.project %}
+    <div class="error" id="project-error">{{ form.errors.project.0 }}</div>
+    {% endif %}
     {{ form.project }}
 
     {% csrf_token %}
