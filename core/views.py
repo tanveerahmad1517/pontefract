@@ -107,3 +107,12 @@ def time_projects(request, pk):
 @login_required(login_url="/", redirect_field_name=None)
 def projects(request):
     return render(request, "projects.html")
+
+
+@login_required(login_url="/", redirect_field_name=None)
+def edit_session(request, pk):
+    try:
+        session = Session.objects.get(id=pk, project__user=request.user)
+    except Session.DoesNotExist:
+        raise Http404
+    return render(request, "edit-session.html")

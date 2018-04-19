@@ -25,3 +25,7 @@ class UrlTests(DjangoTest):
 
     def test_time_tracking_projects_url(self):
         self.check_url_returns_view("/projects/", core_views.projects)
+
+
+    def test_time_tracking_edit_session_url(self):
+        self.check_url_returns_view("/sessions/199/", core_views.edit_session)

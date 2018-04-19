@@ -371,3 +371,30 @@ class ProjectsViewTests(DjangoTest):
     def test_projects_view_requires_auth(self):
         request = self.make_request("---")
         self.check_view_redirects(projects, request, "/")
+
+
+
+class EditSessionViewTests(DjangoTest):
+
+    def setUp(self):
+        self.patch1 = patch("core.views.Session.objects.get")
+        self.mock_get = self.patch1.start()
+        self.mock_get.return_value = "SESSION"
+
+
+    def test_edit_session_view_uses_right_template(self):
+        request = self.make_request("---", loggedin=True)
+        self.check_view_uses_template(edit_session, request, "edit-session.html", 10)
+
+
+    def test_session_edit_view_requires_auth(self):
+        request = self.make_request("---")
+        self.check_view_redirects(edit_session, request, "/", 10)
+
+
+    def test_session_edit_view_404(self):
+        request = self.make_request("---", loggedin=True)
+        self.mock_get.side_effect = Session.DoesNotExist
+        with self.assertRaises(Http404):
+            edit_session(request, 10)
+        self.mock_get.assert_called_with(id=10, project__user=request.user)

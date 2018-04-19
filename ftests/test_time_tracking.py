@@ -707,7 +707,6 @@ class SessionViewingTests(TimeTrackingTests):
         ], date="31st March 1962")
 
 
-
     def test_project_view_404(self):
         self.logout()
         self.get("/projects/{}/".format(self.ultra_id))
@@ -749,3 +748,97 @@ class SessionViewingTests(TimeTrackingTests):
         self.logout()
         self.get("/projects/")
         self.check_page("/")
+
+
+
+class SessionEditingTests(TimeTrackingTests):
+
+    def setUp(self):
+        FunctionalTest.setUp(self)
+
+        # Create some projects for Sarah
+        running = Project.objects.create(name="Running", user=self.user)
+        archery = Project.objects.create(name="Archery", user=self.user)
+        cooking = Project.objects.create(name="Cooking", user=self.user)
+        ultra = Project.objects.create(name="Project Ultra", user=self.user)
+        reading = Project.objects.create(name="Reading", user=self.user)
+
+        # Create some sessions for today
+        tz = pytz.timezone("Pacific/Auckland")
+        timezone.activate(self.user.timezone)
+        Session.objects.create(
+         start=tz.localize(datetime(1962, 10, 27, 11, 0)),
+         end=tz.localize(datetime(1962, 10, 27, 11, 30)),
+         breaks=0, project=reading
+        )
+        Session.objects.create(
+         start=tz.localize(datetime(1962, 10, 27, 12, 0)),
+         end=tz.localize(datetime(1962, 10, 27, 12, 15)),
+         breaks=0, project=ultra
+        )
+        Session.objects.create(
+         start=tz.localize(datetime(1962, 10, 27, 9, 0)),
+         end=tz.localize(datetime(1962, 10, 27, 9, 45)),
+         breaks=5, project=cooking
+        )
+        session = Session.objects.create(
+         start=tz.localize(datetime(1962, 10, 27, 18, 0)),
+         end=tz.localize(datetime(1962, 10, 27, 20, 30)),
+         breaks=10, project=reading
+        )
+        self.session_id = session.id
+        Session.objects.create(
+         start=tz.localize(datetime(1962, 10, 27, 23, 45)),
+         end=tz.localize(datetime(1962, 10, 28, 0, 30)),
+         breaks=0, project=reading
+        )
+
+        # Create sessions from other user
+        user2 = User.objects.create_user(
+         username="john",
+         email="jfk@wash.gov",
+         password="onassis"
+        )
+        running2 = Project.objects.create(name="Running", user=user2)
+        other = Session.objects.create(
+         start=tz.localize(datetime(1962, 10, 27, 11, 0)),
+         end=tz.localize(datetime(1962, 10, 27, 11, 30)),
+         breaks=0, project=running2
+        )
+        self.other_id = other.id
+        self.login()
+
+
+    @freeze_time("1962-10-27")
+    def test_can_edit_session(self):
+        # The user goes to the home page
+        self.get("/")
+        time = self.browser.find_element_by_id("user-time-tracking")
+        today = time.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "4 hours, 30 minutes", [
+         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
+         ["11:00 - 11:30", "Reading", "30 minutes", None],
+         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
+         ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
+         ["23:45 - 00:30", "Reading", "45 minutes", None]
+        ], date="27th October 1962")
+
+        # They go to edit the excessive reading
+        row = today.find_elements_by_tag_name("tr")[3]
+        self.assertIn("2 hours, 20 minutes", row.text)
+        link = row.find_element_by_class_name("edit-link")
+        self.click(link)
+        self.check_page("/sessions/{}/".format(self.session_id))
+        self.check_title("Edit Session")
+        self.check_h1("Edit Session")
+
+
+    def test_session_editing_view_404(self):
+        self.logout()
+        self.get("/sessions/{}/".format(self.session_id))
+        self.check_page("/")
+        self.login()
+        self.get("/sessions/{}/".format(self.other_id))
+        self.check_title("Not Found")
+        self.get("/sessions/9999999/")
+        self.check_title("Not Found")
