@@ -305,6 +305,12 @@ class TimeTrackingMonthViewTests(DjangoTest):
             time_month(self.request, 1961, 6)
 
 
+    def test_month_view_raises_404_on_no_sessions(self):
+        self.request.user.first_month.return_value = None
+        with self.assertRaises(Http404):
+            time_month(self.request, 1984, 4)
+
+
 
 class TimeTrackingProjectViewTests(DjangoTest):
 

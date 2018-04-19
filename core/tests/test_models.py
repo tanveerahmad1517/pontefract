@@ -46,3 +46,10 @@ class UserTests(DjangoTest):
         sessions[0].local_start.return_value = date(1998, 6, 7)
         user = User(username="sam", email="sam@sam.sam", password="p")
         self.assertEqual(user.first_month(), date(1998, 6, 1))
+
+
+    @patch("projects.models.Session.objects.filter")
+    def test_user_first_session_month_none(self, mock_filter):
+        mock_filter.return_value = []
+        user = User(username="sam", email="sam@sam.sam", password="p")
+        self.assertIsNone(user.first_month())

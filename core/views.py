@@ -74,8 +74,8 @@ def logout(request):
 
 @login_required(login_url="/", redirect_field_name=None)
 def time_month(request, year, month):
-    month_date = date(year, month, 1)
-    if month_date < request.user.first_month():
+    month_date, first_month = date(year, month, 1), request.user.first_month()
+    if not first_month or month_date < first_month:
         raise Http404
     today = request.now.date()
     days = Session.group_by_date(request.user, month=date(year, month, 1))
