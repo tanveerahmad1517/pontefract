@@ -72,7 +72,11 @@ class Session(models.Model):
     def duration(self):
         """The length of the session in minutes, accounting for breaks."""
 
-        return int(((self.end - self.start).seconds / 60) - self.breaks)
+        delta = self.end - self.start
+        minutes = int((delta.seconds / 60) - self.breaks)
+        if delta.days:
+            minutes += delta.days * 24 * 60
+        return minutes
 
 
     def duration_string(*sessions):

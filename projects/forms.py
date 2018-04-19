@@ -89,8 +89,9 @@ class SessionForm(forms.ModelForm):
 
     def clean(self):
         forms.ModelForm.clean(self)
-        if self.cleaned_data["end"] < self.cleaned_data["start"]:
-            self.add_error("end", "End time is before start time")
-        elif (self.cleaned_data["end"] - self.cleaned_data["start"]
-         ).seconds <= self.cleaned_data.get("breaks", 0) * 60:
-            self.add_error("breaks", "Break cannot cancel out session")
+        if "start" in self.cleaned_data and "end" in self.cleaned_data:
+            if self.cleaned_data["end"] < self.cleaned_data["start"]:
+                self.add_error("end", "End time is before start time")
+            elif (self.cleaned_data["end"] - self.cleaned_data["start"]
+             ).seconds <= self.cleaned_data.get("breaks", 0) * 60:
+                self.add_error("breaks", "Break cannot cancel out session")

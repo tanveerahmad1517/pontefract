@@ -89,10 +89,7 @@ class SessionTests(DjangoTest):
          2008, 1, 1, 9, 30, 0, tzinfo=pytz.timezone("Pacific/Auckland")
         )
         self.dt3 = datetime(
-         2008, 1, 2, 12, 15, 0, tzinfo=pytz.timezone("Pacific/Auckland")
-        )
-        self.dt4 = datetime(
-         2008, 1, 2, 12, 15, 0, tzinfo=pytz.timezone("Pacific/Auckland")
+         2009, 1, 1, 9, 45, 0, tzinfo=pytz.timezone("Pacific/Auckland")
         )
 
 
@@ -147,6 +144,15 @@ class SessionTests(DjangoTest):
          start=self.dt1, end=self.dt2, breaks=5, project=self.project
         )
         self.assertEqual(session.duration(), 10)
+
+
+    @patch("projects.models.Session.start")
+    @patch("projects.models.Session.end")
+    def test_can_get_long_duration(self, mock_end, mock_start):
+        session = Session(
+         start=self.dt1, end=self.dt3, breaks=5, project=self.project
+        )
+        self.assertEqual(session.duration(), 527065)
 
 
     def test_can_get_duration_string(self):
