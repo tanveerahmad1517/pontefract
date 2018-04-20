@@ -1,5 +1,6 @@
 from datetime import datetime, date
 import pytz
+from selenium.webdriver.common.keys import Keys
 from django.utils import timezone
 from projects.models import Project, Session
 from core.models import User
@@ -810,7 +811,7 @@ class SessionEditingTests(TimeTrackingTests):
 
 
     @freeze_time("1962-10-27")
-    def test_can_edit_session(self):
+    def test_can_edit_session_to_new_project(self):
         # The user goes to the home page
         self.get("/")
         time = self.browser.find_element_by_id("user-time-tracking")
@@ -831,6 +832,120 @@ class SessionEditingTests(TimeTrackingTests):
         self.check_page("/sessions/{}/".format(self.session_id))
         self.check_title("Edit Session")
         self.check_h1("Edit Session")
+
+        # There is a form
+        form = self.browser.find_elements_by_tag_name("form")[1]
+        start_day_input = form.find_elements_by_tag_name("input")[0]
+        start_time_input = form.find_elements_by_tag_name("input")[1]
+        end_day_input = form.find_elements_by_tag_name("input")[2]
+        end_time_input = form.find_elements_by_tag_name("input")[3]
+        breaks_input = form.find_elements_by_tag_name("input")[4]
+        project_input = form.find_elements_by_tag_name("input")[5]
+
+        # The form has pre-loaded values
+        self.assertEqual(start_day_input.get_attribute("value"), "1962-10-27")
+        self.assertEqual(start_time_input.get_attribute("value"), "18:00")
+        self.assertEqual(end_day_input.get_attribute("value"), "1962-10-27")
+        self.assertEqual(end_time_input.get_attribute("value"), "20:30")
+        self.assertEqual(breaks_input.get_attribute("value"), "10")
+        self.assertEqual(project_input.get_attribute("value"), "Reading")
+
+        # They change those values and submit
+        start_day_input.send_keys(Keys.DELETE)
+        start_day_input.send_keys("15101962")
+        start_time_input.send_keys(Keys.DELETE)
+        start_time_input.send_keys("23:00")
+        end_day_input.send_keys(Keys.DELETE)
+        end_day_input.send_keys("16101962")
+        end_time_input.send_keys(Keys.DELETE)
+        end_time_input.send_keys("02:00")
+        breaks_input.clear()
+        breaks_input.send_keys(30)
+        project_input.clear()
+        project_input.send_keys("Base Jumping")
+        self.click(form.find_elements_by_tag_name("input")[-1])
+
+        # They are on the October page
+        self.check_page("/time/1962/10/")
+
+        # The sessions are updated
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 27)
+        self.check_day_report(days[0], "2 hours, 10 minutes", [
+         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
+         ["11:00 - 11:30", "Reading", "30 minutes", None],
+         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
+         ["23:45 - 00:30", "Reading", "45 minutes", None]
+        ], date="27th October 1962")
+        self.check_day_report(days[12], "2 hours, 30 minutes", [
+         ["23:00 - 02:00", "Base Jumping", "2 hours, 30 minutes", "30 minutes"],
+        ], date="15th October 1962")
+
+
+    @freeze_time("1962-10-27")
+    def test_can_edit_session_to_existing_project(self):
+        # The user goes to the home page
+        self.get("/")
+        time = self.browser.find_element_by_id("user-time-tracking")
+        today = time.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "4 hours, 30 minutes", [
+         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
+         ["11:00 - 11:30", "Reading", "30 minutes", None],
+         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
+         ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
+         ["23:45 - 00:30", "Reading", "45 minutes", None]
+        ], date="27th October 1962")
+
+        # They go to edit the excessive reading
+        row = today.find_elements_by_tag_name("tr")[3]
+        self.assertIn("2 hours, 20 minutes", row.text)
+        link = row.find_element_by_class_name("edit-link")
+        self.click(link)
+        self.check_page("/sessions/{}/".format(self.session_id))
+        self.check_title("Edit Session")
+        self.check_h1("Edit Session")
+
+        # There is a form
+        form = self.browser.find_elements_by_tag_name("form")[1]
+        start_day_input = form.find_elements_by_tag_name("input")[0]
+        start_time_input = form.find_elements_by_tag_name("input")[1]
+        end_day_input = form.find_elements_by_tag_name("input")[2]
+        end_time_input = form.find_elements_by_tag_name("input")[3]
+        breaks_input = form.find_elements_by_tag_name("input")[4]
+        project_input = form.find_elements_by_tag_name("input")[5]
+
+        # The form has pre-loaded values
+        self.assertEqual(start_day_input.get_attribute("value"), "1962-10-27")
+        self.assertEqual(start_time_input.get_attribute("value"), "18:00")
+        self.assertEqual(end_day_input.get_attribute("value"), "1962-10-27")
+        self.assertEqual(end_time_input.get_attribute("value"), "20:30")
+        self.assertEqual(breaks_input.get_attribute("value"), "10")
+        self.assertEqual(project_input.get_attribute("value"), "Reading")
+
+        # They change those values and submit
+        start_day_input.send_keys(Keys.DELETE)
+        start_day_input.send_keys("15041961")
+        start_time_input.send_keys(Keys.DELETE)
+        start_time_input.send_keys("23:00")
+        end_day_input.send_keys(Keys.DELETE)
+        end_day_input.send_keys("16041961")
+        end_time_input.send_keys(Keys.DELETE)
+        end_time_input.send_keys("02:00")
+        breaks_input.clear()
+        breaks_input.send_keys(30)
+        project_input.clear()
+        project_input.send_keys("Project Ultra")
+        self.click(form.find_elements_by_tag_name("input")[-1])
+
+        # They are on the October page
+        self.check_page("/time/1961/04/")
+
+        # The sessions are updated
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 30)
+        self.check_day_report(days[15], "2 hours, 30 minutes", [
+         ["23:00 - 02:00", "Project Ultra", "2 hours, 30 minutes", "30 minutes"],
+        ], date="15th April 1961")
 
 
     def test_session_editing_view_404(self):

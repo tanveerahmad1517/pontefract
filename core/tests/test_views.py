@@ -380,6 +380,14 @@ class EditSessionViewTests(DjangoTest):
         self.patch1 = patch("core.views.Session.objects.get")
         self.mock_get = self.patch1.start()
         self.mock_get.return_value = "SESSION"
+        self.patch2 = patch("core.views.SessionForm")
+        self.mock_form = self.patch2.start()
+        self.mock_form.return_value = "FORM"
+
+
+    def tearDown(self):
+        self.patch1.stop()
+        self.patch2.stop()
 
 
     def test_edit_session_view_uses_right_template(self):
@@ -398,3 +406,11 @@ class EditSessionViewTests(DjangoTest):
         with self.assertRaises(Http404):
             edit_session(request, 10)
         self.mock_get.assert_called_with(id=10, project__user=request.user)
+
+
+    def test_edit_session_view_sends_bound_form(self):
+        request = self.make_request("---", loggedin=True)
+        self.check_view_has_context(
+         edit_session, request, {"form": "FORM"}, 10
+        )
+        self.mock_form.assert_called_with(instance="SESSION")

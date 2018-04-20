@@ -115,4 +115,13 @@ def edit_session(request, pk):
         session = Session.objects.get(id=pk, project__user=request.user)
     except Session.DoesNotExist:
         raise Http404
-    return render(request, "edit-session.html")
+    form = SessionForm(instance=session)
+    if request.method == "POST":
+        try:
+            ProjectForm(request.user, request.POST).save()
+        except: pass
+        form = SessionForm(request.POST, user=request.user, instance=session)
+        if form.is_valid():
+            form.save(request.user)
+            return redirect(form.instance.start.strftime("/time/%Y/%m/"))
+    return render(request, "edit-session.html", {"form": form})
