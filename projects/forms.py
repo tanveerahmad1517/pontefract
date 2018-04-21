@@ -44,13 +44,28 @@ class ProjectForm(forms.ModelForm):
 
 
 
+class DateWidget(forms.DateInput):
+
+    input_type = "date"
+
+
+
+class TimeWidget(forms.TimeInput):
+
+    input_type = "time"
+
+    def format_value(self, value):
+        value = forms.TimeInput.format_value(self, value)
+        return value [:5] if isinstance(value, str) else value
+
+
+
 class DateTimeWidget(forms.SplitDateTimeWidget):
 
     def __init__(self, *args, **kwargs):
         forms.SplitDateTimeWidget.__init__(self, *args, **kwargs)
-        self.widgets[0].input_type ,self.widgets[1].input_type = "date", "time"
+        self.widgets = (DateWidget(), TimeWidget())
         self.instance = False
-        self.widgets[1].format_value = lambda v: forms.TimeInput.format_value(self.widgets[1], v)[:5]
 
 
     def decompress(self, *args, **kwargs):
