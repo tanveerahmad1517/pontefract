@@ -751,6 +751,34 @@ class SessionViewingTests(TimeTrackingTests):
         self.check_page("/")
 
 
+    @freeze_time("1962-10-27")
+    def test_can_see_other_days(self):
+        # The main page shows today's times
+        self.get("/")
+        time = self.browser.find_element_by_id("user-time-tracking")
+        today = time.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "4 hours, 30 minutes", [
+         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
+         ["11:00 - 11:30", "Reading", "30 minutes", None],
+         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
+         ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
+         ["23:45 - 00:30", "Reading", "45 minutes", None]
+        ], date="27th October 1962")
+
+        # They can view the work done yesterday
+        link = time.find_element_by_class_name("yesterday-link")
+        self.click(link)
+        self.check_page("/time/1962/10/26/")
+        self.check_title("26th October 1962")
+        self.check_h1("26th October 1962")
+
+
+    def test_day_view_auth_required(self):
+        self.logout()
+        self.get("/time/1962/10/26/")
+        self.check_page("/")
+
+
 
 class SessionEditingTests(TimeTrackingTests):
 

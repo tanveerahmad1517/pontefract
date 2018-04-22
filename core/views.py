@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from calendar import monthrange
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
@@ -45,9 +45,11 @@ def home(request):
         if form.is_valid():
             form.save(request.user)
             return redirect("/")
+    day = Session.from_day(request.user, request.now.date())
     return render(request, "home.html", {
      "form": form,
-     "day": Session.from_day(request.user, request.now.date())
+     "day": day,
+     "yesterday": day[0] - timedelta(days=1)
     })
 
 
@@ -125,3 +127,9 @@ def edit_session(request, pk):
             form.save(request.user)
             return redirect(form.instance.start.strftime("/time/%Y/%m/"))
     return render(request, "edit-session.html", {"form": form})
+
+
+@login_required(login_url="/", redirect_field_name=None)
+def time_day(request, year, month, day):
+    day = Session.from_day(request.user, date(year, month, day))
+    return render(request, "time-day.html", {"day": day})

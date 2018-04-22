@@ -11,6 +11,7 @@
 <div id="user-time-tracking">
     <h2>Time Tracking</h2>
     {% include "day-sessions.html" %}
+    <a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link">See Yesterday</a>
     {% if user.first_month %}<a href="/time/{{ request.now|date:'Y/m/'}}" class="month-link">See work done this month</a>{% endif %}
     {% if user.project_set.all %}<a href="/projects/" class="projects-link">See all projects</a>{% endif %}
     {% include "session-form.html" %}
