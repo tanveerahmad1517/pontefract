@@ -11,8 +11,7 @@ class TimeTrackingTests(FunctionalTest):
 
     def fill_in_session_form(self, now, start_time, end_time, breaks, project, existing=False):
         # There is a form to record work
-        time = self.browser.find_element_by_id("user-time-tracking")
-        form = time.find_element_by_tag_name("form")
+        form = self.browser.find_elements_by_tag_name("form")[1]
         start_day_input = form.find_elements_by_tag_name("input")[0]
         start_time_input = form.find_elements_by_tag_name("input")[1]
         end_day_input = form.find_elements_by_tag_name("input")[2]
@@ -112,6 +111,25 @@ class SessionAddingTests(TimeTrackingTests):
         # The total for the day is updated
         time = self.browser.find_element_by_id("user-time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "30 minutes", [
+         ["16:05 - 16:35", "Cycling", "30 minutes", None]
+        ])
+
+
+    def test_can_add_work_session_for_previous_day(self):
+        # The user goes to the yesetrday page and fills out the form there
+        self.login()
+        self.get("/time/2009/10/1/")
+        now = datetime(2009, 10, 1)
+        self.fill_in_session_form(
+         now, "1605PM", "1635PM", "0", "Cycling"
+        )
+
+        # They are still on the main page
+        self.check_page("/time/2009/10/1/")
+
+        # The total for the day is updated
+        today = self.browser.find_element_by_class_name("day-time-tracking")
         self.check_day_report(today, "30 minutes", [
          ["16:05 - 16:35", "Cycling", "30 minutes", None]
         ])
@@ -771,6 +789,40 @@ class SessionViewingTests(TimeTrackingTests):
         self.check_page("/time/1962/10/26/")
         self.check_title("26th October 1962")
         self.check_h1("26th October 1962")
+        day = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(day, "6 hours", [
+         ["06:20 - 07:40", "Running", "1 hour", None],
+         ["17:20 - 17:40", "Archery", "20 minutes", None],
+         ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
+        ], date="26th October 1962")
+
+        # There is a form for adding to that day
+        form = self.browser.find_elements_by_tag_name("form")[1]
+        start_day_input = form.find_elements_by_tag_name("input")[0]
+        start_time_input = form.find_elements_by_tag_name("input")[1]
+        end_day_input = form.find_elements_by_tag_name("input")[2]
+        end_time_input = form.find_elements_by_tag_name("input")[3]
+        breaks_input = form.find_elements_by_tag_name("input")[4]
+        project_input = form.find_elements_by_tag_name("input")[5]
+        self.assertEqual(start_day_input.get_attribute("value"), "1962-10-26")
+        self.assertEqual(end_day_input.get_attribute("value"), "1962-10-26")
+
+        # They can navigate between days
+        link = self.browser.find_element_by_class_name("yesterday-link")
+        self.click(link)
+        self.check_page("/time/1962/10/25/")
+        self.check_title("25th October 1962")
+        self.check_h1("25th October 1962")
+        day = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(day, "0 minutes", [], date="25th October 1962")
+        link = self.browser.find_element_by_class_name("tomorrow-link")
+        self.click(link)
+        self.check_page("/time/1962/10/26/")
+        self.check_title("26th October 1962")
+        self.check_h1("26th October 1962")
+        link = self.browser.find_element_by_class_name("tomorrow-link")
+        self.click(link)
+        self.check_page("/")
 
 
     def test_day_view_auth_required(self):
@@ -890,18 +942,11 @@ class SessionEditingTests(TimeTrackingTests):
         self.click(form.find_elements_by_tag_name("input")[-1])
 
         # They are on the October page
-        self.check_page("/time/1962/10/")
+        self.check_page("/time/1962/10/15/")
 
         # The sessions are updated
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
-        self.assertEqual(len(days), 27)
-        self.check_day_report(days[0], "2 hours, 10 minutes", [
-         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
-         ["11:00 - 11:30", "Reading", "30 minutes", None],
-         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
-         ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27th October 1962")
-        self.check_day_report(days[12], "2 hours, 30 minutes", [
+        day = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(day, "2 hours, 30 minutes", [
          ["23:00 - 02:00", "Base Jumping", "2 hours, 30 minutes", "30 minutes"],
         ], date="15th October 1962")
 
@@ -958,12 +1003,11 @@ class SessionEditingTests(TimeTrackingTests):
 
         self.click(form.find_elements_by_tag_name("input")[-1])
         # They are on the October page
-        self.check_page("/time/1961/04/")
+        self.check_page("/time/1961/04/15/")
 
         # The sessions are updated
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
-        self.assertEqual(len(days), 30)
-        self.check_day_report(days[15], "2 hours, 30 minutes", [
+        day = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(day, "2 hours, 30 minutes", [
          ["23:00 - 02:00", "Project Ultra", "2 hours, 30 minutes", "30 minutes"],
         ], date="15th April 1961")
 

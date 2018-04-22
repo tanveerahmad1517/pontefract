@@ -162,13 +162,17 @@ class SessionForm(forms.ModelForm):
         }
 
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, date=None, **kwargs):
         self.user = user
+        self.date = date
         forms.ModelForm.__init__(self, *args, **kwargs)
         self.fields["start"].widget.instance = self.instance.id is not None
         self.fields["end"].widget.instance = self.instance.id is not None
         self.fields["project"].user = self.user
         self.fields["project"].widget.user = self.user
+        if date:
+            self.fields["start"].initial = datetime(date.year, date.month, date.day)
+            self.fields["end"].initial = datetime(date.year, date.month, date.day)
 
 
     def clean(self):

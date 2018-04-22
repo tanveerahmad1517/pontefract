@@ -125,11 +125,23 @@ def edit_session(request, pk):
         form = SessionForm(request.POST, user=request.user, instance=session)
         if form.is_valid():
             form.save(request.user)
-            return redirect(form.instance.start.strftime("/time/%Y/%m/"))
+            return redirect(form.instance.start.strftime("/time/%Y/%m/%d/"))
     return render(request, "edit-session.html", {"form": form})
 
 
 @login_required(login_url="/", redirect_field_name=None)
 def time_day(request, year, month, day):
+    from django.utils import timezone
+    form = SessionForm(date=date(year, month, day))
+    if request.method == "POST":
+        try:
+            ProjectForm(request.user, request.POST).save()
+        except: pass
+        form = SessionForm(request.POST, user=request.user, date=date(year, month, day))
+        if form.is_valid():
+            form.save(request.user)
+            return redirect("/time/{}/{}/{}/".format(year, month, day))
     day = Session.from_day(request.user, date(year, month, day))
-    return render(request, "time-day.html", {"day": day})
+    yesterday = day[0] - timedelta(days=1)
+    tomorrow = day[0] + timedelta(days=1)
+    return render(request, "time-day.html", {"day": day, "form": form, "yesterday": yesterday, "tomorrow": tomorrow})
