@@ -852,11 +852,9 @@ class SessionEditingTests(TimeTrackingTests):
 
         # They change those values and submit
         self.browser.execute_script("arguments[0].value = '1962-10-15';", start_day_input)
-        start_time_input.send_keys(Keys.DELETE)
-        start_time_input.send_keys("2300PM")
+        self.browser.execute_script("arguments[0].value = '23:00';", start_time_input)
         self.browser.execute_script("arguments[0].value = '1962-10-16';", end_day_input)
-        end_time_input.send_keys(Keys.DELETE)
-        end_time_input.send_keys("0200AM")
+        self.browser.execute_script("arguments[0].value = '02:00';", end_time_input)
         breaks_input.clear()
         breaks_input.send_keys(30)
         project_input.clear()
@@ -922,17 +920,15 @@ class SessionEditingTests(TimeTrackingTests):
 
         # They change those values and submit
         self.browser.execute_script("arguments[0].value = '1961-04-15';", start_day_input)
-        start_time_input.send_keys(Keys.DELETE)
-        start_time_input.send_keys("2300PM")
+        self.browser.execute_script("arguments[0].value = '23:00';", start_time_input)
         self.browser.execute_script("arguments[0].value = '1961-04-16';", end_day_input)
-        end_time_input.send_keys(Keys.DELETE)
-        end_time_input.send_keys("0200AM")
+        self.browser.execute_script("arguments[0].value = '02:00';", end_time_input)
         breaks_input.clear()
         breaks_input.send_keys(30)
         project_input.clear()
         project_input.send_keys("Project Ultra")
-        self.click(form.find_elements_by_tag_name("input")[-1])
 
+        self.click(form.find_elements_by_tag_name("input")[-1])
         # They are on the October page
         self.check_page("/time/1961/04/")
 
