@@ -302,9 +302,32 @@ class AccountModificationTests(FunctionalTest):
         self.assertIn("credentials", error.text)
 
 
-
     def test_profile_page_protection(self):
         self.get("/profile/")
         self.check_page("/")
         self.get("/delete-account/")
         self.check_page("/")
+
+
+    def test_can_change_timezone(self):
+        self.login()
+        link = self.browser.find_element_by_class_name("account-link")
+        self.click(link)
+        self.check_page("/profile/")
+        self.check_title("sarah")
+        self.check_h1("sarah")
+
+        # There is a dropdown for timezone
+        form = self.browser.find_element_by_id("settings-form")
+        timezone = form.find_element_by_id("id_timezone")
+        self.assertEqual(self.get_select_value(timezone), "Pacific/Auckland")
+
+        # They change it
+        self.select_dropdown(timezone, "Europe/Istanbul")
+        save = form.find_elements_by_tag_name("input")[-1]
+        self.click(save)
+        self.check_page("/profile/")
+        self.check_title("sarah")
+        self.check_h1("sarah")
+        timezone = self.browser.find_element_by_id("id_timezone")
+        self.assertEqual(self.get_select_value(timezone), "Europe/Istanbul")

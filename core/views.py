@@ -76,7 +76,12 @@ def logout(request):
 
 @login_required(login_url="/", redirect_field_name=None)
 def profile(request):
-    return render(request, "profile.html")
+    form = SignupForm(instance=request.user)
+    if request.method == "POST":
+        request.user.timezone = request.POST["timezone"]
+        request.user.save()
+        return redirect("/profile/")
+    return render(request, "profile.html", {"form": form})
 
 
 @login_required(login_url="/", redirect_field_name=None)
