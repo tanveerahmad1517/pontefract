@@ -96,3 +96,17 @@ class LoginForm(forms.Form):
             else:
                 self.add_error("username", "Invalid credentials")
         return False
+
+
+    def validate_and_delete(self, request):
+        if self.is_valid():
+            user = authenticate(
+             username=self.cleaned_data.get("username"),
+             password=self.cleaned_data.get("password")
+            )
+            if user:
+                user.delete()
+                return True
+            else:
+                self.add_error("username", "Invalid credentials")
+        return False

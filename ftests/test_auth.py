@@ -259,6 +259,49 @@ class AccountModificationTests(FunctionalTest):
         self.check_title("Delete Account")
         self.check_h1("Delete Account")
 
+        # They enter their credentials incorrectly on the page
+        form = self.browser.find_elements_by_tag_name("form")[1]
+        username = form.find_elements_by_tag_name("input")[0]
+        password = form.find_elements_by_tag_name("input")[1]
+        username.send_keys("sarah")
+        password.send_keys("wrongpassword")
+        submit = form.find_elements_by_tag_name("input")[-1]
+        self.click(submit)
+
+        # The account is not deleted
+        self.check_page("/delete-account/")
+        form = self.browser.find_elements_by_tag_name("form")[1]
+        username = form.find_elements_by_tag_name("input")[0]
+        password = form.find_elements_by_tag_name("input")[1]
+        self.assertEqual(username.get_attribute("value"), "sarah")
+        self.assertEqual(password.get_attribute("value"), "")
+        error = form.find_element_by_id("username-error")
+        self.assertIn("credentials", error.text)
+
+        # They enter the correct details and delete
+        password.send_keys("password")
+        submit = form.find_elements_by_tag_name("input")[-1]
+        self.click(submit)
+        self.check_page("/")
+        self.check_h1("pontefract")
+        self.get("/login/")
+        form = self.browser.find_element_by_tag_name("form")
+        username = form.find_elements_by_tag_name("input")[0]
+        password = form.find_elements_by_tag_name("input")[1]
+        username.send_keys("sarah")
+        password.send_keys("password")
+        submit = form.find_elements_by_tag_name("input")[-1]
+        self.click(submit)
+        self.check_page("/login/")
+        form = self.browser.find_element_by_tag_name("form")
+        username = form.find_elements_by_tag_name("input")[0]
+        password = form.find_elements_by_tag_name("input")[1]
+        self.assertEqual(username.get_attribute("value"), "sarah")
+        self.assertEqual(password.get_attribute("value"), "")
+        error = form.find_element_by_id("username-error")
+        self.assertIn("credentials", error.text)
+
+
 
     def test_profile_page_protection(self):
         self.get("/profile/")

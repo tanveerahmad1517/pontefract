@@ -81,7 +81,12 @@ def profile(request):
 
 @login_required(login_url="/", redirect_field_name=None)
 def account_deletion(request):
-    return render(request, "account-deletion.html")
+    form = LoginForm()
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+        valid = form.validate_and_delete(request)
+        if valid: return redirect("/")
+    return render(request, "account-deletion.html", {"form": form})
 
 
 @login_required(login_url="/", redirect_field_name=None)
