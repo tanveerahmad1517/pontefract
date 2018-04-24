@@ -237,3 +237,21 @@ class LogoutTests(FunctionalTest):
         self.click(logout_link)
         self.check_page("/")
         signup = self.browser.find_element_by_id("signup-panel")
+
+
+
+class AccountModificationTests(FunctionalTest):
+
+    def test_can_delete_account(self):
+        # User goes to their account page
+        self.login()
+        link = self.browser.find_element_by_class_name("account-link")
+        self.click(link)
+        self.check_page("/profile/")
+        self.check_title("sarah")
+        self.check_h1("sarah")
+
+
+    def test_profile_paghe_protection(self):
+        self.get("/profile/")
+        self.check_page("/")

@@ -10,7 +10,7 @@
     <div id="logo"><a href="/">pontefract</a></div>
     <div id="mobile-menu"><div id="mobile-menu-icon">&#9776;</div></div>
     <div id="nav-links">
-        <a>{{ user.username }}</a>
+        <a href="/profile/" class="account-link">{{ user.username }}</a>
         <form id="logout-form" method="POST" action="/logout/">
             <a id="logout-link" href="javascript:void(0)" onclick="$(this).parent().submit()">Log Out</a>
             {% csrf_token %}
