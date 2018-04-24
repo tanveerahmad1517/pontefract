@@ -251,7 +251,17 @@ class AccountModificationTests(FunctionalTest):
         self.check_title("sarah")
         self.check_h1("sarah")
 
+        # There is a section for deleting an account
+        deletion = self.browser.find_element_by_id("account-deletion")
+        button = deletion.find_element_by_class_name("delete-button")
+        self.click(button)
+        self.check_page("/delete-account/")
+        self.check_title("Delete Account")
+        self.check_h1("Delete Account")
 
-    def test_profile_paghe_protection(self):
+
+    def test_profile_page_protection(self):
         self.get("/profile/")
+        self.check_page("/")
+        self.get("/delete-account/")
         self.check_page("/")

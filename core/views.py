@@ -80,6 +80,11 @@ def profile(request):
 
 
 @login_required(login_url="/", redirect_field_name=None)
+def account_deletion(request):
+    return render(request, "account-deletion.html")
+
+
+@login_required(login_url="/", redirect_field_name=None)
 def time_month(request, year, month):
     month_date, first_month = date(year, month, 1), request.user.first_month()
     if not first_month or month_date < first_month:
