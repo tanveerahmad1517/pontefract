@@ -9,5 +9,6 @@ urlpatterns = [
  path(r"projects/<int:pk>/", core_views.time_projects),
  path(r"projects/", core_views.projects),
  path(r"sessions/<int:pk>/", core_views.edit_session),
+ path(r"sessions/<int:pk>/delete/", core_views.delete_session),
  path(r"", core_views.root),
 ]

@@ -1000,8 +1000,8 @@ class SessionEditingTests(TimeTrackingTests):
         breaks_input.send_keys(30)
         project_input.clear()
         project_input.send_keys("Project Ultra")
-
         self.click(form.find_elements_by_tag_name("input")[-1])
+
         # They are on the October page
         self.check_page("/time/1961/04/15/")
 
@@ -1020,4 +1020,76 @@ class SessionEditingTests(TimeTrackingTests):
         self.get("/sessions/{}/".format(self.other_id))
         self.check_title("Not Found")
         self.get("/sessions/9999999/")
+        self.check_title("Not Found")
+
+
+    @freeze_time("1962-10-27")
+    def test_can_delete_session(self):
+        # The user goes to the home page
+        self.get("/")
+        time = self.browser.find_element_by_id("user-time-tracking")
+        today = time.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "4 hours, 30 minutes", [
+         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
+         ["11:00 - 11:30", "Reading", "30 minutes", None],
+         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
+         ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
+         ["23:45 - 00:30", "Reading", "45 minutes", None]
+        ], date="27th October 1962")
+
+        # They go to edit the excessive reading
+        row = today.find_elements_by_tag_name("tr")[3]
+        self.assertIn("2 hours, 20 minutes", row.text)
+        link = row.find_element_by_class_name("edit-link")
+        self.click(link)
+        self.check_page("/sessions/{}/".format(self.session_id))
+        self.check_title("Edit Session")
+        self.check_h1("Edit Session")
+
+        # There is a link to the deletion page
+        link = self.browser.find_element_by_class_name("delete-link")
+        self.click(link)
+        self.check_page("/sessions/{}/delete/".format(self.session_id))
+        self.check_title("Delete Session")
+        self.check_h1("Delete Session")
+
+        # They can go back
+        main = self.browser.find_element_by_tag_name("main")
+        self.assertIn("are you sure", main.text.lower())
+        self.assertIn("Reading", main.text)
+        self.assertIn("2 hours, 20 minutes", main.text)
+        back_link = main.find_element_by_class_name("back-link")
+        self.click(back_link)
+        self.check_page("/sessions/{}/".format(self.session_id))
+        self.check_title("Edit Session")
+        self.check_h1("Edit Session")
+
+        # But they want to delete
+        link = self.browser.find_element_by_class_name("delete-link")
+        self.click(link)
+        self.check_page("/sessions/{}/delete/".format(self.session_id))
+        self.check_title("Delete Session")
+        self.check_h1("Delete Session")
+        delete = self.browser.find_element_by_class_name("delete-button")
+        self.click(delete)
+        self.check_page("/time/1962/10/27/")
+        day = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(day, "2 hours, 10 minutes", [
+         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
+         ["11:00 - 11:30", "Reading", "30 minutes", None],
+         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
+         ["23:45 - 00:30", "Reading", "45 minutes", None]
+        ], date="27th October 1962")
+
+
+
+
+    def test_session_deletion_view_404(self):
+        self.logout()
+        self.get("/sessions/{}/delete/".format(self.session_id))
+        self.check_page("/")
+        self.login()
+        self.get("/sessions/{}/delete/".format(self.other_id))
+        self.check_title("Not Found")
+        self.get("/sessions/9999999/delete/")
         self.check_title("Not Found")

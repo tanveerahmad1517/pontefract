@@ -130,6 +130,18 @@ def edit_session(request, pk):
 
 
 @login_required(login_url="/", redirect_field_name=None)
+def delete_session(request, pk):
+    try:
+        session = Session.objects.get(id=pk, project__user=request.user)
+    except Session.DoesNotExist:
+        raise Http404
+    if request.method == "POST":
+        session.delete()
+        return redirect("/time/{}/{}/{}/".format(session.local_start().year, session.local_start().month, session.local_start().day))
+    return render(request, "delete-session.html", {"session": session})
+
+
+@login_required(login_url="/", redirect_field_name=None)
 def time_day(request, year, month, day):
     from django.utils import timezone
     form = SessionForm(date=date(year, month, day))

@@ -12,4 +12,6 @@
 {% block main %}
 <h1>Edit Session</h1>
 {% include "session-form.html" %}
+
+<a href="/sessions/{{ form.instance.id }}/delete/" class="delete-link">Delete this session</a>
 {% endblock %}
