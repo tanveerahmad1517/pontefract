@@ -109,7 +109,7 @@ def time_month(request, year, month):
      year - 1 if month == 1 else year, 12 if month == 1 else month - 1, 1
     )
     if previous < request.user.first_month(): previous = None
-    return render(request, "time-month.html", {
+    return render(request, "time-tracking-month.html", {
      "month": date(year, month, 1),
      "days": days,
      "next": next,
@@ -123,7 +123,7 @@ def time_projects(request, pk):
         project = Project.objects.get(id=pk, user=request.user)
     except Project.DoesNotExist: raise Http404
     days = Session.group_by_date(request.user, project=project)
-    return render(request, "time-projects.html", {"project": project, "days": days})
+    return render(request, "project.html", {"project": project, "days": days})
 
 
 @login_required(login_url="/", redirect_field_name=None)
@@ -176,4 +176,4 @@ def time_day(request, year, month, day):
     day = Session.from_day(request.user, date(year, month, day))
     yesterday = day[0] - timedelta(days=1)
     tomorrow = day[0] + timedelta(days=1)
-    return render(request, "time-day.html", {"day": day, "form": form, "yesterday": yesterday, "tomorrow": tomorrow})
+    return render(request, "time-tracking-day.html", {"day": day, "form": form, "yesterday": yesterday, "tomorrow": tomorrow})

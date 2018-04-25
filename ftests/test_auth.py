@@ -1,5 +1,6 @@
 import pytz
 from datetime import datetime
+from core.models import User
 from .base import FunctionalTest
 
 class SignupTests(FunctionalTest):
@@ -78,7 +79,7 @@ class SignupTests(FunctionalTest):
 
         # There is a starter section for time tracking
         now = datetime.now(tz=pytz.timezone("Pacific/Auckland"))
-        time = self.browser.find_element_by_id("user-time-tracking")
+        time = self.browser.find_element_by_id("time-tracking")
         self.assertEqual(time.find_element_by_tag_name("h2").text, "Time Tracking")
         new_session = time.find_element_by_tag_name("form")
         today = time.find_element_by_class_name("day-time-tracking")
@@ -260,6 +261,12 @@ class AccountModificationTests(FunctionalTest):
 
     def test_can_delete_account(self):
         # User goes to their account page
+        User.objects.create_user(
+         username="bill",
+         email="bill@gmail.com",
+         timezone="Pacific/Auckland",
+         password="password_"
+        )
         self.login()
         link = self.browser.find_element_by_class_name("account-link")
         self.click(link)
@@ -279,8 +286,8 @@ class AccountModificationTests(FunctionalTest):
         form = self.browser.find_elements_by_tag_name("form")[1]
         username = form.find_elements_by_tag_name("input")[0]
         password = form.find_elements_by_tag_name("input")[1]
-        username.send_keys("sarah")
-        password.send_keys("wrongpassword")
+        username.send_keys("bill")
+        password.send_keys("password_")
         submit = form.find_elements_by_tag_name("input")[-1]
         self.click(submit)
 
@@ -289,12 +296,14 @@ class AccountModificationTests(FunctionalTest):
         form = self.browser.find_elements_by_tag_name("form")[1]
         username = form.find_elements_by_tag_name("input")[0]
         password = form.find_elements_by_tag_name("input")[1]
-        self.assertEqual(username.get_attribute("value"), "sarah")
+        self.assertEqual(username.get_attribute("value"), "bill")
         self.assertEqual(password.get_attribute("value"), "")
         error = form.find_element_by_id("username-error")
         self.assertIn("credentials", error.text)
 
         # They enter the correct details and delete
+        username.clear()
+        username.send_keys("sarah")
         password.send_keys("password")
         submit = form.find_elements_by_tag_name("input")[-1]
         self.click(submit)

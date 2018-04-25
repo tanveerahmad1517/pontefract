@@ -8,7 +8,7 @@
 {% block title %}Home{% endblock %}
 
 {% block main %}
-<div id="user-time-tracking">
+<div id="time-tracking">
     <h2>Time Tracking</h2>
     {% include "day-sessions.html" %}
     <a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link">See Yesterday</a>

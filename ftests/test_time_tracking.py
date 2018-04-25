@@ -88,7 +88,7 @@ class TimeTrackingTests(FunctionalTest):
 
     def check_day_report(self, div, total, sessions, date=None):
         if date:
-            self.assertEqual(div.find_element_by_tag_name("h3").text, date)
+            self.assertEqual(div.find_element_by_class_name("date").text, date)
         self.assertIn(total, div.find_element_by_class_name("total-time").text)
         session_divs = div.find_elements_by_class_name("session")
         self.assertEqual(len(sessions), len(session_divs))
@@ -121,7 +121,7 @@ class SessionAddingTests(TimeTrackingTests):
         self.check_page("/")
 
         # The total for the day is updated
-        time = self.browser.find_element_by_id("user-time-tracking")
+        time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
         self.check_day_report(today, "20 minutes", [
          ["06:05 - 06:35", "Dog Walking", "20 minutes", "10 minute break"]
@@ -147,7 +147,7 @@ class SessionAddingTests(TimeTrackingTests):
         self.check_page("/")
 
         # The total for the day is updated
-        time = self.browser.find_element_by_id("user-time-tracking")
+        time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
         self.check_day_report(today, "30 minutes", [
          ["16:05 - 16:35", "Cycling", "30 minutes", None]
@@ -489,7 +489,7 @@ class SessionViewingTests(TimeTrackingTests):
     def test_can_view_months(self):
         # The main page shows today's times
         self.get("/")
-        time = self.browser.find_element_by_id("user-time-tracking")
+        time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
         self.check_day_report(today, "4 hours, 30 minutes", [
          ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
@@ -745,7 +745,7 @@ class SessionViewingTests(TimeTrackingTests):
         self.get("/")
 
         # There is a link to the projects
-        time = self.browser.find_element_by_id("user-time-tracking")
+        time = self.browser.find_element_by_id("time-tracking")
         link = time.find_element_by_class_name("projects-link")
         self.click(link)
         self.check_page("/projects/")
@@ -776,7 +776,7 @@ class SessionViewingTests(TimeTrackingTests):
     def test_can_see_other_days(self):
         # The main page shows today's times
         self.get("/")
-        time = self.browser.find_element_by_id("user-time-tracking")
+        time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
         self.check_day_report(today, "4 hours, 30 minutes", [
          ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
@@ -897,7 +897,7 @@ class SessionEditingTests(TimeTrackingTests):
     def test_can_edit_session_to_new_project(self):
         # The user goes to the home page
         self.get("/")
-        time = self.browser.find_element_by_id("user-time-tracking")
+        time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
         self.check_day_report(today, "4 hours, 30 minutes", [
          ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
@@ -942,7 +942,7 @@ class SessionEditingTests(TimeTrackingTests):
     def test_can_edit_session_to_existing_project(self):
         # The user goes to the home page
         self.get("/")
-        time = self.browser.find_element_by_id("user-time-tracking")
+        time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
         self.check_day_report(today, "4 hours, 30 minutes", [
          ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
@@ -998,7 +998,7 @@ class SessionEditingTests(TimeTrackingTests):
     def test_can_delete_session(self):
         # The user goes to the home page
         self.get("/")
-        time = self.browser.find_element_by_id("user-time-tracking")
+        time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
         self.check_day_report(today, "4 hours, 30 minutes", [
          ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],

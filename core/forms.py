@@ -106,7 +106,7 @@ class LoginForm(forms.Form):
              username=self.cleaned_data.get("username"),
              password=self.cleaned_data.get("password")
             )
-            if user:
+            if user and user.username == request.user.username:
                 user.delete()
                 return True
             else:
