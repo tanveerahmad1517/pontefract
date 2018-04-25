@@ -145,7 +145,7 @@ def edit_session(request, pk):
         form = SessionForm(request.POST, user=request.user, instance=session)
         if form.is_valid():
             form.save(request.user)
-            return redirect(form.instance.start.strftime("/time/%Y/%m/%d/"))
+            return redirect(form.instance.local_start().strftime("/time/%Y/%m/%d/"))
     return render(request, "edit-session.html", {"form": form})
 
 

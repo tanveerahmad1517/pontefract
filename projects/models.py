@@ -2,6 +2,7 @@ from datetime import date, datetime
 import pytz
 from calendar import monthrange
 from itertools import groupby
+from timezone_field import TimeZoneField
 from django.utils import timezone
 from django.db import models
 from django.core.validators import MinValueValidator
@@ -46,6 +47,7 @@ class Session(models.Model):
 
     start = models.DateTimeField()
     end = models.DateTimeField()
+    timezone = TimeZoneField()
     breaks = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 

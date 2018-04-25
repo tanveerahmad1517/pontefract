@@ -82,6 +82,18 @@ class DateTimeField(forms.SplitDateTimeField):
 
 
 
+class TimezoneWidget(forms.HiddenInput):
+
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        self.attrs = {}
+
+
+    def value_from_datadict(self, data, files, name):
+        return self.user.timezone
+
+
+
 class SessionBreaksField(forms.IntegerField):
 
     def __init__(self, *args, **kwargs):
@@ -157,6 +169,7 @@ class SessionForm(forms.ModelForm):
          "end": DateTimeWidget(
           date_attrs={"tabindex": "2"}, time_attrs={"tabindex": "4"}
          ),
+         "timezone": TimezoneWidget(),
          "breaks": SessionBreaksWidget(attrs={"tabindex": "5"}),
          "project": SessionProjectWidget(attrs={"tabindex": "6"})
         }
@@ -170,6 +183,7 @@ class SessionForm(forms.ModelForm):
         self.fields["end"].widget.instance = self.instance.id is not None
         self.fields["project"].user = self.user
         self.fields["project"].widget.user = self.user
+        self.fields["timezone"].widget.user = self.user
         if date:
             self.fields["start"].initial = datetime(date.year, date.month, date.day)
             self.fields["end"].initial = datetime(date.year, date.month, date.day)

@@ -9,7 +9,8 @@ from .base import FunctionalTest
 
 class TimeTrackingTests(FunctionalTest):
 
-    def fill_in_session_form(self, now, start_time, end_time, breaks, project, existing=False):
+    def fill_in_session_form(self, start_time, end_time, breaks,
+     project, existing=False, start_day=None, end_day=None):
         # There is a form to record work
         form = self.browser.find_elements_by_tag_name("form")[1]
         start_day_input = form.find_elements_by_tag_name("input")[0]
@@ -18,21 +19,19 @@ class TimeTrackingTests(FunctionalTest):
         end_time_input = form.find_elements_by_tag_name("input")[3]
         breaks_input = form.find_elements_by_tag_name("input")[4]
         project_input = form.find_elements_by_tag_name("input")[5]
-
-        # The form default values are sensible
-        self.assertEqual(start_day_input.get_attribute("type"), "date")
-        self.assertEqual(start_time_input.get_attribute("type"), "time")
-        self.assertEqual(end_day_input.get_attribute("type"), "date")
-        self.assertEqual(end_time_input.get_attribute("type"), "time")
-        self.assertEqual(start_day_input.get_attribute("value"), now.date().strftime("%Y-%m-%d"))
-        self.assertEqual(end_day_input.get_attribute("value"), now.date().strftime("%Y-%m-%d"))
-        self.assertEqual(breaks_input.get_attribute("value"), "0")
+        with self.assertRaises(self.NoElement):
+            form.find_element_by_tag_name("select")
 
         # They enter some values and submit
-        start_time_input.send_keys(start_time)
-        end_time_input.send_keys(end_time)
+        if start_day:
+            self.browser.execute_script("arguments[0].value = '{}';".format(start_day), start_day_input)
+        self.browser.execute_script("arguments[0].value = '{}';".format(start_time), start_time_input)
+        if end_day:
+            self.browser.execute_script("arguments[0].value = '{}';".format(end_day), end_day_input)
+        self.browser.execute_script("arguments[0].value = '{}';".format(end_time), end_time_input)
         breaks_input.clear()
         if breaks != "0": breaks_input.send_keys(breaks)
+        project_input.clear()
         if existing:
             visible_suggestions = self.browser.find_elements_by_class_name("ui-menu-item")
             self.assertEqual(len(visible_suggestions), 0)
@@ -49,6 +48,42 @@ class TimeTrackingTests(FunctionalTest):
             project_input.send_keys(project)
         submit = form.find_elements_by_tag_name("input")[-1]
         self.click(submit)
+
+
+    def check_session_form(self, start_day=None, start_time=None, end_day=None,
+     end_time=None, breaks=None, project=None, start_error=None, end_error=None,
+     breaks_error=None, project_error=None):
+        form = self.browser.find_elements_by_tag_name("form")[1]
+        start_day_input = form.find_elements_by_tag_name("input")[0]
+        start_time_input = form.find_elements_by_tag_name("input")[1]
+        end_day_input = form.find_elements_by_tag_name("input")[2]
+        end_time_input = form.find_elements_by_tag_name("input")[3]
+        breaks_input = form.find_elements_by_tag_name("input")[4]
+        project_input = form.find_elements_by_tag_name("input")[5]
+        if start_day:
+            self.assertEqual(start_day_input.get_attribute("value"), start_day)
+        if start_time:
+            self.assertEqual(start_time_input.get_attribute("value"), start_time)
+        if end_day:
+            self.assertEqual(end_day_input.get_attribute("value"), end_day)
+        if end_time:
+            self.assertEqual(end_time_input.get_attribute("value"), end_time)
+        if breaks:
+            self.assertEqual(breaks_input.get_attribute("value"), breaks)
+        if project:
+            self.assertEqual(project_input.get_attribute("value"), project)
+        if start_error:
+            error = form.find_element_by_id("start-error")
+            self.assertIn(start_error, error.text)
+        if end_error:
+            error = form.find_element_by_id("end-error")
+            self.assertIn(end_error, error.text)
+        if breaks_error:
+            error = form.find_element_by_id("breaks-error")
+            self.assertIn(breaks_error, error.text)
+        if project_error:
+            error = form.find_element_by_id("project-error")
+            self.assertIn(project_error, error.text)
 
 
     def check_day_report(self, div, total, sessions, date=None):
@@ -74,12 +109,13 @@ class SessionAddingTests(TimeTrackingTests):
         # User goes to the home page
         self.login()
         self.get("/")
-        now = timezone.localtime(timezone.now())
+        today = timezone.localtime(timezone.now()).date()
 
         # They fill out the session form that is there
-        self.fill_in_session_form(
-         now, "0605AM", "0635AM", "10", "Dog Walking"
+        self.check_session_form(
+         start_day=today.strftime("%Y-%m-%d"), end_day=today.strftime("%Y-%m-%d")
         )
+        self.fill_in_session_form("06:05", "06:35", "10", "Dog Walking")
 
         # They are still on the main page
         self.check_page("/")
@@ -91,6 +127,11 @@ class SessionAddingTests(TimeTrackingTests):
          ["06:05 - 06:35", "Dog Walking", "20 minutes", "10 minute break"]
         ])
 
+        # The database has the timezone in it
+        self.assertEqual(
+         Session.objects.last().timezone, pytz.timezone("Pacific/Auckland")
+        )
+
 
     def test_can_add_work_session_to_existing_project(self):
         Project.objects.create(name="Running", user=self.user)
@@ -100,10 +141,7 @@ class SessionAddingTests(TimeTrackingTests):
         # The user goes to the home page and fills out the form there
         self.login()
         self.get("/")
-        now = timezone.localtime(timezone.now())
-        self.fill_in_session_form(
-         now, "1605PM", "1635PM", "0", "Cycling", existing=True
-        )
+        self.fill_in_session_form("16:05", "16:35", "0", "Cycling", existing=True)
 
         # They are still on the main page
         self.check_page("/")
@@ -120,12 +158,9 @@ class SessionAddingTests(TimeTrackingTests):
         # The user goes to the yesetrday page and fills out the form there
         self.login()
         self.get("/time/2009/10/1/")
-        now = datetime(2009, 10, 1)
-        self.fill_in_session_form(
-         now, "1605PM", "1635PM", "0", "Cycling"
-        )
+        self.fill_in_session_form("16:05", "16:35", "0", "Cycling")
 
-        # They are still on the main page
+        # They are on the day's page
         self.check_page("/time/2009/10/1/")
 
         # The total for the day is updated
@@ -139,104 +174,72 @@ class SessionAddingTests(TimeTrackingTests):
         # User goes to the home page
         self.login()
         self.get("/")
-        now = timezone.localtime(timezone.now())
 
         # They fill out the session form that is there
-        self.fill_in_session_form(
-         now, "0605AM", "0505AM", "10", "Dog Walking"
-        )
+        self.fill_in_session_form("06:05", "05:05", "10", "Dog Walking")
 
         # They are still on the home page and there are no sessions
         self.check_page("/")
         self.assertEqual(self.browser.find_elements_by_class_name("session"), [])
 
         # There is an error message and the form is still filled in
-        time = self.browser.find_element_by_id("user-time-tracking")
-        form = time.find_element_by_tag_name("form")
-        start_time_input = form.find_elements_by_tag_name("input")[1]
-        end_time_input = form.find_elements_by_tag_name("input")[3]
-        self.assertEqual(start_time_input.get_attribute("value"), "06:05")
-        self.assertEqual(end_time_input.get_attribute("value"), "05:05")
-        error = form.find_element_by_id("end-error")
-        self.assertIn("before", error.text)
+        self.check_session_form(
+         start_time="06:05", end_time="05:05", breaks="10", end_error="before"
+        )
 
 
     def test_breaks_must_be_positive(self):
         # User goes to the home page
         self.login()
         self.get("/")
-        now = timezone.localtime(timezone.now())
 
         # They fill out the session form that is there
-        self.fill_in_session_form(
-         now, "0605AM", "0705AM", "-10", "Dog Walking"
-        )
+        self.fill_in_session_form("06:05", "07:05", "-10", "Dog Walking")
 
         # They are still on the home page and there are no sessions
         self.check_page("/")
         self.assertEqual(self.browser.find_elements_by_class_name("session"), [])
 
         # There is an error message and the form is still filled in
-        time = self.browser.find_element_by_id("user-time-tracking")
-        form = time.find_element_by_tag_name("form")
-        start_time_input = form.find_elements_by_tag_name("input")[1]
-        end_time_input = form.find_elements_by_tag_name("input")[3]
-        self.assertEqual(start_time_input.get_attribute("value"), "06:05")
-        self.assertEqual(end_time_input.get_attribute("value"), "07:05")
-        error = form.find_element_by_id("breaks-error")
-        self.assertIn("positive", error.text)
+        self.check_session_form(
+         start_time="06:05", end_time="07:05", breaks="-10", breaks_error="positive"
+        )
 
 
     def test_breaks_must_not_cancel_out_session(self):
         # User goes to the home page
         self.login()
         self.get("/")
-        now = timezone.localtime(timezone.now())
 
         # They fill out the session form that is there
-        self.fill_in_session_form(
-         now, "0605AM", "0705AM", "70", "Dog Walking"
-        )
+        self.fill_in_session_form("06:05", "07:05", "70", "Dog Walking")
 
         # They are still on the home page and there are no sessions
         self.check_page("/")
         self.assertEqual(self.browser.find_elements_by_class_name("session"), [])
 
         # There is an error message and the form is still filled in
-        time = self.browser.find_element_by_id("user-time-tracking")
-        form = time.find_element_by_tag_name("form")
-        start_time_input = form.find_elements_by_tag_name("input")[1]
-        end_time_input = form.find_elements_by_tag_name("input")[3]
-        self.assertEqual(start_time_input.get_attribute("value"), "06:05")
-        self.assertEqual(end_time_input.get_attribute("value"), "07:05")
-        error = form.find_element_by_id("breaks-error")
-        self.assertIn("cancel", error.text)
+        self.check_session_form(
+         start_time="06:05", end_time="07:05", breaks="70", breaks_error="cancel"
+        )
 
 
     def test_project_name_cannot_be_spaces(self):
         # User goes to the home page
         self.login()
         self.get("/")
-        now = timezone.localtime(timezone.now())
 
         # They fill out the session form that is there
-        self.fill_in_session_form(
-         now, "0605AM", "0705AM", "70", "   "
-        )
+        self.fill_in_session_form("06:05", "07:05", "10", "   ")
 
         # They are still on the home page and there are no sessions
         self.check_page("/")
         self.assertEqual(self.browser.find_elements_by_class_name("session"), [])
 
         # There is an error message and the form is still filled in
-        time = self.browser.find_element_by_id("user-time-tracking")
-        form = time.find_element_by_tag_name("form")
-        start_time_input = form.find_elements_by_tag_name("input")[1]
-        end_time_input = form.find_elements_by_tag_name("input")[3]
-        self.assertEqual(start_time_input.get_attribute("value"), "06:05")
-        self.assertEqual(end_time_input.get_attribute("value"), "07:05")
-        error = form.find_element_by_id("project-error")
-        self.assertIn("valid", error.text)
+        self.check_session_form(
+         start_time="06:05", end_time="07:05", breaks="10", project_error="valid"
+        )
 
 
 
@@ -258,27 +261,27 @@ class SessionViewingTests(TimeTrackingTests):
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 11, 0)),
          end=tz.localize(datetime(1962, 10, 27, 11, 30)),
-         breaks=0, project=reading
+         breaks=0, project=reading, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 12, 0)),
          end=tz.localize(datetime(1962, 10, 27, 12, 15)),
-         breaks=0, project=ultra
+         breaks=0, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 9, 0)),
          end=tz.localize(datetime(1962, 10, 27, 9, 45)),
-         breaks=5, project=cooking
+         breaks=5, project=cooking, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 18, 0)),
          end=tz.localize(datetime(1962, 10, 27, 20, 30)),
-         breaks=10, project=reading
+         breaks=10, project=reading, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 23, 45)),
          end=tz.localize(datetime(1962, 10, 28, 0, 30)),
-         breaks=0, project=reading
+         breaks=0, project=reading, timezone=tz
         )
 
         # Create sessions for current month
@@ -286,79 +289,79 @@ class SessionViewingTests(TimeTrackingTests):
          start=tz.localize(datetime(1962, 10, 26, 23, 30)),
          end=tz.localize(datetime(1962, 10, 27, 4, 30)),
 
-         breaks=20, project=ultra
+         breaks=20, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 26, 17,20)),
          end=tz.localize(datetime(1962, 10, 26, 17, 40)),
 
-         breaks=0, project=archery
+         breaks=0, project=archery, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 26, 6,20)),
          end=tz.localize(datetime(1962, 10, 26, 7, 40)),
 
-         breaks=0, project=running
+         breaks=0, project=running, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 20, 9,00)),
          end=tz.localize(datetime(1962, 10, 20, 17, 00)),
 
-         breaks=0, project=ultra
+         breaks=0, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 16, 9,00)),
          end=tz.localize(datetime(1962, 10, 16, 17, 00)),
 
-         breaks=0, project=ultra
+         breaks=0, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 16, 18,00)),
          end=tz.localize(datetime(1962, 10, 16, 22, 00)),
 
-         breaks=0, project=ultra
+         breaks=0, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 12, 9,00)),
          end=tz.localize(datetime(1962, 10, 12, 17, 00)),
 
-         breaks=0, project=ultra
+         breaks=0, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 12, 18,00)),
          end=tz.localize(datetime(1962, 10, 12, 22, 00)),
 
-         breaks=0, project=ultra
+         breaks=0, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 8, 9,00)),
          end=tz.localize(datetime(1962, 10, 8, 17, 00)),
 
-         breaks=0, project=ultra
+         breaks=0, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 8, 18,00)),
          end=tz.localize(datetime(1962, 10, 8, 22, 00)),
 
-         breaks=0, project=ultra
+         breaks=0, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 3, 23,30)),
          end=tz.localize(datetime(1962, 10, 4, 4, 30)),
 
-         breaks=20, project=ultra
+         breaks=20, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 3, 17,20)),
          end=tz.localize(datetime(1962, 10, 3, 17, 40)),
 
-         breaks=0, project=archery
+         breaks=0, project=archery, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 3, 6,20)),
          end=tz.localize(datetime(1962, 10, 3, 7, 40)),
 
-         breaks=0, project=running
+         breaks=0, project=running, timezone=tz
         )
 
         # Create sessions for previous months
@@ -366,55 +369,55 @@ class SessionViewingTests(TimeTrackingTests):
          start=tz.localize(datetime(1962, 9, 30, 23,30)),
          end=tz.localize(datetime(1962, 10, 1, 4, 30)),
 
-         breaks=20, project=ultra
+         breaks=20, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 9, 30, 17,20)),
          end=tz.localize(datetime(1962, 9, 30, 17, 40)),
 
-         breaks=0, project=archery
+         breaks=0, project=archery, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 9, 30, 6,20)),
          end=tz.localize(datetime(1962, 9, 30, 7, 40)),
 
-         breaks=0, project=running
+         breaks=0, project=running, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 3, 31, 23,30)),
          end=tz.localize(datetime(1962, 4, 1, 4, 30)),
 
-         breaks=20, project=ultra
+         breaks=20, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 3, 31, 17,20)),
          end=tz.localize(datetime(1962, 3, 31, 17, 40)),
-         breaks=0, project=archery
+         breaks=0, project=archery, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 3, 31, 6,20)),
          end=tz.localize(datetime(1962, 3, 31, 7, 40)),
-         breaks=0, project=running
+         breaks=0, project=running, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 3, 3, 17,20)),
          end=tz.localize(datetime(1962, 3, 3, 17, 40)),
-         breaks=0, project=archery
+         breaks=0, project=archery, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 3, 3, 6,20)),
          end=tz.localize(datetime(1962, 3, 3, 7, 40)),
-         breaks=0, project=running
+         breaks=0, project=running, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1961, 12, 3, 17,20)),
          end=tz.localize(datetime(1961, 12, 3, 17, 40)),
-         breaks=0, project=archery
+         breaks=0, project=archery, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1961, 12, 3, 6,20)),
          end=tz.localize(datetime(1961, 12, 3, 7, 40)),
-         breaks=0, project=running
+         breaks=0, project=running, timezone=tz
         )
 
         # Create things for other user that could clash if not set up properly
@@ -429,52 +432,52 @@ class SessionViewingTests(TimeTrackingTests):
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 11, 0)),
          end=tz.localize(datetime(1962, 10, 27, 11, 30)),
-         breaks=0, project=running2
+         breaks=0, project=running2, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 26, 11,00)),
          end=tz.localize(datetime(1962, 10, 26, 11, 30)),
-         breaks=0, project=cycling2
+         breaks=0, project=cycling2, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 3, 11,00)),
          end=tz.localize(datetime(1962, 10, 26, 11, 30)),
-         breaks=0, project=health
+         breaks=0, project=health, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 9, 30, 11, 0)),
          end=tz.localize(datetime(1962, 9, 30, 11, 30)),
-         breaks=0, project=health
+         breaks=0, project=health, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 9, 27, 11, 0)),
          end=tz.localize(datetime(1962, 9, 27, 11, 30)),
-         breaks=0, project=health
+         breaks=0, project=health, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 7, 1, 11,00)),
          end=tz.localize(datetime(1962, 7, 1, 11, 30)),
-         breaks=0, project=health
+         breaks=0, project=health, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 3, 3, 11,00)),
          end=tz.localize(datetime(1962, 3, 3, 11, 30)),
-         breaks=0, project=health
+         breaks=0, project=health, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 3, 1, 11,00)),
          end=tz.localize(datetime(1962, 3, 1, 11, 30)),
-         breaks=0, project=health
+         breaks=0, project=health, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1961, 3, 1, 11,00)),
          end=tz.localize(datetime(1961, 3, 1, 11, 30)),
-         breaks=0, project=health
+         breaks=0, project=health, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1958, 3, 1, 11,00)),
          end=tz.localize(datetime(1958, 3, 1, 11, 30)),
-         breaks=0, project=health
+         breaks=0, project=health, timezone=tz
         )
         self.login()
         self.ultra_id = ultra.id
@@ -850,28 +853,28 @@ class SessionEditingTests(TimeTrackingTests):
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 11, 0)),
          end=tz.localize(datetime(1962, 10, 27, 11, 30)),
-         breaks=0, project=reading
+         breaks=0, project=reading, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 12, 0)),
          end=tz.localize(datetime(1962, 10, 27, 12, 15)),
-         breaks=0, project=ultra
+         breaks=0, project=ultra, timezone=tz
         )
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 9, 0)),
          end=tz.localize(datetime(1962, 10, 27, 9, 45)),
-         breaks=5, project=cooking
+         breaks=5, project=cooking, timezone=tz
         )
         session = Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 18, 0)),
          end=tz.localize(datetime(1962, 10, 27, 20, 30)),
-         breaks=10, project=reading
+         breaks=10, project=reading, timezone=tz
         )
         self.session_id = session.id
         Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 23, 45)),
          end=tz.localize(datetime(1962, 10, 28, 0, 30)),
-         breaks=0, project=reading
+         breaks=0, project=reading, timezone=tz
         )
 
         # Create sessions from other user
@@ -884,7 +887,7 @@ class SessionEditingTests(TimeTrackingTests):
         other = Session.objects.create(
          start=tz.localize(datetime(1962, 10, 27, 11, 0)),
          end=tz.localize(datetime(1962, 10, 27, 11, 30)),
-         breaks=0, project=running2
+         breaks=0, project=running2, timezone=tz
         )
         self.other_id = other.id
         self.login()
@@ -913,33 +916,17 @@ class SessionEditingTests(TimeTrackingTests):
         self.check_title("Edit Session")
         self.check_h1("Edit Session")
 
-        # There is a form
-        form = self.browser.find_elements_by_tag_name("form")[1]
-        start_day_input = form.find_elements_by_tag_name("input")[0]
-        start_time_input = form.find_elements_by_tag_name("input")[1]
-        end_day_input = form.find_elements_by_tag_name("input")[2]
-        end_time_input = form.find_elements_by_tag_name("input")[3]
-        breaks_input = form.find_elements_by_tag_name("input")[4]
-        project_input = form.find_elements_by_tag_name("input")[5]
-
         # The form has pre-loaded values
-        self.assertEqual(start_day_input.get_attribute("value"), "1962-10-27")
-        self.assertEqual(start_time_input.get_attribute("value"), "18:00")
-        self.assertEqual(end_day_input.get_attribute("value"), "1962-10-27")
-        self.assertEqual(end_time_input.get_attribute("value"), "20:30")
-        self.assertEqual(breaks_input.get_attribute("value"), "10")
-        self.assertEqual(project_input.get_attribute("value"), "Reading")
+        self.check_session_form(
+         start_day="1962-10-27", end_day="1962-10-27",
+         start_time="18:00", end_time="20:30", breaks="10", project="Reading"
+        )
 
         # They change those values and submit
-        self.browser.execute_script("arguments[0].value = '1962-10-15';", start_day_input)
-        self.browser.execute_script("arguments[0].value = '23:00';", start_time_input)
-        self.browser.execute_script("arguments[0].value = '1962-10-16';", end_day_input)
-        self.browser.execute_script("arguments[0].value = '02:00';", end_time_input)
-        breaks_input.clear()
-        breaks_input.send_keys(30)
-        project_input.clear()
-        project_input.send_keys("Base Jumping")
-        self.click(form.find_elements_by_tag_name("input")[-1])
+        self.fill_in_session_form(
+         "23:00", "02:00", "30", "Base Jumping",
+         start_day="1962-10-15", end_day="1962-10-16"
+        )
 
         # They are on the October page
         self.check_page("/time/1962/10/15/")
@@ -974,33 +961,17 @@ class SessionEditingTests(TimeTrackingTests):
         self.check_title("Edit Session")
         self.check_h1("Edit Session")
 
-        # There is a form
-        form = self.browser.find_elements_by_tag_name("form")[1]
-        start_day_input = form.find_elements_by_tag_name("input")[0]
-        start_time_input = form.find_elements_by_tag_name("input")[1]
-        end_day_input = form.find_elements_by_tag_name("input")[2]
-        end_time_input = form.find_elements_by_tag_name("input")[3]
-        breaks_input = form.find_elements_by_tag_name("input")[4]
-        project_input = form.find_elements_by_tag_name("input")[5]
-
         # The form has pre-loaded values
-        self.assertEqual(start_day_input.get_attribute("value"), "1962-10-27")
-        self.assertEqual(start_time_input.get_attribute("value"), "18:00")
-        self.assertEqual(end_day_input.get_attribute("value"), "1962-10-27")
-        self.assertEqual(end_time_input.get_attribute("value"), "20:30")
-        self.assertEqual(breaks_input.get_attribute("value"), "10")
-        self.assertEqual(project_input.get_attribute("value"), "Reading")
+        self.check_session_form(
+         start_day="1962-10-27", end_day="1962-10-27",
+         start_time="18:00", end_time="20:30", breaks="10", project="Reading"
+        )
 
         # They change those values and submit
-        self.browser.execute_script("arguments[0].value = '1961-04-15';", start_day_input)
-        self.browser.execute_script("arguments[0].value = '23:00';", start_time_input)
-        self.browser.execute_script("arguments[0].value = '1961-04-16';", end_day_input)
-        self.browser.execute_script("arguments[0].value = '02:00';", end_time_input)
-        breaks_input.clear()
-        breaks_input.send_keys(30)
-        project_input.clear()
-        project_input.send_keys("Project Ultra")
-        self.click(form.find_elements_by_tag_name("input")[-1])
+        self.fill_in_session_form(
+         "23:00", "02:00", "30", "Project Ultra", existing=True,
+         start_day="1961-04-15", end_day="1961-04-16"
+        )
 
         # They are on the October page
         self.check_page("/time/1961/04/15/")
@@ -1080,8 +1051,6 @@ class SessionEditingTests(TimeTrackingTests):
          ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
          ["23:45 - 00:30", "Reading", "45 minutes", None]
         ], date="27th October 1962")
-
-
 
 
     def test_session_deletion_view_404(self):

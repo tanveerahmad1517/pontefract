@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import authenticate, login
+from django.core.validators import MinLengthValidator
 from .models import User
 
 class SignupForm(forms.ModelForm):
@@ -36,6 +37,7 @@ class SignupForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
+        self.fields["password"].validators.append(MinLengthValidator(8, message="Password must be at least 8 characters"))
         del self.fields["username"].widget.attrs["maxlength"]
         del self.fields["email"].widget.attrs["maxlength"]
         del self.fields["password"].widget.attrs["maxlength"]

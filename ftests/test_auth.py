@@ -4,18 +4,28 @@ from .base import FunctionalTest
 
 class SignupTests(FunctionalTest):
 
-    def test_can_make_account(self):
-        # User goes to the website
-        self.get("/")
+    def fill_in_signup_form(self, username, email, timezone, password, pass2=None):
+        # There is a form to signup
+        signup = self.browser.find_element_by_id("signup-panel")
+        form = signup.find_element_by_tag_name("form")
+        username_input = form.find_elements_by_tag_name("input")[0]
+        email_input = form.find_elements_by_tag_name("input")[1]
+        timezone_input = form.find_element_by_tag_name("select")
+        password1 = form.find_elements_by_tag_name("input")[2]
+        password2 = form.find_elements_by_tag_name("input")[3]
 
-        # The name is prominently displayed
-        h1 = self.browser.find_element_by_tag_name("h1")
-        self.assertEqual(h1.text, "pontefract")
+        # They enter their details
+        username_input.send_keys(username)
+        email_input.send_keys(email)
+        self.select_dropdown(timezone_input, timezone)
+        password1.send_keys(password)
+        password2.send_keys(pass2 if pass2 else password)
+        submit = form.find_elements_by_tag_name("input")[-1]
+        self.click(submit)
 
-        # There is a brief description
-        description = self.browser.find_element_by_id("site-description")
-        self.assertIn("time tracking for individuals", description.text.lower())
 
+    def check_signup_form(self, username_value=None, username_error=None,
+     email_value=None, email_error=None, password_error=None):
         # There is a form to signup
         signup = self.browser.find_element_by_id("signup-panel")
         form = signup.find_element_by_tag_name("form")
@@ -25,23 +35,49 @@ class SignupTests(FunctionalTest):
         password1 = form.find_elements_by_tag_name("input")[2]
         password2 = form.find_elements_by_tag_name("input")[3]
 
-        # They enter their details
-        username.send_keys("joe23")
-        email.send_keys("joe@gmail.com")
-        self.select_dropdown(timezone, "Pacific/Auckland")
-        password1.send_keys("swordfish")
-        password2.send_keys("swordfish")
-        submit = form.find_elements_by_tag_name("input")[-1]
-        self.click(submit)
+        # It looks ok
+        if username_value:
+            self.assertEqual(username.get_attribute("value"), username_value)
+        if email_value:
+            self.assertEqual(email.get_attribute("value"), email_value)
+        if username_error:
+            error = form.find_element_by_id("username-error")
+            self.assertIn(username_error, error.text)
+        if email_error:
+            error = form.find_element_by_id("email-error")
+            self.assertIn(email_error, error.text)
+        if password_error:
+            error = form.find_element_by_id("password-error")
+            self.assertIn(password_error, error.text)
+        self.assertEqual(password1.get_attribute("value"), "")
+        self.assertEqual(password2.get_attribute("value"), "")
+
+
+    def test_can_make_account(self):
+        # User goes to the website
+        self.get("/")
+
+        # The name is prominently displayed
+        self.check_title("pontefract")
+        self.check_h1("pontefract")
+
+        # There is a brief description
+        description = self.browser.find_element_by_id("site-description")
+        self.assertIn("time tracking for individuals", description.text.lower())
+
+        # They enter their details in the signup form
+        self.fill_in_signup_form(
+         "joe23", "joe@gmail.com", "Pacific/Auckland", "swordfish"
+        )
 
         # They are on their own homepage
-        now = datetime.now(tz=pytz.timezone("Pacific/Auckland"))
         self.check_page("/")
         self.check_title("Home")
         nav = self.browser.find_element_by_tag_name("nav")
         self.assertIn("joe23", nav.text)
 
         # There is a starter section for time tracking
+        now = datetime.now(tz=pytz.timezone("Pacific/Auckland"))
         time = self.browser.find_element_by_id("user-time-tracking")
         self.assertEqual(time.find_element_by_tag_name("h2").text, "Time Tracking")
         new_session = time.find_element_by_tag_name("form")
@@ -63,69 +99,50 @@ class SignupTests(FunctionalTest):
         self.get("/")
 
         # They enter details with a taken username
-        form = self.browser.find_element_by_tag_name("form")
-        username = form.find_elements_by_tag_name("input")[0]
-        email = form.find_elements_by_tag_name("input")[1]
-        timezone = form.find_element_by_tag_name("select")
-        password1 = form.find_elements_by_tag_name("input")[2]
-        password2 = form.find_elements_by_tag_name("input")[3]
-        username.send_keys("sarah")
-        email.send_keys("joe@gmail.com")
-        self.select_dropdown(timezone, "Pacific/Auckland")
-        password1.send_keys("swordfish")
-        password2.send_keys("swordfish")
-        submit = form.find_elements_by_tag_name("input")[-1]
-        self.click(submit)
+        self.fill_in_signup_form(
+         "sarah", "joe@gmail.com", "Pacific/Auckland", "swordfish"
+        )
 
         # They are still on the landing page and an error message is there
         self.check_page("/")
-        signup = self.browser.find_element_by_id("signup-panel")
-        form = signup.find_element_by_tag_name("form")
-        username = form.find_elements_by_tag_name("input")[0]
-        email = form.find_elements_by_tag_name("input")[1]
-        password1 = form.find_elements_by_tag_name("input")[2]
-        password2 = form.find_elements_by_tag_name("input")[3]
-        self.assertEqual(username.get_attribute("value"), "sarah")
-        self.assertEqual(email.get_attribute("value"), "joe@gmail.com")
-        self.assertEqual(password1.get_attribute("value"), "")
-        self.assertEqual(password2.get_attribute("value"), "")
-        error = form.find_element_by_id("username-error")
-        self.assertIn("already", error.text)
+        self.check_signup_form(
+         username_value="sarah", email_value="joe@gmail.com",
+         username_error="already"
+        )
+
+
+    def test_username_must_be_slug(self):
+        # User goes to the landing page
+        self.get("/")
+
+        # They enter details with a taken username
+        self.fill_in_signup_form(
+         "joe jones", "joe@gmail.com", "Pacific/Auckland", "swordfish"
+        )
+
+        # They are still on the landing page and an error message is there
+        self.check_page("/")
+        self.check_signup_form(
+         username_value="joe jones", email_value="joe@gmail.com",
+         username_error="valid"
+        )
 
 
     def test_emails_must_be_unique(self):
         # User goes to the landing page
         self.get("/")
 
-        # They enter details with a taken email
-        form = self.browser.find_element_by_tag_name("form")
-        username = form.find_elements_by_tag_name("input")[0]
-        email = form.find_elements_by_tag_name("input")[1]
-        timezone = form.find_element_by_tag_name("select")
-        password1 = form.find_elements_by_tag_name("input")[2]
-        password2 = form.find_elements_by_tag_name("input")[3]
-        username.send_keys("joe23")
-        email.send_keys("sarah@gmail.com")
-        self.select_dropdown(timezone, "Pacific/Auckland")
-        password1.send_keys("swordfish")
-        password2.send_keys("swordfish")
-        submit = form.find_elements_by_tag_name("input")[-1]
-        self.click(submit)
+        # They enter details with a taken username
+        self.fill_in_signup_form(
+         "joe23", "sarah@gmail.com", "Pacific/Auckland", "swordfish"
+        )
 
         # They are still on the landing page and an error message is there
         self.check_page("/")
-        signup = self.browser.find_element_by_id("signup-panel")
-        form = signup.find_element_by_tag_name("form")
-        username = form.find_elements_by_tag_name("input")[0]
-        email = form.find_elements_by_tag_name("input")[1]
-        password1 = form.find_elements_by_tag_name("input")[2]
-        password2 = form.find_elements_by_tag_name("input")[3]
-        self.assertEqual(username.get_attribute("value"), "joe23")
-        self.assertEqual(email.get_attribute("value"), "sarah@gmail.com")
-        self.assertEqual(password1.get_attribute("value"), "")
-        self.assertEqual(password2.get_attribute("value"), "")
-        error = form.find_element_by_id("email-error")
-        self.assertIn("already", error.text)
+        self.check_signup_form(
+         username_value="joe23", email_value="sarah@gmail.com",
+         email_error="already"
+        )
 
 
     def test_passwords_must_match(self):
@@ -133,34 +150,33 @@ class SignupTests(FunctionalTest):
         self.get("/")
 
         # They enter details with differing passwords
-        form = self.browser.find_element_by_tag_name("form")
-        username = form.find_elements_by_tag_name("input")[0]
-        email = form.find_elements_by_tag_name("input")[1]
-        timezone = form.find_element_by_tag_name("select")
-        password1 = form.find_elements_by_tag_name("input")[2]
-        password2 = form.find_elements_by_tag_name("input")[3]
-        username.send_keys("joe23")
-        email.send_keys("a@b.com")
-        self.select_dropdown(timezone, "Pacific/Auckland")
-        password1.send_keys("swordfish")
-        password2.send_keys("swordfishx")
-        submit = form.find_elements_by_tag_name("input")[-1]
-        self.click(submit)
+        self.fill_in_signup_form(
+         "joe23", "joe@gmail.com", "Pacific/Auckland", "swordfish", "swordfish2"
+        )
 
         # They are still on the landing page and an error message is there
         self.check_page("/")
-        signup = self.browser.find_element_by_id("signup-panel")
-        form = signup.find_element_by_tag_name("form")
-        username = form.find_elements_by_tag_name("input")[0]
-        email = form.find_elements_by_tag_name("input")[1]
-        password1 = form.find_elements_by_tag_name("input")[2]
-        password2 = form.find_elements_by_tag_name("input")[3]
-        self.assertEqual(username.get_attribute("value"), "joe23")
-        self.assertEqual(email.get_attribute("value"), "a@b.com")
-        self.assertEqual(password1.get_attribute("value"), "")
-        self.assertEqual(password2.get_attribute("value"), "")
-        error = form.find_element_by_id("password-error")
-        self.assertIn("don't match", error.text)
+        self.check_signup_form(
+         username_value="joe23", email_value="joe@gmail.com",
+         password_error="don't match"
+        )
+
+
+    def test_password_must_be_long_enough(self):
+        # User goes to the landing page
+        self.get("/")
+
+        # They enter details with differing passwords
+        self.fill_in_signup_form(
+         "joe23", "joe@gmail.com", "Pacific/Auckland", "1234567", "1234567"
+        )
+
+        # They are still on the landing page and an error message is there
+        self.check_page("/")
+        self.check_signup_form(
+         username_value="joe23", email_value="joe@gmail.com",
+         password_error="8 characters"
+        )
 
 
 
