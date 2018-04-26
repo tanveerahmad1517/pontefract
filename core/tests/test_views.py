@@ -1,6 +1,5 @@
 from datetime import date, datetime
 from unittest.mock import patch, Mock, MagicMock
-from freezegun import freeze_time
 from django.http import HttpResponse, QueryDict
 from testarsenal import DjangoTest
 from core.views import *
@@ -89,7 +88,7 @@ class HomeViewTests(DjangoTest):
         self.mock_form = self.patch2.start()
         self.patch4 = patch("core.views.Session.from_day")
         self.mock_from = self.patch4.start()
-        self.mock_from.return_value = ["A", "B", "C"]
+        self.mock_from.return_value = [date(1945, 1, 1), "B", "C"]
         self.request = self.make_request("---", loggedin=True)
         self.request.now = datetime.now()
 
@@ -112,7 +111,16 @@ class HomeViewTests(DjangoTest):
 
 
     def test_home_view_sends_sessions_from_today(self):
-        self.check_view_has_context(home, self.request, {"day": ["A", "B", "C"]})
+        self.check_view_has_context(
+         home, self.request, {"day": [date(1945, 1, 1), "B", "C"]}
+        )
+        self.mock_from.assert_called_with(self.request.user, date.today())
+
+
+    def test_home_view_sends_yesterday(self):
+        self.check_view_has_context(
+         home, self.request, {"yesterday": date(1944, 12, 31)}
+        )
         self.mock_from.assert_called_with(self.request.user, date.today())
 
 
@@ -176,7 +184,7 @@ class LoginViewTests(DjangoTest):
         self.mock_form.assert_called_with()
 
 
-    def test_login_view_logs_inn(self):
+    def test_login_view_logs_in(self):
         form = Mock()
         self.mock_form.return_value = form
         form.validate_and_login.return_value = True
@@ -185,20 +193,20 @@ class LoginViewTests(DjangoTest):
         )
         self.check_view_redirects(login, request, "/")
         self.mock_form.assert_called_with(QueryDict("username=u&password=p"))
-        form.validate_and_login.assert_called_with(request)
+        form.validate_credentials.assert_called_with()
 
 
     def test_login_view_can_return_incorrect_form(self):
         form = Mock()
         self.mock_form.return_value = form
-        form.validate_and_login.return_value = False
+        form.validate_credentials.return_value = False
         request = self.make_request(
          "---", method="post", data={"username": "u", "password": "p"}
         )
         self.check_view_uses_template(login, request, "login.html")
         self.check_view_has_context(login, request, {"form": form})
         self.mock_form.assert_called_with(QueryDict("username=u&password=p"))
-        form.validate_and_login.assert_called_with(request)
+        form.validate_credentials.assert_called_with()
 
 
 
@@ -231,186 +239,93 @@ class LogoutViewTests(DjangoTest):
 
 
 
-class TimeTrackingMonthViewTests(DjangoTest):
+class ProfileViewTests(DjangoTest):
 
     def setUp(self):
-        self.request = self.make_request("---", loggedin=True)
-        self.request.user.sessions_today.side_effect = lambda d: d.day
-        self.request.user.hours_worked_today.side_effect = lambda d: d.day * 2
-        self.request.user.first_month.return_value = date(1983, 6, 1)
-        self.request.now = datetime(1984, 10, 3)
-        self.patch1 = patch("core.views.Session.group_by_date")
-        self.mock_group = self.patch1.start()
-        self.mock_group.return_value = [1, 2, 3]
+        self.patch1 = patch("core.views.SignupForm")
+        self.mock_form = self.patch1.start()
 
 
     def tearDown(self):
         self.patch1.stop()
 
 
-    def test_month_view_uses_month_template(self):
-        self.check_view_uses_template(
-         time_month, self.request, "time-month.html", 1990, 10
-        )
-
-
-    def test_month_view_sends_date(self):
-        self.check_view_has_context(
-         time_month, self.request, {"month": date(1990, 10, 1)}, 1990, 10
-        )
-
-
-    @freeze_time("1984-10-3")
-    def test_month_view_sends_days(self):
-        self.check_view_has_context(
-         time_month, self.request, {"days": [1, 2, 3]}, 1984, 10
-        )
-        self.mock_group.assert_called_with(self.request.user, month=date(1984, 10, 1))
-
-
-    @freeze_time("1984-10-3")
-    def test_month_view_sends_next_month(self):
-        self.check_view_has_context(time_month, self.request, {"next": None}, 1984, 10)
-        self.check_view_has_context(
-         time_month, self.request, {"next": date(1984, 10, 1)}, 1984, 9
-        )
-        self.check_view_has_context(
-         time_month, self.request, {"next": date(1984, 2, 1)}, 1984, 1
-        )
-        self.check_view_has_context(
-         time_month, self.request, {"next": date(1984, 1, 1)}, 1983, 12
-        )
-
-
-    @freeze_time("1984-10-3")
-    def test_month_view_sends_previous_month(self):
-        self.check_view_has_context(
-         time_month, self.request, {"previous": date(1984, 9, 1)}, 1984, 10
-        )
-        self.check_view_has_context(
-         time_month, self.request, {"previous": date(1983, 12, 1)}, 1984, 1
-        )
-        self.check_view_has_context(
-         time_month, self.request, {"previous": None}, 1983, 6
-        )
-
-
-    def test_month_view_requires_auth(self):
-        request = self.make_request("---")
-        self.check_view_redirects(time_month, request, "/", 1962, 4)
-
-
-    def test_month_view_raises_404_on_month_out_of_bounds(self):
-        with self.assertRaises(Http404):
-            time_month(self.request, 1961, 6)
-
-
-    def test_month_view_raises_404_on_no_sessions(self):
-        self.request.user.first_month.return_value = None
-        with self.assertRaises(Http404):
-            time_month(self.request, 1984, 4)
-
-
-
-class TimeTrackingProjectViewTests(DjangoTest):
-
-    def setUp(self):
-        self.request = self.make_request("---", loggedin=True)
-        self.patch1 = patch("core.views.Project.objects.get")
-        self.mock_get = self.patch1.start()
-        self.mock_get.return_value = "PROJECT"
-        self.patch2 = patch("core.views.Session.group_by_date")
-        self.mock_group = self.patch2.start()
-        self.mock_group.return_value = [1, 2, 3]
-
-
-    def tearDown(self):
-        self.patch1.stop()
-        self.patch2.stop()
-
-
-    def test_project_view_uses_project_template(self):
-        self.check_view_uses_template(
-         time_projects, self.request, "time-projects.html", 3
-        )
-
-
-    def test_project_view_sends_project(self):
-        self.check_view_has_context(
-         time_projects, self.request, {"project": "PROJECT"}, 3
-        )
-        self.mock_get.assert_called_with(id=3, user=self.request.user)
-
-
-    def test_project_view_sends_days(self):
-        self.check_view_has_context(
-         time_projects, self.request, {"days": [1, 2, 3]}, 3
-        )
-        self.mock_group.assert_called_with(self.request.user, project="PROJECT")
-
-
-    def test_project_view_requires_auth(self):
-        request = self.make_request("---")
-        self.check_view_redirects(time_projects, request, "/", 3)
-
-
-    def test_project_view_raises_404_on_non_project(self):
-        self.mock_get.side_effect = Project.DoesNotExist
-        with self.assertRaises(Http404):
-            time_projects(self.request, 3)
-
-
-
-class ProjectsViewTests(DjangoTest):
-
-    def test_projects_view_uses_projects_template(self):
+    def test_account_deletion_view_uses_profile_template(self):
         request = self.make_request("---", loggedin=True)
-        self.check_view_uses_template(projects, request, "projects.html")
+        self.check_view_uses_template(profile, request, "profile.html")
 
 
-    def test_projects_view_requires_auth(self):
+    def test_account_deletion_view_is_protected(self):
         request = self.make_request("---")
-        self.check_view_redirects(projects, request, "/")
+        self.check_view_redirects(profile, request, "/")
 
 
-
-class EditSessionViewTests(DjangoTest):
-
-    def setUp(self):
-        self.patch1 = patch("core.views.Session.objects.get")
-        self.mock_get = self.patch1.start()
-        self.mock_get.return_value = "SESSION"
-        self.patch2 = patch("core.views.SessionForm")
-        self.mock_form = self.patch2.start()
+    def test_account_deletion_view_sends_profile_form(self):
         self.mock_form.return_value = "FORM"
+        request = self.make_request("---", loggedin=True)
+        self.check_view_has_context(profile, request, {"form": "FORM"})
+        self.mock_form.assert_called_with(instance=request.user)
+
+
+    def test_account_deletion_view_can_update_timezone(self):
+        request = self.make_request(
+         "---", loggedin=True, method="post", data={"timezone": "TZ"}
+        )
+        self.check_view_redirects(profile, request, "/profile/")
+        self.assertEqual(request.user.timezone, "TZ")
+        request.user.save.assert_called_with()
+
+
+
+class AccountDeletionViewTests(DjangoTest):
+
+    def setUp(self):
+        self.patch1 = patch("core.views.LoginForm")
+        self.mock_form = self.patch1.start()
 
 
     def tearDown(self):
         self.patch1.stop()
-        self.patch2.stop()
 
 
-    def test_edit_session_view_uses_right_template(self):
+    def test_account_deletion_view_uses_delete_account_template(self):
         request = self.make_request("---", loggedin=True)
-        self.check_view_uses_template(edit_session, request, "edit-session.html", 10)
+        self.check_view_uses_template(delete_account, request, "delete-account.html")
 
 
-    def test_session_edit_view_requires_auth(self):
+    def test_account_deletion_view_is_protected(self):
         request = self.make_request("---")
-        self.check_view_redirects(edit_session, request, "/", 10)
+        self.check_view_redirects(delete_account, request, "/")
 
 
-    def test_session_edit_view_404(self):
+    def test_account_deletion_view_sends_login_form(self):
+        self.mock_form.return_value = "FORM"
         request = self.make_request("---", loggedin=True)
-        self.mock_get.side_effect = Session.DoesNotExist
-        with self.assertRaises(Http404):
-            edit_session(request, 10)
-        self.mock_get.assert_called_with(id=10, project__user=request.user)
+        self.check_view_has_context(delete_account, request, {"form": "FORM"})
+        self.mock_form.assert_called_with()
 
 
-    def test_edit_session_view_sends_bound_form(self):
-        request = self.make_request("---", loggedin=True)
-        self.check_view_has_context(
-         edit_session, request, {"form": "FORM"}, 10
+    def test_account_deletion_view_can_delete_user(self):
+        user, form = Mock(), Mock()
+        self.mock_form.return_value = form
+        form.validate_credentials.return_value = user
+        request = self.make_request(
+         "---", loggedin=True, method="post", data={"a": "b"}
         )
-        self.mock_form.assert_called_with(instance="SESSION")
+        self.check_view_redirects(delete_account, request, "/")
+        self.mock_form.assert_called_with(QueryDict("a=b"))
+        form.validate_credentials.assert_called_with(user_to_match=request.user)
+        user.delete.assert_called_with()
+
+
+    def test_account_deletion_view_can_reject_credentials(self):
+        user, form = Mock(), Mock()
+        self.mock_form.return_value = form
+        form.validate_credentials.return_value = False
+        request = self.make_request(
+         "---", loggedin=True, method="post", data={"a": "b"}
+        )
+        self.check_view_uses_template(delete_account, request, "delete-account.html")
+        self.mock_form.assert_called_with(QueryDict("a=b"))
+        form.validate_credentials.assert_called_with(user_to_match=request.user)
+        self.assertFalse(user.delete.called)

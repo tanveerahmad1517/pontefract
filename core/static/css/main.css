@@ -38,6 +38,7 @@ nav #nav-links {
 #nav-links form {
     display: inline;
     background-color: inherit;
+    padding: 0px;
 }
 
 #nav-links a {
