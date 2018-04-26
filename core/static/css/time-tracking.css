@@ -37,6 +37,11 @@ table {
   text-align: left;
 }
 
+a.block {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
 .session-form {
   width: 300px;
 }
@@ -45,6 +50,7 @@ table {
 }
 .session-form input {
   margin: 0px;
+  margin-bottom: 20px;
   font-size: 110%;
   padding: 3px;
 }

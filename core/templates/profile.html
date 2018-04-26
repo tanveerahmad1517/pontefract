@@ -7,7 +7,7 @@
 <h1>{{ user.username }}</h1>
 
 <form id="settings-form" method="POST">
-{{ form.timezone.label }}
+{{ form.timezone.label_tag }}
 {{ form.timezone }}
 {% csrf_token %}
 <input type="submit" value="Save">

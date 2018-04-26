@@ -19,12 +19,35 @@ h2 {
     margin-bottom: 20px;
 }
 
+form {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+table {
+  font-size: 75%;
+}
+
+label {
+  font-size: 90%;
+}
+
+.delete-button {
+  color: #8f1d21;
+  font-weight: bold;
+
+}
+
 
 @media only screen and (min-width: 568px) {
     /* iPad and up */
     main {
         padding-left: 60px;
         padding-right: 60px;
+    }
+
+    table {
+      font-size: 80%;
     }
 }
 
@@ -36,9 +59,17 @@ h2 {
         margin-left: auto;
         margin-right: auto;
     }
+
+    table {
+      font-size: 90%;
+    }
 }
 
 
 @media only screen and (min-width: 1025px) {
     /* Big Desktop screens */
+
+    table {
+      font-size: 95%;
+    }
 }

@@ -9,6 +9,7 @@
   } );
   </script>
 
+    {{ form.start.label_tag }}
     <div class="datetime">
         {% if form.errors.start %}
         <div class="error" id="start-error">
@@ -18,6 +19,7 @@
         {{ form.start }}
     </div>
 
+    {{ form.end.label_tag }}
     <div class="datetime">
         {% if form.errors.end %}
         <div class="error" id="end-error">
@@ -27,11 +29,13 @@
         {{ form.end }}
     </div>
 
+    {{ form.breaks.label_tag }}
     {% if form.errors.breaks %}
     <div class="error" id="breaks-error">{{ form.errors.breaks.0 }}</div>
     {% endif %}
     {{ form.breaks }}
 
+    {{ form.project.label_tag }}
     {% if form.errors.project %}
     <div class="error" id="project-error">{{ form.errors.project.0 }}</div>
     {% endif %}
