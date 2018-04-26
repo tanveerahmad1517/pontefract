@@ -60,7 +60,9 @@ class SessionFormTests(DjangoTest):
     def test_session_form_has_correct_fields(self):
         form = SessionForm()
         self.assertEqual(
-         list(form.fields.keys()), ["start", "end", "breaks", "project"])
+         list(form.fields.keys()),
+         ["start", "end", "timezone", "breaks", "project"]
+        )
 
 
     def test_start_widget(self):
@@ -73,6 +75,11 @@ class SessionFormTests(DjangoTest):
         self.assertEqual(
          widget.decompress(datetime(1990, 9, 30, 15, 30)),
          (date(1990, 9, 30), None)
+        )
+        self.assertEqual(widget.widgets[1].format_value(None), None)
+        self.assertEqual(
+         widget.widgets[1].format_value(datetime(1990, 9, 30, 15, 30, 11)),
+         "15:30"
         )
 
 
@@ -87,11 +94,22 @@ class SessionFormTests(DjangoTest):
          widget.decompress(datetime(1990, 9, 30, 15, 30)),
          (date(1990, 9, 30), None)
         )
+        self.assertEqual(widget.widgets[1].format_value(None), None)
+        self.assertEqual(
+         widget.widgets[1].format_value(datetime(1990, 9, 30, 15, 30, 11)),
+         "15:30"
+        )
+
+
+    def test_timezone_widget(self):
+        user, user.timezone = Mock(), "TZ"
+        widget = SessionForm().fields["timezone"].widget
+        widget.user = user
+        self.assertEqual(widget.value_from_datadict({}, None, None), "TZ")
 
 
     def test_breaks_widget(self):
         widget = SessionForm().fields["breaks"].widget
-        self.assertFalse(widget.is_required)
         self.assertEqual(widget.input_type, "number")
         self.assertEqual(widget.attrs, {"tabindex": "5"})
         self.assertEqual(
@@ -99,11 +117,20 @@ class SessionFormTests(DjangoTest):
         )
 
 
-    def test_projects_widget(self):
+    @patch("projects.forms.Project.objects.get")
+    def test_projects_widget(self, mock_get):
+        mock_get.return_value = "PROJECT"
         widget = SessionForm().fields["project"].widget
+        widget.user = "USER"
         self.assertTrue(widget.is_required)
         self.assertEqual(widget.input_type, "text")
         self.assertEqual(widget.attrs, {"tabindex": "6"})
+        self.assertEqual(widget.format_value(None), None)
+        self.assertEqual(widget.format_value("   "), None)
+        self.assertEqual(widget.format_value(2), "PROJECT")
+        mock_get.assert_called_with(id=2)
+        self.assertEqual(widget.format_value("aaa"), "PROJECT")
+        mock_get.assert_called_with(user="USER", name="aaa")
 
 
     def test_start_validation(self):
@@ -153,26 +180,27 @@ class SessionFormTests(DjangoTest):
         self.assertEqual(
          SessionForm().fields["end"].initial.date(), datetime.utcnow().date()
         )
-        self.assertEqual(SessionForm().fields["breaks"].initial, 0)
 
 
     def test_can_reject_mismatched_times(self):
+        user, user.timezone = Mock(), "TZ"
         form = SessionForm(data={
          "start_0": "2018-01-02", "start_1": "13:00",
          "end_0": "2018-01-02", "end_1": "12:00",
          "breaks": 10
-        })
+        }, user=user)
         self.assertFalse(form.is_valid())
         self.mock_clean.assert_called_with(form)
         self.assertIn("end", form.errors)
 
 
     def test_can_reject_break_longer_than_session(self):
+        user, user.timezone = Mock(), "TZ"
         form = SessionForm(data={
          "start_0": "2018-01-02", "start_1": "12:00",
          "end_0": "2018-01-02", "end_1": "13:00",
          "breaks": 61
-        })
+        }, user=user)
         self.assertFalse(form.is_valid())
         self.mock_clean.assert_called_with(form)
         self.assertIn("breaks", form.errors)

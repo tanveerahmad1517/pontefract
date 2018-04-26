@@ -45,55 +45,66 @@ class ProjectForm(forms.ModelForm):
 
 
 class DateWidget(forms.DateInput):
+    """The widget used to take date inputs."""
 
     input_type = "date"
 
 
 
 class TimeWidget(forms.TimeInput):
+    """The widget used to take time inputs."""
 
     input_type = "time"
 
     def format_value(self, value):
+        """This function is used when rendering a Python object in a HTML tag.
+        This override makes sure that seconds are not rendered."""
+
         value = forms.TimeInput.format_value(self, value)
         return value [:5] if isinstance(value, str) else value
 
 
 
 class DateTimeWidget(forms.SplitDateTimeWidget):
+    """The collective widget used to take time inputs."""
 
     def __init__(self, *args, **kwargs):
         forms.SplitDateTimeWidget.__init__(self, *args, **kwargs)
-        self.widgets = (DateWidget(self.widgets[0].attrs), TimeWidget(self.widgets[1].attrs))
+        self.widgets = (
+         DateWidget(self.widgets[0].attrs), TimeWidget(self.widgets[1].attrs)
+        )
         self.instance = False
 
 
     def decompress(self, *args, **kwargs):
+        """Determines how a datetime is split into two values - date and time.
+        If the form has an instance associated, the time will be sent,
+        otherwise no time is sent."""
+
         values = forms.SplitDateTimeWidget.decompress(self, *args, **kwargs)
         return values if self.instance else (values[0], None)
 
 
 
-class DateTimeField(forms.SplitDateTimeField):
+class TimezoneWidget(forms.HiddenInput):
+    """The timezone widget, which is never rendered and is just there to pretend
+    to get data from POST data."""
 
     def __init__(self, *args, **kwargs):
-        forms.SplitDateTimeField.__init__(self, *args, **kwargs)
-
-
-
-class TimezoneWidget(forms.HiddenInput):
-
-    def __init__(self, *args, user=None, **kwargs):
-        self.user = user
+        self.user = None
         self.attrs = {}
 
 
     def value_from_datadict(self, data, files, name):
+        """The widget doesn't get the timezone from any POST data, it just gets
+        the user's timezone."""
+
         return self.user.timezone
 
 
 
 class SessionBreaksField(forms.IntegerField):
+    """The field used to validate breaks taken. It has to be a positive."""
 
     def __init__(self, *args, **kwargs):
         forms.IntegerField.__init__(self, *args, **kwargs)
@@ -105,6 +116,7 @@ class SessionBreaksField(forms.IntegerField):
 
 
 class SessionBreaksWidget(forms.NumberInput):
+    """The widget used to take in breaks."""
 
     def __init__(self, *args, **kwargs):
         forms.NumberInput.__init__(self, *args, **kwargs)
@@ -112,11 +124,14 @@ class SessionBreaksWidget(forms.NumberInput):
 
 
     def value_from_datadict(self, data, files, name):
+        """If no breaks are sent, it will pluck '0' out of nowhere."""
+
         return data.get(name) or "0"
 
 
 
 class SessionProjectField(forms.ModelChoiceField):
+    """The field used to hold a project."""
 
     def __init__(self, *args, **kwargs):
         forms.ModelChoiceField.__init__(self, *args, **kwargs)
@@ -125,6 +140,11 @@ class SessionProjectField(forms.ModelChoiceField):
 
 
     def to_python(self, value):
+        """Controls how the field turns POST data into an object. It will be
+        interpreted as a project name. If there is no project, it means that the
+        project form that was applied to the POST data previosly wasn't happy,
+        so an error about an invalid project name will be sent."""
+
         try:
             return Project.objects.get(user=self.user, name=value)
         except Project.DoesNotExist:
@@ -133,6 +153,7 @@ class SessionProjectField(forms.ModelChoiceField):
 
 
 class SessionProjectWidget(forms.TextInput):
+    """The widget used to take in a project name. Basically just a textbox."""
 
     def __init__(self, *args, **kwargs):
         forms.TextInput.__init__(self, *args, **kwargs)
@@ -140,6 +161,10 @@ class SessionProjectWidget(forms.TextInput):
 
 
     def format_value(self, value):
+        """If the field holds a number, it's an ID and that project should be
+        rendered. If the field holds a string, it's a name and that project
+        for that user should be rendered (unless it's just spaces)."""
+
         if value:
             if isinstance(value, int):
                 return Project.objects.get(id=value)
@@ -158,7 +183,7 @@ class SessionForm(forms.ModelForm):
         exclude = []
 
         field_classes = {
-         "start": DateTimeField, "end": DateTimeField,
+         "start": forms.SplitDateTimeField, "end": forms.SplitDateTimeField,
          "breaks": SessionBreaksField, "project": SessionProjectField
         }
 
@@ -181,18 +206,19 @@ class SessionForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         self.fields["start"].widget.instance = self.instance.id is not None
         self.fields["end"].widget.instance = self.instance.id is not None
-
         self.fields["start"].initial = timezone.localtime()
         self.fields["end"].initial = timezone.localtime()
+        self.fields["timezone"].widget.user = self.user
         self.fields["project"].user = self.user
         self.fields["project"].widget.user = self.user
-        self.fields["timezone"].widget.user = self.user
         if date:
             self.fields["start"].initial = datetime(date.year, date.month, date.day)
             self.fields["end"].initial = datetime(date.year, date.month, date.day)
 
 
     def clean(self):
+        """Checks that the times and break times mesh well together."""
+        
         forms.ModelForm.clean(self)
         if "start" in self.cleaned_data and "end" in self.cleaned_data:
             if self.cleaned_data["end"] < self.cleaned_data["start"]:
