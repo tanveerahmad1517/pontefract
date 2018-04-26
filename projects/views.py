@@ -10,11 +10,8 @@ from projects.forms import SessionForm, ProjectForm
 from projects.models import Session, Project
 
 
-
-
-
 @login_required(login_url="/", redirect_field_name=None)
-def time_month(request, year, month):
+def month(request, year, month):
     month_date, first_month = date(year, month, 1), request.user.first_month()
     if not first_month or month_date < first_month:
         raise Http404
@@ -37,7 +34,7 @@ def time_month(request, year, month):
 
 
 @login_required(login_url="/", redirect_field_name=None)
-def time_projects(request, pk):
+def project(request, pk):
     try:
         project = Project.objects.get(id=pk, user=request.user)
     except Project.DoesNotExist: raise Http404
