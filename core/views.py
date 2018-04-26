@@ -45,7 +45,6 @@ def home(request):
         if form.is_valid():
             form.save(request.user)
             return redirect("/")
-    print(request.now.date())
     day = Session.from_day(request.user, request.now.date())
     return render(request, "home.html", {
      "form": form,
@@ -61,8 +60,10 @@ def login(request):
     form = LoginForm()
     if request.method == "POST":
         form = LoginForm(request.POST)
-        valid = form.validate_and_login(request)
-        if valid: return redirect("/")
+        user = form.validate_credentials()
+        if user:
+            auth.login(request, user)
+            return redirect("/")
     return render(request, "login.html", {"form": form})
 
 
@@ -90,8 +91,10 @@ def account_deletion(request):
     form = LoginForm()
     if request.method == "POST":
         form = LoginForm(request.POST)
-        valid = form.validate_and_delete(request)
-        if valid: return redirect("/")
+        user = form.validate_credentials(user_to_match=request.user)
+        if user:
+            user.delete()
+            return redirect("/")
     return render(request, "account-deletion.html", {"form": form})
 
 

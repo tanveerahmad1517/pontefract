@@ -37,6 +37,18 @@ class SignupFormTests(DjangoTest):
         self.assertTrue(widget.is_required)
 
 
+    def test_password_1_widget(self):
+        widget = SignupForm().fields["password"].widget
+        self.assertEqual(widget.input_type, "password")
+        self.assertEqual(widget.attrs, {"placeholder": "Password"})
+
+
+    def test_password_2(self):
+        widget = SignupForm().fields["confirm_password"].widget
+        self.assertEqual(widget.input_type, "password")
+        self.assertEqual(widget.attrs, {"placeholder": "Confirm Password"})
+
+
     def test_username_validation(self):
         username = LoginForm().fields["username"]
         self.assertTrue(username.required)
@@ -61,24 +73,12 @@ class SignupFormTests(DjangoTest):
                 timezone.clean(invalid)
 
 
-    def test_password_1_widget(self):
-        widget = SignupForm().fields["password"].widget
-        self.assertEqual(widget.input_type, "password")
-        self.assertEqual(widget.attrs, {"placeholder": "Password"})
-
-
     def test_password_1_validation(self):
         password = SignupForm().fields["password"]
         self.assertTrue(password.required)
-        for invalid in ("", None, "a\x00b"):
+        for invalid in ("", None, "1\x003456789", "1234567"):
             with self.assertRaises(ValidationError):
                 password.clean(invalid)
-
-
-    def test_password_2(self):
-        widget = SignupForm().fields["confirm_password"].widget
-        self.assertEqual(widget.input_type, "password")
-        self.assertEqual(widget.attrs, {"placeholder": "Confirm Password"})
 
 
     def test_password_2_validation(self):
@@ -122,7 +122,9 @@ class SignupFormTests(DjangoTest):
          "password": "p", "confirm_password": "p"
         }
         returned = form.save()
-        mock_create.assert_called_with(username="u", email="E@X.com", timezone="UTC")
+        mock_create.assert_called_with(
+         username="u", email="E@X.com", timezone="UTC"
+        )
         user.set_password.assert_called_with("p")
         user.save.assert_called_with()
         self.assertIs(returned, user)
@@ -164,44 +166,53 @@ class LoginFormTests(DjangoTest):
 
     @patch("core.forms.LoginForm.is_valid")
     @patch("core.forms.authenticate")
-    @patch("core.forms.login")
-    def test_can_validate_and_login(self, mock_login, mock_auth, mock_valid):
+    def test_can_validate_credentials(self, mock_auth, mock_valid):
         mock_valid.return_value = True
         request = Mock()
         mock_auth.return_value = "USER"
         form = LoginForm(data={"a": 1, "b": 2})
         form.cleaned_data = {"username": "u", "password": "p"}
-        self.assertTrue(form.validate_and_login(request))
+        self.assertEqual(form.validate_credentials(), "USER")
         mock_valid.assert_called_with()
         mock_auth.assert_called_with(username="u", password="p")
-        mock_login.assert_called_with(request, "USER")
 
 
     @patch("core.forms.LoginForm.is_valid")
     @patch("core.forms.authenticate")
-    @patch("core.forms.login")
-    def test_can_reject_validation(self, mock_login, mock_auth, mock_valid):
+    def test_can_reject_validation(self, mock_auth, mock_valid):
         mock_valid.return_value = False
         request = Mock()
         form = LoginForm(data={"a": 1, "b": 2})
-        self.assertFalse(form.validate_and_login(request))
+        self.assertFalse(form.validate_credentials())
         mock_valid.assert_called_with()
         self.assertFalse(mock_auth.called)
-        self.assertFalse(mock_login.called)
 
 
     @patch("core.forms.LoginForm.is_valid")
     @patch("core.forms.authenticate")
-    @patch("core.forms.login")
     @patch("core.forms.LoginForm.add_error")
-    def test_can_reject_credentials(self, mock_add, mock_login, mock_auth, mock_valid):
+    def test_can_reject_credentials(self, mock_add, mock_auth, mock_valid):
         mock_valid.return_value = True
         request = Mock()
         mock_auth.return_value = None
         form = LoginForm(data={"a": 1, "b": 2})
         form.cleaned_data = {"username": "u", "password": "p"}
-        self.assertFalse(form.validate_and_login(request))
+        self.assertFalse(form.validate_credentials())
         mock_valid.assert_called_with()
         mock_auth.assert_called_with(username="u", password="p")
-        self.assertFalse(mock_login.called)
+        mock_add.assert_called_with("username", "Invalid credentials")
+
+
+    @patch("core.forms.LoginForm.is_valid")
+    @patch("core.forms.authenticate")
+    @patch("core.forms.LoginForm.add_error")
+    def test_can_reject_credentials_on_user(self, mock_add, mock_auth, mock_valid):
+        mock_valid.return_value = True
+        request = Mock()
+        mock_auth.return_value = "USER"
+        form = LoginForm(data={"a": 1, "b": 2})
+        form.cleaned_data = {"username": "u", "password": "p"}
+        self.assertFalse(form.validate_credentials(user_to_match="USER2"))
+        mock_valid.assert_called_with()
+        mock_auth.assert_called_with(username="u", password="p")
         mock_add.assert_called_with("username", "Invalid credentials")

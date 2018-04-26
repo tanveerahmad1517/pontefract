@@ -37,10 +37,11 @@ class SignupForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
-        self.fields["password"].validators.append(MinLengthValidator(8, message="Password must be at least 8 characters"))
-        del self.fields["username"].widget.attrs["maxlength"]
-        del self.fields["email"].widget.attrs["maxlength"]
-        del self.fields["password"].widget.attrs["maxlength"]
+        self.fields["password"].validators.append(
+         MinLengthValidator(8, message="Password must be at least 8 characters")
+        )
+        for name in ("username", "email", "password"):
+            del self.fields[name].widget.attrs["maxlength"]
 
 
     def clean(self):
@@ -70,7 +71,7 @@ class SignupForm(forms.ModelForm):
 
 
 class LoginForm(forms.Form):
-    """The form users use to log into their account."""
+    """The form users use to validate who they are."""
 
     username_widget = forms.TextInput(attrs={
      "placeholder": "Username", "autocomplete": "off"
@@ -80,35 +81,24 @@ class LoginForm(forms.Form):
     username = forms.CharField(widget=username_widget)
     password = forms.CharField(widget=password_widget)
 
-    def validate_and_login(self, request):
-        """Validates the form using full_clean, and if it's valid, tries to log
-        in using the credentials. If that succeeds, ``True`` is returned.
+
+    def validate_credentials(self, user_to_match=None):
+        """Validates the form using full_clean, and if it's valid, tries to
+        authenticate the credentials. If that succeeds, ``True`` is returned.
 
         If the form is invalid, or the credentials incorrect, ``False`` is
-        returned."""
+        returned.
+
+        You can also supply a user if you want to also check that the
+        credentials are for a given user."""
 
         if self.is_valid():
             user = authenticate(
              username=self.cleaned_data.get("username"),
              password=self.cleaned_data.get("password")
             )
-            if user:
-                login(request, user)
-                return True
-            else:
-                self.add_error("username", "Invalid credentials")
-        return False
-
-
-    def validate_and_delete(self, request):
-        if self.is_valid():
-            user = authenticate(
-             username=self.cleaned_data.get("username"),
-             password=self.cleaned_data.get("password")
-            )
-            if user and user.username == request.user.username:
-                user.delete()
-                return True
+            if user and (not user_to_match or user_to_match == user):
+                return user
             else:
                 self.add_error("username", "Invalid credentials")
         return False
