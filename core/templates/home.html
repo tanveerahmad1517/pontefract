@@ -1,6 +1,7 @@
 {% extends "user-base.html" %}
 {% block css %}
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="/static/css/time-tracking.css">
 {% endblock %}
 {% block scripts %}
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -11,9 +12,9 @@
 <div id="time-tracking">
     <h2>Time Tracking</h2>
     {% include "day-sessions.html" %}
-    <a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link">See Yesterday</a>
-    {% if user.first_month %}<a href="/time/{{ request.now|date:'Y/m/'}}" class="month-link">See work done this month</a>{% endif %}
-    {% if user.project_set.all %}<a href="/projects/" class="projects-link">See all projects</a>{% endif %}
+    <a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link block">See Yesterday</a>
+    {% if user.first_month %}<a href="/time/{{ request.now|date:'Y/m/'}}" class="month-link block">See work done this month</a>{% endif %}
+    {% if user.project_set.all %}<a href="/projects/" class="projects-link block">See all projects</a>{% endif %}
     {% include "session-form.html" %}
 </div>
 {% endblock %}

@@ -1,5 +1,5 @@
-<form method="POST">
-
+<form method="POST" class="session-form">
+<h3>Add Session</h3>
  <script>
   $( function() {
     var availableTags = [{% for t in user.project_set.all %}{% if not forloop.first %}, {% endif %}'{{ t }}'{% endfor %}];
@@ -38,5 +38,5 @@
     {{ form.project }}
 
     {% csrf_token %}
-    <input type="submit">
+    <input type="submit" tabindex="7" value="Save">
 </form>

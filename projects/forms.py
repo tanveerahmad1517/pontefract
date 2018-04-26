@@ -64,7 +64,7 @@ class DateTimeWidget(forms.SplitDateTimeWidget):
 
     def __init__(self, *args, **kwargs):
         forms.SplitDateTimeWidget.__init__(self, *args, **kwargs)
-        self.widgets = (DateWidget(), TimeWidget())
+        self.widgets = (DateWidget(self.widgets[0].attrs), TimeWidget(self.widgets[1].attrs))
         self.instance = False
 
 
@@ -78,7 +78,6 @@ class DateTimeField(forms.SplitDateTimeField):
 
     def __init__(self, *args, **kwargs):
         forms.SplitDateTimeField.__init__(self, *args, **kwargs)
-        self.initial = timezone.localtime()
 
 
 
@@ -98,6 +97,7 @@ class SessionBreaksField(forms.IntegerField):
 
     def __init__(self, *args, **kwargs):
         forms.IntegerField.__init__(self, *args, **kwargs)
+        self.initial = None
         self.required = False
         self.validators.append(MinValueValidator(
          0, message="The break must be positive."
@@ -181,6 +181,9 @@ class SessionForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         self.fields["start"].widget.instance = self.instance.id is not None
         self.fields["end"].widget.instance = self.instance.id is not None
+
+        self.fields["start"].initial = timezone.localtime()
+        self.fields["end"].initial = timezone.localtime()
         self.fields["project"].user = self.user
         self.fields["project"].widget.user = self.user
         self.fields["timezone"].widget.user = self.user

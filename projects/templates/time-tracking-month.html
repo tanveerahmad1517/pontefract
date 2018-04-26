@@ -1,17 +1,20 @@
 {% extends "user-base.html" %}
 {% block title %}{{ month|date:'F Y'}}{% endblock %}
 
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/time-tracking.css">
+{% endblock %}
 
 {% block main %}
 
 <h1>{{ month|date:'F Y'}}</h1>
 
 {% if previous %}
-<a id="previous-month" href="/time/{{ previous|date:'Y/m/'}}">{{ previous|date:'F Y'}}</a>
+<a id="previous-month" class="block" href="/time/{{ previous|date:'Y/m/'}}">{{ previous|date:'F Y'}}</a>
 {% endif %}
 
 {% if next %}
-<a id="next-month" href="/time/{{ next|date:'Y/m/'}}">{{ next|date:'F Y'}}</a>
+<a id="next-month" class="block" href="/time/{{ next|date:'Y/m/'}}">{{ next|date:'F Y'}}</a>
 {% endif %}
 
 {% for day in days %}
