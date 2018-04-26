@@ -88,7 +88,7 @@ class TimeTrackingTests(FunctionalTest):
 
     def check_day_report(self, div, total, sessions, date=None):
         if date:
-            self.assertEqual(div.find_element_by_class_name("date").text, date)
+            self.assertIn(date, div.find_element_by_class_name("date").text)
         self.assertIn(total, div.find_element_by_class_name("total-time").text)
         session_divs = div.find_elements_by_class_name("session")
         self.assertEqual(len(sessions), len(session_divs))
@@ -497,7 +497,7 @@ class SessionViewingTests(TimeTrackingTests):
          ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
          ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
          ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27th October 1962")
+        ], date="27 October, 1962")
 
         # They can view the work done in October
         link = time.find_element_by_class_name("month-link")
@@ -515,38 +515,38 @@ class SessionViewingTests(TimeTrackingTests):
                  ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
                  ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
                  ["23:45 - 00:30", "Reading", "45 minutes", None]
-                ], date="27th October 1962")
+                ], date="27 October, 1962")
             elif index == 1:
                 self.check_day_report(day, "6 hours", [
                  ["06:20 - 07:40", "Running", "1 hour", None],
                  ["17:20 - 17:40", "Archery", "20 minutes", None],
                  ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-                ], date="26th October 1962")
+                ], date="26 October, 1962")
             elif index == 7:
                 self.check_day_report(day, "8 hours", [
                  ["09:00 - 17:00", "Project Ultra", "8 hours", None],
-                ], date="20th October 1962")
+                ], date="20 October, 1962")
             elif index == 11:
                 self.check_day_report(day, "12 hours", [
                  ["09:00 - 17:00", "Project Ultra", "8 hours", None],
                  ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-                ], date="16th October 1962")
+                ], date="16 October, 1962")
             elif index == 15:
                 self.check_day_report(day, "12 hours", [
                  ["09:00 - 17:00", "Project Ultra", "8 hours", None],
                  ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-                ], date="12th October 1962")
+                ], date="12 October, 1962")
             elif index == 19:
                 self.check_day_report(day, "12 hours", [
                  ["09:00 - 17:00", "Project Ultra", "8 hours", None],
                  ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-                ], date="8th October 1962")
+                ], date="8 October, 1962")
             elif index == 24:
                 self.check_day_report(day, "6 hours, 20 minutes", [
                  ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
                  ["17:20 - 17:40", "Archery", "20 minutes", None],
                  ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-                ], date="3rd October 1962")
+                ], date="3 October, 1962")
             else:
                 self.check_day_report(day, "0 minutes", [])
 
@@ -566,7 +566,7 @@ class SessionViewingTests(TimeTrackingTests):
                 ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
                 ["17:20 - 17:40", "Archery", "20 minutes", None],
                 ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-                ], date="30th September 1962")
+                ], date="30 September, 1962")
             else:
                 self.check_day_report(day, "0 minutes", [])
         previous = self.browser.find_element_by_id("previous-month")
@@ -618,12 +618,12 @@ class SessionViewingTests(TimeTrackingTests):
                 ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
                 ["17:20 - 17:40", "Archery", "20 minutes", None],
                 ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-                ], date="31st March 1962")
+                ], date="31 March, 1962")
             elif index == 28:
                 self.check_day_report(day, "1 hour, 40 minutes", [
                 ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
                 ["17:20 - 17:40", "Archery", "20 minutes", None],
-                ], date="3rd March 1962")
+                ], date="3 March, 1962")
             else:
                 self.check_day_report(day, "0 minutes", [])
         previous = self.browser.find_element_by_id("previous-month")
@@ -652,7 +652,7 @@ class SessionViewingTests(TimeTrackingTests):
                 self.check_day_report(day, "1 hour, 40 minutes", [
                 ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
                 ["17:20 - 17:40", "Archery", "20 minutes", None],
-                ], date="3rd December 1961")
+                ], date="3 December, 1961")
             else:
                 self.check_day_report(day, "0 minutes", [])
         with self.assertRaises(self.NoElement):
@@ -699,34 +699,34 @@ class SessionViewingTests(TimeTrackingTests):
         self.assertEqual(len(days), 9)
         self.check_day_report(days[0], "15 minutes", [
          ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
-        ], date="27th October 1962")
+        ], date="27 October, 1962")
         self.check_day_report(days[1], "4 hours, 40 minutes", [
          ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-        ], date="26th October 1962")
+        ], date="26 October, 1962")
         self.check_day_report(days[2], "8 hours", [
          ["09:00 - 17:00", "Project Ultra", "8 hours", None],
-        ], date="20th October 1962")
+        ], date="20 October, 1962")
         self.check_day_report(days[3], "12 hours", [
          ["09:00 - 17:00", "Project Ultra", "8 hours", None],
          ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-        ], date="16th October 1962")
+        ], date="16 October, 1962")
         self.check_day_report(days[4], "12 hours", [
          ["09:00 - 17:00", "Project Ultra", "8 hours", None],
          ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-        ], date="12th October 1962")
+        ], date="12 October, 1962")
         self.check_day_report(days[5], "12 hours", [
          ["09:00 - 17:00", "Project Ultra", "8 hours", None],
          ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-        ], date="8th October 1962")
+        ], date="8 October, 1962")
         self.check_day_report(days[6], "4 hours, 40 minutes", [
          ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-        ], date="3rd October 1962")
+        ], date="3 October, 1962")
         self.check_day_report(days[7], "4 hours, 40 minutes", [
          ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-         ], date="30th September 1962")
+         ], date="30 September, 1962")
         self.check_day_report(days[8], "4 hours, 40 minutes", [
          ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-        ], date="31st March 1962")
+        ], date="31 March, 1962")
 
 
     def test_project_view_404(self):
@@ -760,7 +760,7 @@ class SessionViewingTests(TimeTrackingTests):
         total_time = projects[0].find_element_by_class_name("total-time")
         self.assertIn("2 hours", total_time.text)
         last_done = projects[0].find_element_by_class_name("last-done")
-        self.assertIn("26th October 1962", last_done.text)
+        self.assertIn("26 October, 1962", last_done.text)
         self.click(h31.find_element_by_tag_name("a"))
         self.check_page("/projects/{}/".format(self.archery_id))
         self.browser.back()
@@ -784,20 +784,20 @@ class SessionViewingTests(TimeTrackingTests):
          ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
          ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
          ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27th October 1962")
+        ], date="27 October, 1962")
 
         # They can view the work done yesterday
         link = time.find_element_by_class_name("yesterday-link")
         self.click(link)
         self.check_page("/time/1962/10/26/")
-        self.check_title("26th October 1962")
-        self.check_h1("26th October 1962")
+        self.check_title("26 October, 1962")
+        self.check_h1("26 October, 1962")
         day = self.browser.find_element_by_class_name("day-time-tracking")
         self.check_day_report(day, "6 hours", [
          ["06:20 - 07:40", "Running", "1 hour", None],
          ["17:20 - 17:40", "Archery", "20 minutes", None],
          ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-        ], date="26th October 1962")
+        ], date="26 October, 1962")
 
         # There is a form for adding to that day
         form = self.browser.find_elements_by_tag_name("form")[1]
@@ -814,15 +814,15 @@ class SessionViewingTests(TimeTrackingTests):
         link = self.browser.find_element_by_class_name("yesterday-link")
         self.click(link)
         self.check_page("/time/1962/10/25/")
-        self.check_title("25th October 1962")
-        self.check_h1("25th October 1962")
+        self.check_title("25 October, 1962")
+        self.check_h1("25 October, 1962")
         day = self.browser.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(day, "0 minutes", [], date="25th October 1962")
+        self.check_day_report(day, "0 minutes", [], date="25 October, 1962")
         link = self.browser.find_element_by_class_name("tomorrow-link")
         self.click(link)
         self.check_page("/time/1962/10/26/")
-        self.check_title("26th October 1962")
-        self.check_h1("26th October 1962")
+        self.check_title("26 October, 1962")
+        self.check_h1("26 October, 1962")
         link = self.browser.find_element_by_class_name("tomorrow-link")
         self.click(link)
         self.check_page("/")
@@ -905,7 +905,7 @@ class SessionEditingTests(TimeTrackingTests):
          ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
          ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
          ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27th October 1962")
+        ], date="27 October, 1962")
 
         # They go to edit the excessive reading
         row = today.find_elements_by_tag_name("tr")[3]
@@ -935,7 +935,7 @@ class SessionEditingTests(TimeTrackingTests):
         day = self.browser.find_element_by_class_name("day-time-tracking")
         self.check_day_report(day, "2 hours, 30 minutes", [
          ["23:00 - 02:00", "Base Jumping", "2 hours, 30 minutes", "30 minutes"],
-        ], date="15th October 1962")
+        ], date="15 October, 1962")
 
 
     @freeze_time("1962-10-27")
@@ -950,7 +950,7 @@ class SessionEditingTests(TimeTrackingTests):
          ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
          ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
          ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27th October 1962")
+        ], date="27 October, 1962")
 
         # They go to edit the excessive reading
         row = today.find_elements_by_tag_name("tr")[3]
@@ -980,7 +980,7 @@ class SessionEditingTests(TimeTrackingTests):
         day = self.browser.find_element_by_class_name("day-time-tracking")
         self.check_day_report(day, "2 hours, 30 minutes", [
          ["23:00 - 02:00", "Project Ultra", "2 hours, 30 minutes", "30 minutes"],
-        ], date="15th April 1961")
+        ], date="15 April, 1961")
 
 
     def test_session_editing_view_404(self):
@@ -1006,7 +1006,7 @@ class SessionEditingTests(TimeTrackingTests):
          ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
          ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
          ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27th October 1962")
+        ], date="27 October, 1962")
 
         # They go to edit the excessive reading
         row = today.find_elements_by_tag_name("tr")[3]
@@ -1050,7 +1050,7 @@ class SessionEditingTests(TimeTrackingTests):
          ["11:00 - 11:30", "Reading", "30 minutes", None],
          ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
          ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27th October 1962")
+        ], date="27 October, 1962")
 
 
     def test_session_deletion_view_404(self):

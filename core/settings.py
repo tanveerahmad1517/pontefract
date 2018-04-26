@@ -35,7 +35,7 @@ AUTH_USER_MODEL = "core.User"
 TIME_ZONE = "UTC"
 USE_TZ = True
 TIME_FORMAT = "H:i"
-DATE_FORMAT = "jS F Y"
+DATE_FORMAT = "l j F, Y"
 TEMPLATES = [{
  "BACKEND": "django.template.backends.django.DjangoTemplates",
  "APP_DIRS": True,
