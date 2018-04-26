@@ -12,6 +12,7 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True)
     timezone = TimeZoneField(default="UTC")
+    
 
     def first_month(self):
         """What was the first month that the user has sessions for?"""

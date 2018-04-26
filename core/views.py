@@ -45,6 +45,7 @@ def home(request):
         if form.is_valid():
             form.save(request.user)
             return redirect("/")
+    print(request.now.date())
     day = Session.from_day(request.user, request.now.date())
     return render(request, "home.html", {
      "form": form,

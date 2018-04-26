@@ -17,7 +17,7 @@ class Project(models.Model):
         unique_together = (("name", "user"),)
         ordering = [models.functions.Lower("name")]
 
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=255)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
@@ -50,6 +50,7 @@ class Session(models.Model):
     timezone = TimeZoneField()
     breaks = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
 
     def local_start(self):
         """Even when timezone awareness is switched on, the start property just
@@ -100,7 +101,10 @@ class Session(models.Model):
     @classmethod
     def from_day(cls, user, day):
         """Gets all the user's sessions from a given day, as a
-        (date, duration_string, sessions) tuple."""
+        (date, duration_string, sessions) tuple. The day will just be an
+        ordinary date object with no timezone awareness, and should be the date
+        in the user's timezone, as when the database is searched the dates there
+        will be converted to that timezone."""
 
         sessions = cls.objects.filter(
          project__user=user, start__year=day.year,

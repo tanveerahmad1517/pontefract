@@ -19,8 +19,8 @@ class ProjectTests(DjangoTest):
         project.full_clean()
 
 
-    def test_project_name_must_be_less_than_256(self):
-        project = Project(name="." * 257, user=self.user)
+    def test_project_name_must_be_less_than_255(self):
+        project = Project(name="." * 256, user=self.user)
         with self.assertRaises(ValidationError):
             project.full_clean()
 
@@ -95,14 +95,16 @@ class SessionTests(DjangoTest):
 
     def test_can_create_session(self):
         session = Session(
-         start=self.dt1, end=self.dt2, breaks=5, project=self.project
+         start=self.dt1, end=self.dt2, breaks=5, project=self.project,
+         timezone=pytz.timezone("Pacific/Auckland")
         )
         session.full_clean(), session.save()
 
 
     def test_default_break_is_0(self):
         session = Session(
-         start=self.dt1, end=self.dt2, project=self.project
+         start=self.dt1, end=self.dt2, project=self.project,
+         timezone=pytz.timezone("Pacific/Auckland")
         )
         session.full_clean(), session.save()
         self.assertEqual(session.breaks, 0)
@@ -110,7 +112,8 @@ class SessionTests(DjangoTest):
 
     def test_breaks_must_be_positive(self):
         session = Session(
-         start=self.dt1, end=self.dt2, breaks=-5, project=self.project
+         start=self.dt1, end=self.dt2, breaks=-5, project=self.project,
+         timezone=pytz.timezone("Pacific/Auckland")
         )
         with self.assertRaises(ValidationError): session.full_clean()
 
@@ -119,7 +122,8 @@ class SessionTests(DjangoTest):
         session = Session(
          start=datetime(2008, 1, 1, 12, 0, tzinfo=pytz.UTC),
          end=datetime(2008, 1, 1, 12, 30, tzinfo=pytz.UTC),
-         breaks=5, project=self.project
+         breaks=5, project=self.project,
+         timezone=pytz.timezone("Pacific/Auckland")
         )
         timezone.activate(pytz.timezone("Pacific/Auckland"))
         self.assertEqual(str(session.start.tzinfo), "UTC")
@@ -130,25 +134,22 @@ class SessionTests(DjangoTest):
         session = Session(
          start=datetime(2008, 1, 1, 12, 0, tzinfo=pytz.UTC),
          end=datetime(2008, 1, 1, 12, 30, tzinfo=pytz.UTC),
-         breaks=5, project=self.project
+         breaks=5, project=self.project,
+         timezone=pytz.timezone("Pacific/Auckland")
         )
         timezone.activate(pytz.timezone("Pacific/Auckland"))
         self.assertEqual(str(session.end.tzinfo), "UTC")
         self.assertEqual(str(session.local_end().tzinfo), "Pacific/Auckland")
 
 
-    @patch("projects.models.Session.start")
-    @patch("projects.models.Session.end")
-    def test_can_get_duration(self, mock_end, mock_start):
+    def test_can_get_duration(self):
         session = Session(
          start=self.dt1, end=self.dt2, breaks=5, project=self.project
         )
         self.assertEqual(session.duration(), 10)
 
 
-    @patch("projects.models.Session.start")
-    @patch("projects.models.Session.end")
-    def test_can_get_long_duration(self, mock_end, mock_start):
+    def test_can_get_long_duration(self):
         session = Session(
          start=self.dt1, end=self.dt3, breaks=5, project=self.project
         )
@@ -175,23 +176,25 @@ class SessionTests(DjangoTest):
         self.assertEqual(Session.duration_string(s1, s2, s3), "2 hours, 10 minutes")
 
 
-
-    @patch("projects.models.Session.objects.filter")
     @patch("projects.models.Session.duration_string")
-    def test_can_get_sessions_from_day(self, mock_str, mock_filter):
-        filtered = Mock()
-        filtered.order_by.return_value = [10, 20, 30, 40]
-        mock_filter.return_value = filtered
-        mock_str.return_value = "STRING"
-        sessions = Session.from_day("USER", date(1990, 9, 28))
-        self.assertEqual(sessions, (
-         date(1990, 9, 28), "STRING", [10, 20, 30, 40]
-        ))
-        mock_filter.assert_called_with(
-         project__user="USER", start__year=1990, start__month=9, start__day=28
-        )
-        filtered.order_by.assert_called_with("start")
-        mock_str.assert_called_with(10, 20, 30, 40)
+    def test_can_get_sessions_from_day(self, mock_str):
+        mock_str.return_value = "DURATION"
+        for hour in (10, 13):
+            Session.objects.create(
+             start=datetime(
+              2007, 1, 10, hour, 5, 0, tzinfo=pytz.timezone("Pacific/Auckland")
+             ), end=self.dt3, project=self.project,
+             timezone=pytz.timezone("Pacific/Auckland")
+            )
+        sessions = Session.from_day(self.user, date(2007, 1, 9))
+        self.assertEqual(sessions[0], date(2007, 1, 9))
+        self.assertEqual(sessions[1], "DURATION")
+        self.assertEqual(list(sessions[2]), [Session.objects.first()])
+        sessions = Session.from_day(self.user, date(2007, 1, 10))
+        self.assertEqual(list(sessions[2]), [Session.objects.last()])
+        timezone.activate(pytz.timezone("Pacific/Auckland"))
+        sessions = Session.from_day(self.user, date(2007, 1, 10))
+        self.assertEqual(list(sessions[2]), list(Session.objects.all()))
 
 
     @patch("projects.models.Session.objects.filter")
