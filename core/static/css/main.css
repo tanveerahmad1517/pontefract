@@ -4,6 +4,7 @@ html {
 
 body {
     margin: 0px;
+    box
 }
 
 .block {
@@ -126,6 +127,7 @@ input[type=submit] {
 
 .datetime {
     text-align: left;
+    display: flex;
 }
 
 .datetime input {
