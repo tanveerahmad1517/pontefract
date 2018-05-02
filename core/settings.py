@@ -1,6 +1,9 @@
 import os
 from .secrets import SECRET_KEY, BASE_DIR, DATABASES
 
+VERSION = "0.1.1"
+
+
 ALLOWED_HOSTS = []
 DEBUG = True
 
