@@ -9,10 +9,11 @@ $(window).on("resize", function() {
 
 $(document).ready(function() {
     $("#mobile-menu-icon").on("click", function() {
+        var SPEED = 100;
         if ($("#nav-links").is(":hidden")) {
-            $("#nav-links").slideToggle("fast");
+            $("#nav-links").slideToggle(SPEED);
         } else {
-            $("#nav-links").slideToggle("fast", function() {
+            $("#nav-links").slideToggle(SPEED, function() {
                 $("#nav-links").removeAttr("style");
             });
         }

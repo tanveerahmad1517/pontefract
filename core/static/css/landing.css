@@ -10,7 +10,7 @@ html {
 }
 
 h1 {
-    font-family: Shrikhand;
+    font-family: "Patua One";
     margin-top: 0px;
     padding-top: 50px;
     font-size: 190%;
@@ -74,7 +74,6 @@ form input[type=submit] {
 @media only screen and (min-width: 769px) {
     /* Small Desktop screens and up */
     h1 {
-        font-family: Shrikhand;
         font-size: 300%;
     }
 
