@@ -2,11 +2,12 @@
 {% block title %}{{ project.name }}{% endblock %}
 
 {% block css %}
+<link rel="stylesheet" href="/static/css/time.css">
 {% endblock %}
 
 {% block main %}
 
-<h1>{{ project.name }}</h1>
+<div class="time-tracking-title">{{ project.name }}</div>
 
 {% for day in days %}
 {% include "day-sessions.html" %}

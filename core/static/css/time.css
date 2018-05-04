@@ -107,11 +107,12 @@
     font-size: 150%;
 }
 
-.all-projects {
+.time-tracking-title {
     font-size: 240%;
     margin-bottom: 12px;
     padding: 30px;
     text-align: center;
+    margin-bottom: 20px;
 }
 
 
