@@ -1,5 +1,5 @@
 <form method="POST" class="session-form">
-<h3>Add Session</h3>
+<div class="form-title">Add Session</div>
  <script>
   $( function() {
     var availableTags = [{% for t in user.project_set.all %}{% if not forloop.first %}, {% endif %}'{{ t }}'{% endfor %}];

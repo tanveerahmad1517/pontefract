@@ -1,7 +1,7 @@
 {% extends "user-base.html" %}
 {% block css %}
+<link rel="stylesheet" href="/static/css/time.css">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<link rel="stylesheet" type="text/css" href="/static/css/time-tracking.css">
 {% endblock %}
 {% block scripts %}
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -10,11 +10,14 @@
 
 {% block main %}
 <div id="time-tracking">
-    <h2>Time Tracking</h2>
-    {% include "day-sessions.html" %}
-    <a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link block">See Yesterday</a>
-    {% if user.first_month %}<a href="/time/{{ request.now|date:'Y/m/'}}" class="month-link block">See work done this month</a>{% endif %}
-    {% if user.project_set.all %}<a href="/projects/" class="projects-link block">See all projects</a>{% endif %}
-    {% include "session-form.html" %}
+    <div id="time-tracking-today">
+        {% include "day-sessions.html" %}
+        <div class="time-tracking-nav-buttons">
+            <a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link">Yesterday</a>
+            {% if user.first_month %}<a href="/time/{{ request.now|date:'Y/m/'}}" class="month-link">This Month</a>{% endif %}
+        </div>
+    </div><div id="time-tracking-today-form">
+        {% include "session-form.html" %}
+    </div>
 </div>
 {% endblock %}

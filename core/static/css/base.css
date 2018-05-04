@@ -1,0 +1,105 @@
+html {
+    font-family: Montserrat;
+}
+
+body {
+    background-color: #e9ebee;
+    margin: 0px;
+}
+
+nav {
+    background-color: #6c5ce7;
+    color: #ffffff;
+    /*height: auto;*/
+    display: flex;
+    position: relative;
+}
+
+nav #logo a {
+    color: inherit;
+    display: inline;
+    font-family: "Patua One";
+    font-size: 200%;
+    line-height: 2;
+    margin-left: 30px;
+}
+
+nav #mobile-menu {
+    text-align: right;
+    flex-grow: 5;
+    font-size: 170%;
+    height: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 30px;
+}
+
+#mobile-menu-icon {
+    cursor: pointer;
+    padding-bottom: 6px;
+}
+
+nav #nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    padding-top: 10px;
+    background-color: inherit;
+}
+
+#nav-links a {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    padding: 12px;
+    color: inherit;
+    border-top: 1px solid #dddbef;
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+main {
+    padding: 12px;
+}
+
+main div {
+    background-color: #ffffff;
+}
+
+
+@media only screen and (min-width: 568px) {
+    /* iPad and up */
+
+    nav #mobile-menu {
+        display: none;
+    }
+
+    nav #nav-links {
+        display: flex;
+        position: inherit;
+        flex-grow: 5;
+        justify-content: flex-end;
+        align-items: center;
+        margin-right: 30px;
+        padding: 0px;
+    }
+
+    #nav-links a {
+        display: inline;
+        border: none;
+        text-align: center;
+        padding: 0px;
+        font-size: 110%;
+        margin-left: 20px;
+        margin-right: 20px;
+        background-color: inherit;
+    }
+
+}
+
+
+@media only screen and (min-width: 769px) {
+    /* Small Desktop screens and up */
+}

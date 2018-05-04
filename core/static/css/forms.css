@@ -1,0 +1,43 @@
+input {
+    display: block;
+    font-size: 110%;
+    padding: 11px;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid silver;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+.datetime input {
+    display: inline-block;
+}
+
+.session-form input[type=date] {
+  width: 60%;
+  border-right-width: 0px;
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
+.session-form input[type=time] {
+  width: 40%;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
+input[type=submit] {
+    background-color: #00b894;
+    color: #ffffff;
+    cursor: pointer;
+    border: none;
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.form-title {
+    font-size: 130%;
+    margin: 20px;
+    margin-left: 0px;
+}
