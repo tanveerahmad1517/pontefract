@@ -2,19 +2,27 @@
 {% block title %}{{ month|date:'F Y'}}{% endblock %}
 
 {% block css %}
+<link rel="stylesheet" href="/static/css/time.css">
 {% endblock %}
 
 {% block main %}
 
-<h1>{{ month|date:'F Y'}}</h1>
+<div class="month-overview">
+    <h1>{{ month|date:'F Y'}}</h1>
+    <div class="time-tracking-nav-buttons">
+        {% if previous %}
+        <a class="month-link" id="previous-month" class="block" href="/time/{{ previous|date:'Y/m/'}}">{{ previous|date:'F Y'}}</a>
+        {% else %}
+        <div style="width:100px"></div>
+        {% endif %}
 
-{% if previous %}
-<a id="previous-month" class="block" href="/time/{{ previous|date:'Y/m/'}}">{{ previous|date:'F Y'}}</a>
-{% endif %}
-
-{% if next %}
-<a id="next-month" class="block" href="/time/{{ next|date:'Y/m/'}}">{{ next|date:'F Y'}}</a>
-{% endif %}
+        {% if next %}
+        <a class="month-link" id="next-month" class="block" href="/time/{{ next|date:'Y/m/'}}">{{ next|date:'F Y'}}</a>
+        {% else %}
+        <div style="width:100px"></div>
+        {% endif %}
+    </div>
+</div>
 
 {% for day in days %}
 {% include "day-sessions.html" %}

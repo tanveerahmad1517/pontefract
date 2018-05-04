@@ -6,9 +6,11 @@
 
 .about-day {
     margin: 20px;
+    margin-top: 10px;
 }
 
 .date {
+    padding-top: 15px;
     font-size: 200%;
 }
 
@@ -79,6 +81,12 @@
 
 .session-form {
     padding: 12px;
+}
+
+.month-overview {
+    padding-top: 10px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 
