@@ -2,6 +2,7 @@
 {% block title %}{{ day.0 }}{% endblock %}
 
 {% block css %}
+<link rel="stylesheet" href="/static/css/time.css">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 {% endblock %}
 {% block scripts %}
@@ -10,15 +11,20 @@
 
 {% block main %}
 
-<h1>{{ day.0 }}</h1>
-
-{% include "day-sessions.html" %}
-<a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link block">See Yesterday</a>
-{% if tomorrow == request.now.date %}
-<a href="/" class="tomorrow-link">See Tomorrow</a>
-{% else %}
-<a href="/time/{{ tomorrow|date:'Y/m/d/'}}" class="tomorrow-link block">See Tomorrow</a>
-{% endif %}
-{% include "session-form.html" %}
+<div id="time-tracking">
+    <div id="time-tracking-today">
+        {% include "day-sessions.html" %}
+        <div class="time-tracking-nav-buttons">
+            <a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link">See Yesterday</a>
+            {% if tomorrow == request.now.date %}
+            <a href="/" class="tomorrow-link">See Tomorrow</a>
+            {% else %}
+            <a href="/time/{{ tomorrow|date:'Y/m/d/'}}" class="tomorrow-link">See Tomorrow</a>
+            {% endif %}
+        </div>
+    </div><div id="time-tracking-today-form">
+        {% include "session-form.html" %}
+    </div>
+</div>
 
 {% endblock %}

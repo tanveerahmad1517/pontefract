@@ -67,7 +67,7 @@
     padding: 20px;
 }
 
-.yesterday-link, .month-link {
+.yesterday-link, .month-link, .tomorrow-link {
     display: inline-block;
     width: auto;
     text-align: center;
