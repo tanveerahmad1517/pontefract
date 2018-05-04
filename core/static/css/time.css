@@ -89,11 +89,40 @@
     margin-bottom: 20px;
 }
 
+.projects {
+    display: grid;
+    grid-gap: 12px;
+    background-color: #e9ebee;
+}
+
+.project {
+    padding: 8px;
+    font-size: 70%;
+}
+
+.project .project-name {
+    display: block;
+    margin: 10px;
+    margin-left: 0px;
+    font-size: 150%;
+}
+
+.all-projects {
+    font-size: 240%;
+    margin-bottom: 12px;
+    padding: 30px;
+    text-align: center;
+}
+
 
 @media only screen and (min-width: 568px) {
     /* iPad and up */
     .day-time-tracking table tr {
         font-size: 80%;
+    }
+
+    .projects {
+        grid-template-columns: 1fr 1fr;
     }
 }
 
@@ -103,6 +132,10 @@
     /* Small Desktop screens and up */
     #time-tracking {
         grid-template-columns: auto 350px;
+    }
+
+    .projects {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
     }
 
 }
