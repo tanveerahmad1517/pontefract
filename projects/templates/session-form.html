@@ -1,13 +1,13 @@
 <form method="POST" class="session-form">
-<div class="form-title">Add Session</div>
- <script>
-  $( function() {
+    <div class="form-title">{% if form.instance.id %}Edit{% else %}Add{% endif %} Session</div>
+    <script>
+    $( function() {
     var availableTags = [{% for t in user.project_set.all %}{% if not forloop.first %}, {% endif %}'{{ t }}'{% endfor %}];
     $( "#id_project" ).autocomplete({
       source: availableTags, delay: 0
     });
-  } );
-  </script>
+    } );
+    </script>
 
     {{ form.start.label_tag }}
     <div class="datetime">

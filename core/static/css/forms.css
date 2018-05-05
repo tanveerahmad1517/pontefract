@@ -1,3 +1,12 @@
+form {
+    padding: 20px;
+}
+
+form.deletion-form {
+    text-align: center;
+    font-size: 130%;
+}
+
 input {
     display: block;
     font-size: 110%;
