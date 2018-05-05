@@ -3,6 +3,7 @@ from timezone_field import TimeZoneField
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from django.db import models
+from django.db.models import ExpressionWrapper, F, fields, Sum
 
 class User(AbstractUser):
     """The User model for pontefract. Email is required"""
@@ -26,4 +27,10 @@ class User(AbstractUser):
 
 
     def projects_by_time(self):
-        return sorted(self.project_set.all(), key=lambda p: sum([s.duration() for s in p.session_set.all()]), reverse=True)
+        """ Returns a list of all the user's projects, sorted by total time
+        spent on them. This requires a database query for every project, so can
+        get slightly long..."""
+
+        return sorted(self.project_set.all(), key=lambda p: sum(
+         [s.duration() for s in p.session_set.all()]
+        ), reverse=True)

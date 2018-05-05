@@ -22,7 +22,7 @@ class Project(models.Model):
 
 
     def __str__(self):
-        return self.name        
+        return self.name
 
 
     def total_time_string(self):

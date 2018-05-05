@@ -1,9 +1,11 @@
-from datetime import datetime
+from datetime import datetime, date
 from testarsenal import DjangoTest
 from unittest.mock import Mock, patch
+from mixer.backend.django import mixer
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from core.models import *
+from core.models import User
+from projects.models import Project, Session
 
 class UserTests(DjangoTest):
 
@@ -53,3 +55,20 @@ class UserTests(DjangoTest):
         mock_filter.return_value = []
         user = User(username="sam", email="sam@sam.sam", password="p")
         self.assertIsNone(user.first_month())
+
+
+    def test_can_get_user_projects_sorted_by_duration(self):
+        user = User(username="sam", email="sam@sam.sam", password="p")
+        user.save()
+        projects = [mixer.blend(Project, user=user) for _ in range(3)]
+        sessions = [mixer.blend(Session, project=projects[i // 3]) for i in range(9)]
+        print(sessions[0] is sessions[1])
+        for i, session in enumerate(sessions):
+            val = [3, 45, 5, 2, 7, 3, 23, 21, 100][i]
+            print(val)
+            session.duration = lambda s: val
+            print(sessions[0].duration())
+        print(sessions[1].duration())
+        self.assertEqual(
+         user.projects_by_time(), [projects[2], projects[0], projects[1]]
+        )
