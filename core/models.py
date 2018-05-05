@@ -12,7 +12,7 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True)
     timezone = TimeZoneField(default="UTC")
-    
+
 
     def first_month(self):
         """What was the first month that the user has sessions for?"""
@@ -23,3 +23,7 @@ class User(AbstractUser):
             first = sessions.order_by("start")[0]
             start = first.local_start()
             return date(start.year, start.month, 1)
+
+
+    def projects_by_time(self):
+        return sorted(self.project_set.all(), key=lambda p: sum([s.duration() for s in p.session_set.all()]), reverse=True)

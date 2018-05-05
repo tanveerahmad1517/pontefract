@@ -12,7 +12,7 @@
 <div class="time-tracking-title">All Projects</div>
 
 <div class="projects">
-    {% for project in user.project_set.all %}
+    {% for project in user.projects_by_time %}
     <div class="project">
         <a class="project-name" href="/projects/{{ project.id }}/">{{ project.name }}</a>
         <div class="total-time"><strong>Total</strong>: {{ project.total_time_string }}</div>
