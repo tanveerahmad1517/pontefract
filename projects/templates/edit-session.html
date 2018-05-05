@@ -12,9 +12,9 @@
 {% block title %}Edit Session{% endblock %}
 
 {% block main %}
-<div id="editing-form">
+<div class="max-500">
     {% include "session-form.html" %}
-    <div class="time-tracking-nav-buttons">
+    <div class="nav-buttons">
         <a href="/sessions/{{ form.instance.id }}/delete/" class="delete-link">Delete this session</a>
     </div>
 </div>

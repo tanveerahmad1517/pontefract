@@ -34,6 +34,15 @@ form {
     border-radius: 0px;
 }
 
+form input, form label, form select, form div {
+    font-size: 50%;
+}
+
+label {
+    text-align: left;
+    display: block;
+}
+
 h2 {
     margin: 0px;
     margin-top: 40px;

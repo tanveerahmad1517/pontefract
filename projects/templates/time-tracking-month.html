@@ -9,7 +9,7 @@
 
 <div class="month-overview">
     <h1>{{ month|date:'F Y'}}</h1>
-    <div class="time-tracking-nav-buttons">
+    <div class="nav-buttons">
         {% if previous %}
         <a class="month-link" id="previous-month" class="block" href="/time/{{ previous|date:'Y/m/'}}">{{ previous|date:'F Y'}}</a>
         {% else %}

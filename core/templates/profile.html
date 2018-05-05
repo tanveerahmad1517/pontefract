@@ -7,8 +7,7 @@
 
 {% block main %}
 
-<div id="user-profile">
-    <h1>{{ user.username }}</h1>
+<div id="user-profile" class="max-500">
 
     <form id="settings-form" method="POST">
     {{ form.timezone.label_tag }}
@@ -17,9 +16,9 @@
     <input type="submit" value="Save">
     </form>
 
-    <div id="account-deletion">
-      <a href="/delete-account/" class="delete-button">Delete Account</a>
-    </div>
+    <div id="account-deletion"><div class="nav-buttons">
+      <a href="/delete-account/" class="delete-link">Delete Account</a>
+    </div></div>
 </div>
 
 {% endblock %}

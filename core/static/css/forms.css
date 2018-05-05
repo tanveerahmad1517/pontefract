@@ -1,5 +1,6 @@
 form {
-    padding: 20px;
+    padding: 12px;
+    background-color: #ffffff;
 }
 
 form.deletion-form {
@@ -7,6 +8,9 @@ form.deletion-form {
     font-size: 130%;
 }
 
+label {
+    font-size: 80%;
+}
 input, select {
     display: block;
     font-size: 110%;
@@ -21,6 +25,10 @@ input, select {
 
 select {
     height: 40px;
+}
+
+.datetime {
+    display: flex;
 }
 
 .datetime input {
@@ -48,10 +56,52 @@ input[type=submit] {
     width: auto;
     margin-left: auto;
     margin-right: auto;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .form-title {
     font-size: 130%;
     margin: 20px;
     margin-left: 0px;
+}
+
+.nav-buttons {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 20px;
+}
+
+
+.yesterday-link, .month-link, .tomorrow-link, .delete-link, .back-link, .nav-buttons input[type=submit] {
+    display: inline-block;
+    width: auto;
+    text-align: center;
+    background-color: #00b894;
+    color: #ffffff;
+    padding: 11px;
+    border-radius: 4px;
+    margin: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+.delete-link, input[type=submit].delete-link {
+    padding: 6px;
+    background-color: #c0392b;
+    font-size: 90%;
+}
+
+.max-500 {
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.deletion-form {
+    padding: 25px;
+}
+
+.warning {
+    padding: 30px;
 }

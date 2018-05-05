@@ -1,4 +1,4 @@
-<form method="POST">
+<form method="POST" class="max-500">
     {% if "login" in request.path %}<h2>Sign in to your account</h2>{% endif %}
     {% if form.errors.username %}<div class="error" id="username-error">{{ form.errors.username.0 }}</div>{% endif %}
     {{ form.username }}

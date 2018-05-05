@@ -10,14 +10,15 @@
 
 {% block main %}
 
-<div id="editing-form">
-<form method="POST" class="deletion-form">
-  <div class="session-summary">{{ session.duration_string }} on project '{{ session.project }}'</div>
-  <p>Are you sure you want to delete this session?</p>
-  {% csrf_token %}
-  <div class="time-tracking-nav-buttons">
+<div class="max-500">
+    <form method="POST" class="deletion-form">
+      <div class="session-summary">{{ session.duration_string }} on project '{{ session.project }}'</div>
+      <p>Are you sure you want to delete this session?</p>
+      {% csrf_token %}
+    </form>
+    <div class="nav-buttons">
       <a class="back-link" href="/sessions/{{ session.id }}/">Go back</a>
       <input type="submit" value="Delete" class="delete-link">
-  </div>
+    </div>
 </div>
 {% endblock %}

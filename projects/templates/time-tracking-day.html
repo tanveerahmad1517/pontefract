@@ -14,7 +14,7 @@
 <div id="time-tracking">
     <div id="time-tracking-today">
         {% include "day-sessions.html" %}
-        <div class="time-tracking-nav-buttons">
+        <div class="nav-buttons">
             <a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link">See Yesterday</a>
             {% if tomorrow == request.now.date %}
             <a href="/" class="tomorrow-link">See Tomorrow</a>

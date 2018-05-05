@@ -1,18 +1,22 @@
 {% extends "user-base.html" %}
 {% block title %}Delete Account{% endblock %}
 
+{% block css %}
+<link rel="stylesheet" href="/static/css/forms.css">
+{% endblock %}
 
 {% block main %}
 
-<h1>Delete Account</h1>
 
-<div class="warning">
-  <div class="sure">Are you sure you want to delete your account?</div>
-  <p>This action can <strong>not</strong> be undone.</p>
-  <p>If you are sure, enter your login details again below, and hit 'Delete'.</p>
+<div class="max-500">
+    <div class="warning">
+      <div class="sure">Are you sure you want to delete your account?</div>
+      <p>This action can <strong>not</strong> be undone.</p>
+      <p>If you are sure, enter your login details again below, and hit 'Delete'.</p>
+    </div>
+
+    {% include "login-form.html" %}
 </div>
-
-{% include "login-form.html" %}
 
 
 {% endblock %}

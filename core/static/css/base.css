@@ -49,6 +49,13 @@ nav #nav-links {
     background-color: inherit;
 }
 
+#nav-links form {
+    display: inline;
+    padding: 0px;
+    margin: 0px;
+    background-color: inherit;
+}
+
 #nav-links a {
     display: block;
     text-align: center;

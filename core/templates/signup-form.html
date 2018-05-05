@@ -1,6 +1,6 @@
 <form method="POST">
     <script>var timezone = moment.tz.guess();</script>
-    <h2>Create an account</h2>
+    <div class="form-title">Create an account</div>
     {% if form.errors.username %}<div class="error" id="username-error">{{ form.errors.username.0 }}</div>{% endif %}
     {{ form.username.label_tag }}{{ form.username }}
 
