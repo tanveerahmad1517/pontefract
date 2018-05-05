@@ -17,6 +17,7 @@
         </div>
         {% endif %}
         {{ form.start }}
+        <svg id="now-start" class="now-button"><circle cx="9" cy="9" r="8" fill="#16a085" /></svg>
     </div>
 
     {{ form.end.label_tag }}
@@ -27,6 +28,7 @@
         </div>
         {% endif %}
         {{ form.end }}
+        <svg id="now-end" class="now-button"><circle cx="9" cy="9" r="8" fill="#16a085" /></svg>
     </div>
 
     {{ form.breaks.label_tag }}
@@ -42,7 +44,16 @@
     {{ form.project }}
 
     <script>
-
+        $("#now-start").click(function() {
+            var dt = new Date();
+            var time = dt.getHours() + ":" + dt.getMinutes()
+            $("#id_start_1").val(time);
+        });
+        $("#now-end").click(function() {
+            var dt = new Date();
+            var time = dt.getHours() + ":" + dt.getMinutes()
+            $("#id_end_1").val(time);
+        });
     </script>
 
     {% csrf_token %}
