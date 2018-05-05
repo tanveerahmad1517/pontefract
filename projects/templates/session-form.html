@@ -4,7 +4,7 @@
     $( function() {
     var availableTags = [{% for t in user.project_set.all %}{% if not forloop.first %}, {% endif %}'{{ t }}'{% endfor %}];
     $( "#id_project" ).autocomplete({
-      source: availableTags, delay: 0
+      source: availableTags, delay: 0, autoFocus: true
     });
     } );
     </script>
@@ -40,6 +40,10 @@
     <div class="error" id="project-error">{{ form.errors.project.0 }}</div>
     {% endif %}
     {{ form.project }}
+
+    <script>
+
+    </script>
 
     {% csrf_token %}
     <input type="submit" tabindex="7" value="Save">
