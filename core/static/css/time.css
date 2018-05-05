@@ -95,6 +95,11 @@
     margin-bottom: 20px;
 }
 
+.time-tracking-title .total-time {
+    font-size: 50%;
+    margin-top: 20px;
+}
+
 
 
 @media only screen and (min-width: 568px) {
