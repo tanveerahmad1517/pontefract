@@ -14,7 +14,7 @@ label {
 
 input, select {
     display: block;
-    font-size: 110%;
+    font-size: 100%;
     padding: 11px;
     width: 100%;
     border-radius: 5px;
@@ -22,6 +22,7 @@ input, select {
     margin-bottom: 20px;
     box-sizing: border-box;
     background-color: #ffffff;
+    font-family: Montserrat;
 }
 
 select {

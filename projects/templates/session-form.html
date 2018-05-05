@@ -46,12 +46,12 @@
     <script>
         $("#now-start").click(function() {
             var dt = new Date();
-            var time = dt.getHours() + ":" + dt.getMinutes()
+            var time = ('0'+dt.getHours()).slice(-2) + ":" + ('0'+dt.getMinutes()).slice(-2)
             $("#id_start_1").val(time);
         });
         $("#now-end").click(function() {
             var dt = new Date();
-            var time = dt.getHours() + ":" + dt.getMinutes()
+            var time = ('0'+dt.getHours()).slice(-2) + ":" + ('0'+dt.getMinutes()).slice(-2)
             $("#id_end_1").val(time);
         });
     </script>
