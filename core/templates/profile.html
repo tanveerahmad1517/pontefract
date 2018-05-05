@@ -1,21 +1,25 @@
 {% extends "user-base.html" %}
 {% block title %}{{ user.username }}{% endblock %}
 
+{% block css %}
+<link rel="stylesheet" href="/static/css/forms.css">
+{% endblock %}
 
 {% block main %}
 
-<h1>{{ user.username }}</h1>
+<div id="user-profile">
+    <h1>{{ user.username }}</h1>
 
-<form id="settings-form" method="POST">
-{{ form.timezone.label_tag }}
-{{ form.timezone }}
-{% csrf_token %}
-<input type="submit" value="Save">
-</form>
+    <form id="settings-form" method="POST">
+    {{ form.timezone.label_tag }}
+    {{ form.timezone }}
+    {% csrf_token %}
+    <input type="submit" value="Save">
+    </form>
 
-<div id="account-deletion">
-  <a href="/delete-account/" class="delete-button">Delete Account</a>
+    <div id="account-deletion">
+      <a href="/delete-account/" class="delete-button">Delete Account</a>
+    </div>
 </div>
-
 
 {% endblock %}

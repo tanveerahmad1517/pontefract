@@ -7,7 +7,7 @@ form.deletion-form {
     font-size: 130%;
 }
 
-input {
+input, select {
     display: block;
     font-size: 110%;
     padding: 11px;
@@ -16,6 +16,11 @@ input {
     border: 1px solid silver;
     margin-bottom: 20px;
     box-sizing: border-box;
+    background-color: #ffffff;
+}
+
+select {
+    height: 40px;
 }
 
 .datetime input {
