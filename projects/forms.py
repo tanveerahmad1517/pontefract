@@ -129,6 +129,10 @@ class SessionBreaksWidget(forms.NumberInput):
         return data.get(name) or "0"
 
 
+    def format_value(self, value):
+        return None if value == 0 else value
+
+
 
 class SessionProjectField(forms.ModelChoiceField):
     """The field used to hold a project."""
@@ -218,7 +222,7 @@ class SessionForm(forms.ModelForm):
 
     def clean(self):
         """Checks that the times and break times mesh well together."""
-        
+
         forms.ModelForm.clean(self)
         if "start" in self.cleaned_data and "end" in self.cleaned_data:
             if self.cleaned_data["end"] < self.cleaned_data["start"]:
