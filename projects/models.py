@@ -1,3 +1,5 @@
+"""Models needed for time tracking."""
+
 from datetime import date, datetime
 import pytz
 from calendar import monthrange

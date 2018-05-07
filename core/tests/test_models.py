@@ -57,18 +57,17 @@ class UserTests(DjangoTest):
         self.assertIsNone(user.first_month())
 
 
-    def test_can_get_user_projects_sorted_by_duration(self):
+    @patch("core.models.User.project_set")
+    def test_can_get_user_projects_sorted_by_duration(self, mock_projects):
         user = User(username="sam", email="sam@sam.sam", password="p")
-        user.save()
-        projects = [mixer.blend(Project, user=user) for _ in range(3)]
-        sessions = [mixer.blend(Session, project=projects[i // 3]) for i in range(9)]
-        print(sessions[0] is sessions[1])
+        projects = [Mock() for _ in range(3)]
+        mock_projects.all.return_value = projects
+        sessions = [Mock() for _ in range(9)]
+        projects[0].session_set.all.return_value = sessions[:3]
+        projects[1].session_set.all.return_value = sessions[3:6]
+        projects[2].session_set.all.return_value = sessions[6:9]
         for i, session in enumerate(sessions):
-            val = [3, 45, 5, 2, 7, 3, 23, 21, 100][i]
-            print(val)
-            session.duration = lambda s: val
-            print(sessions[0].duration())
-        print(sessions[1].duration())
+            session.duration.return_value = [3, 45, 5, 2, 7, 3, 23, 21, 100][i]
         self.assertEqual(
          user.projects_by_time(), [projects[2], projects[0], projects[1]]
         )

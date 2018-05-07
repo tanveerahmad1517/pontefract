@@ -1,9 +1,10 @@
+"""The models needed for the core site, such as the User class."""
+
 from datetime import date
 from timezone_field import TimeZoneField
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from django.db import models
-from django.db.models import ExpressionWrapper, F, fields, Sum
 
 class User(AbstractUser):
     """The User model for pontefract. Email is required"""
