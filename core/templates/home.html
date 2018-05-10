@@ -13,8 +13,8 @@
     <div id="time-tracking-today">
         {% include "day-sessions.html" %}
         <div class="nav-buttons">
-            <a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link">Yesterday</a>
-            {% if user.first_month %}<a href="/time/{{ request.now|date:'Y/m/'}}" class="month-link">This Month</a>{% endif %}
+            <a href="/time/{{ day.yesterday|date:'Y/m/d/'}}" class="yesterday-link">Yesterday</a>
+            {% if user.first_month %}<a href="/time/{{ day.day|date:'Y/m/'}}" class="month-link">This Month</a>{% endif %}
         </div>
     </div><div id="time-tracking-today-form">
         {% include "session-form.html" %}

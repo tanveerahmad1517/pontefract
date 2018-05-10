@@ -1,5 +1,5 @@
 {% extends "user-base.html" %}
-{% block title %}{{ day.0 }}{% endblock %}
+{% block title %}{{ day.day }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="/static/css/time.css">
@@ -15,11 +15,11 @@
     <div id="time-tracking-today">
         {% include "day-sessions.html" %}
         <div class="nav-buttons">
-            <a href="/time/{{ yesterday|date:'Y/m/d/'}}" class="yesterday-link">See Yesterday</a>
-            {% if tomorrow == request.now.date %}
-            <a href="/" class="tomorrow-link">See Tomorrow</a>
+            <a href="/time/{{ day.yesterday|date:'Y/m/d/'}}" class="yesterday-link">Previous Day</a>
+            {% if day.tomorrow == request.now.date %}
+            <a href="/" class="tomorrow-link">Next Day</a>
             {% else %}
-            <a href="/time/{{ tomorrow|date:'Y/m/d/'}}" class="tomorrow-link">See Tomorrow</a>
+            <a href="/time/{{ day.tomorrow|date:'Y/m/d/'}}" class="tomorrow-link">Next Day</a>
             {% endif %}
         </div>
     </div><div id="time-tracking-today-form">

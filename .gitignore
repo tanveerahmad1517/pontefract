@@ -4,4 +4,4 @@ __pycache__
 secrets.py
 *.log
 *.json
-updatedb
+*.sh

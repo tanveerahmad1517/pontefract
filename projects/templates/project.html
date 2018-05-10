@@ -9,7 +9,7 @@
 
 <div class="time-tracking-title">
      <div>{{ project.name }}</div>
-     <div class="total-time">{{ project.total_time_string}}</div>
+     <div class="total-time">{{ project.total_time|time_string }}</div>
 </div>
 
 {% for day in days %}

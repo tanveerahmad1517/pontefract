@@ -12,11 +12,11 @@
 <div class="time-tracking-title">All Projects</div>
 
 <div class="projects">
-    {% for project in user.projects_by_time %}
+    {% for project in projects %}
     <div class="project">
         <a class="project-name" href="/projects/{{ project.id }}/">{{ project.name }}</a>
-        <div class="total-time"><strong>Total</strong>: {{ project.total_time_string }}</div>
-        <div class="last-done"><strong>Last Done</strong>: {% if project.session_set.all %}{{ project.most_recent_session.end|naturalday }}{% else %}Never{% endif %}</div>
+        <div class="total-time"><strong>Total</strong>: {{ project.duration|time_string }}</div>
+        <div class="last-done"><strong>Last Done</strong>: {% if project.duration %}{{ project.recent.end|naturalday }}{% else %}Never{% endif %}</div>
     </div>
     {% endfor %}
 </div>

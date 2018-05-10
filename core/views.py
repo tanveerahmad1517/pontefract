@@ -47,8 +47,7 @@ def home(request):
     day = Session.from_day(request.user, request.now.date())
     return render(request, "home.html", {
      "form": form,
-     "day": day,
-     "yesterday": day[0] - timedelta(days=1)
+     "day": day
     })
 
 
@@ -90,7 +89,7 @@ def profile(request):
 @login_required(login_url="/", redirect_field_name=None)
 def delete_account(request):
     """The view dealing with deleting a user account."""
-    
+
     form = LoginForm()
     if request.method == "POST":
         form = LoginForm(request.POST)

@@ -11,13 +11,13 @@
     <h1>{{ month|date:'F Y'}}</h1>
     <div class="nav-buttons">
         {% if previous %}
-        <a class="month-link" id="previous-month" class="block" href="/time/{{ previous|date:'Y/m/'}}">{{ previous|date:'F Y'}}</a>
+        <a class="month-link" id="previous-month" class="block" href="/time/{{ days.0.previous_month|date:'Y/m/'}}">{{ days.0.previous_month|date:'F Y'}}</a>
         {% else %}
         <div style="width:100px"></div>
         {% endif %}
 
         {% if next %}
-        <a class="month-link" id="next-month" class="block" href="/time/{{ next|date:'Y/m/'}}">{{ next|date:'F Y'}}</a>
+        <a class="month-link" id="next-month" class="block" href="/time/{{ days.0.next_month|date:'Y/m/'}}">{{ days.0.next_month|date:'F Y'}}</a>
         {% else %}
         <div style="width:100px"></div>
         {% endif %}

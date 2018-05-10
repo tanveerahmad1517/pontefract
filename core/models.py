@@ -3,7 +3,7 @@
 from datetime import date
 from timezone_field import TimeZoneField
 from django.contrib.auth.models import AbstractUser
-from django.utils import timezone
+from django.utils import timezone as tz
 from django.db import models
 
 class User(AbstractUser):
@@ -17,21 +17,14 @@ class User(AbstractUser):
 
 
     def first_month(self):
-        """What was the first month that the user has sessions for?"""
+        """What was the first month that the user has sessions for?
+
+        Database queries: 1"""
 
         from projects.models import Session
-        sessions = Session.objects.filter(project__user=self)
+        sessions = list(
+         Session.objects.filter(project__user=self).order_by("start")
+        )
         if sessions:
-            first = sessions.order_by("start")[0]
-            start = first.local_start()
+            start = tz.localtime(sessions[0].start)
             return date(start.year, start.month, 1)
-
-
-    def projects_by_time(self):
-        """ Returns a list of all the user's projects, sorted by total time
-        spent on them. This requires a database query for every project, so can
-        get slightly long..."""
-
-        return sorted(self.project_set.all(), key=lambda p: sum(
-         [s.duration() for s in p.session_set.all()]
-        ), reverse=True)

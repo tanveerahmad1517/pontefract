@@ -15,21 +15,12 @@ def month(request, year, month):
     month_date, first_month = date(year, month, 1), request.user.first_month()
     if not first_month or month_date < first_month:
         raise Http404
-    today = request.now.date()
-    days = Session.group_by_date(request.user, month=date(year, month, 1))
-    next = date(
-     year + 1 if month == 12 else year, 1 if month == 12 else month + 1, 1
-    )
-    if next > today: next = None
-    previous = date(
-     year - 1 if month == 1 else year, 12 if month == 1 else month - 1, 1
-    )
-    if previous < request.user.first_month(): previous = None
+    days = Session.from_month(request.user, year, month)
     return render(request, "time-tracking-month.html", {
      "month": date(year, month, 1),
      "days": days,
-     "next": next,
-     "previous": previous
+     "next": not days[0].next_month() > request.now.date(),
+     "previous": not days[0].previous_month() < first_month
     })
 
 
@@ -38,13 +29,14 @@ def project(request, pk):
     try:
         project = Project.objects.get(id=pk, user=request.user)
     except Project.DoesNotExist: raise Http404
-    days = Session.group_by_date(request.user, project=project)
+    days = Session.from_project(project)
     return render(request, "project.html", {"project": project, "days": days})
 
 
 @login_required(login_url="/", redirect_field_name=None)
 def projects(request):
-    return render(request, "projects.html")
+    projects = Project.by_total_duration(request.user)
+    return render(request, "projects.html", {"projects": projects})
 
 
 @login_required(login_url="/", redirect_field_name=None)
@@ -90,6 +82,4 @@ def time_day(request, year, month, day):
             form.save(request.user)
             return redirect("/time/{}/{}/{}/".format(year, month, day))
     day = Session.from_day(request.user, date(year, month, day))
-    yesterday = day[0] - timedelta(days=1)
-    tomorrow = day[0] + timedelta(days=1)
-    return render(request, "time-tracking-day.html", {"day": day, "form": form, "yesterday": yesterday, "tomorrow": tomorrow})
+    return render(request, "time-tracking-day.html", {"day": day, "form": form})

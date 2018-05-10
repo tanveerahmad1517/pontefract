@@ -47,5 +47,6 @@ TEMPLATES = [{
    "django.contrib.auth.context_processors.auth",
    "django.template.context_processors.request"
   ],
+  "builtins": ["projects.templatetags"],
  },
 }]
