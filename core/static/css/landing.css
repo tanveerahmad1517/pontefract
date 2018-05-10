@@ -56,8 +56,24 @@ form input[type=submit] {
 }
 
 .login {
-    font-size: 50%;
-    margin-top: 30px;
+    margin-top: 0px;
+}
+
+.login h2 {
+    font-size: 80%;
+}
+
+#logo {
+    margin-top: 20px;
+}
+
+#logo a {
+    font-family: "Patua One";
+    font-size: 150%;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #6c5ce7;
+    color: white;
 }
 
 
@@ -77,6 +93,12 @@ form input[type=submit] {
         margin-right: 10px;
         border-radius: 10px;
     }
+
+    .login {
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 30px;
+    }
 }
 
 
@@ -90,6 +112,13 @@ form input[type=submit] {
         width: 400px;
         margin-left: auto;
         margin-right: auto;
+    }
+
+    .login {
+        width: inherit;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 30px;
     }
 }
 

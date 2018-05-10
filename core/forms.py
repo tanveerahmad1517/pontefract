@@ -57,7 +57,7 @@ class SignupForm(forms.ModelForm):
 
     def save(self):
         """Don't rely on the built-in Model form save functionality here. Hash
-        the password and login."""
+        the password and save the new user, but don't login."""
 
         user = User.objects.create(
          username=self.cleaned_data.get("username"),
