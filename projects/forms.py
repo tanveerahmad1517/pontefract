@@ -6,13 +6,13 @@ from django.core.exceptions import ValidationError
 from .models import Session, Project
 
 class ProjectNameWidget(forms.TextInput):
-    """The name widget for a Project Form. As this form is never rendered, the
-    only thing this widget has to do is find the relevant string from a data
-    dictionary when saving a project.
+    """The name widget for a Project Form. As well as being the entry for the
+    project's name in a name form, it is also tasked with pulling out a name
+    in a session form.
 
     This has to be overridden because by default it would look for a key called
-    'name' but in practice this form will be used to parse POST data from a
-    Session form, where the name is a key called 'project'."""
+    'name' but in practice this form will normally be used to parse POST data
+    from a Session form, where the name is a key called 'project'."""
 
     def value_from_datadict(self, data, files, name):
         """Takes a POST dictionary from a SessionForm and returns the string
@@ -24,20 +24,26 @@ class ProjectNameWidget(forms.TextInput):
 
 
 class ProjectForm(forms.ModelForm):
+    """The form used to save and edit projects. It must have a user object
+    associated with it."""
 
     class Meta:
         model = Project
-        exclude = []
-        widgets = {"name": ProjectNameWidget()}
+        exclude = ["user"]
+        widgets = {"name": ProjectNameWidget(attrs={
+         "autocomplete": "off", "placeholder": "Project's name"
+        })}
 
 
     def __init__(self, user, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
-        self.fields["user"].required = False
         self.user = user
+        del self.fields["name"].widget.attrs["maxlength"]
 
 
     def save(self, *args, **kwargs):
+        """Saves the associated project object with the relevant user."""
+        
         model = forms.ModelForm.save(self, *args, commit=False, **kwargs)
         model.user = self.user
         model.save()

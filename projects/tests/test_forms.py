@@ -14,10 +14,16 @@ class ProjectFormTests(DjangoTest):
 
     def test_project_form_has_correct_fields(self):
         form = ProjectForm(self.user)
-        self.assertEqual(
-         list(form.fields.keys()), [
-          "name", "user"
-         ])
+        self.assertEqual(list(form.fields.keys()), ["name"])
+
+
+    def test_project_name_widget(self):
+        widget = ProjectForm(self.user).fields["name"].widget
+        self.assertEqual(widget.input_type, "text")
+        self.assertTrue(widget.is_required)
+        self.assertEqual(widget.attrs, {
+         "autocomplete": "off", "placeholder": "Project's name"
+        })
 
 
     def test_name_field_can_obtain_data_from_datadict(self):
@@ -28,13 +34,20 @@ class ProjectFormTests(DjangoTest):
         )
 
 
+    def test_name_validation(self):
+        name = ProjectForm(self.user).fields["name"]
+        self.assertTrue(name.required)
+        for invalid in ("", None, "a\x00b"):
+            with self.assertRaises(ValidationError):
+                name.clean(invalid)
+
+
     @patch("projects.forms.forms.ModelForm.save")
     def test_project_form_can_handle_user(self, mock_save):
         model = Mock()
         mock_save.return_value = model
         form = ProjectForm(self.user)
         self.assertEqual(form.user, self.user)
-        self.assertFalse(form.fields["user"].required)
         form.save()
         mock_save.assert_called_with(form, commit=False)
         self.assertEqual(model.user, self.user)
