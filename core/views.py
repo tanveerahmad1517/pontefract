@@ -1,10 +1,7 @@
-from datetime import date, timedelta
-from calendar import monthrange
+from datetime import date
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, Http404
 import django.contrib.auth as auth
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
 from core.forms import SignupForm, LoginForm
 from projects.forms import SessionForm, ProjectForm, process_session_form_data
 from projects.models import Session, Project
@@ -42,10 +39,7 @@ def home(request):
             form.save(request.user)
             return redirect("/")
     day = Session.from_day(request.user, request.now.date())
-    return render(request, "home.html", {
-     "form": form,
-     "day": day
-    })
+    return render(request, "home.html", {"form": form, "day": day})
 
 
 def login(request):

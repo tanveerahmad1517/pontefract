@@ -82,21 +82,21 @@ class LandingViewTests(DjangoTest):
 class HomeViewTests(DjangoTest):
 
     def setUp(self):
-        self.patch1 = patch("core.views.ProjectForm")
-        self.mock_project_form = self.patch1.start()
-        self.patch2 = patch("core.views.SessionForm")
-        self.mock_form = self.patch2.start()
-        self.patch4 = patch("core.views.Session.from_day")
-        self.mock_from = self.patch4.start()
-        self.mock_from.return_value = [date(1945, 1, 1), "B", "C"]
+        self.patch1 = patch("core.views.SessionForm")
+        self.mock_form = self.patch1.start()
+        self.patch2 = patch("core.views.Session.from_day")
+        self.mock_from = self.patch2.start()
+        self.mock_from.return_value = "DAYS"
+        self.patch3 = patch("core.views.process_session_form_data")
+        self.mock_process = self.patch3.start()
         self.request = self.make_request("---", loggedin=True)
-        self.request.now = datetime.now()
+        self.request.now = datetime(1234, 5, 6, 7, 8, 9)
 
 
     def tearDown(self):
         self.patch1.stop()
         self.patch2.stop()
-        self.patch4.stop()
+        self.patch3.stop()
 
 
     def test_home_view_uses_home_template(self):
@@ -111,47 +111,31 @@ class HomeViewTests(DjangoTest):
 
 
     def test_home_view_sends_sessions_from_today(self):
-        self.check_view_has_context(
-         home, self.request, {"day": [date(1945, 1, 1), "B", "C"]}
-        )
-        self.mock_from.assert_called_with(self.request.user, date.today())
-
-
-    def test_home_view_sends_yesterday(self):
-        self.check_view_has_context(
-         home, self.request, {"yesterday": date(1944, 12, 31)}
-        )
-        self.mock_from.assert_called_with(self.request.user, date.today())
+        self.check_view_has_context(home, self.request, {"day": "DAYS"})
+        self.mock_from.assert_called_with(self.request.user, date(1234, 5, 6))
 
 
     def test_home_view_can_return_incorrect_form(self):
-        form = Mock()
-        self.mock_form.return_value = form
-        form.is_valid.return_value = False
-        form.data = {"a": "u", "b": "p"}
+        self.mock_process.return_value = Mock()
+        self.mock_process.return_value.is_valid.return_value = False
         request = self.make_request(
          "---", method="post", data={"a": "u", "b": "p"}
         )
-        request.now = datetime.now()
+        request.now = datetime(1234, 5, 6, 7, 8, 9)
         self.check_view_uses_template(home, request, "home.html")
-        self.check_view_has_context(home, request, {"form": form})
-        self.mock_form.assert_called_with(QueryDict("a=u&b=p"), user=request.user)
-        form.is_valid.assert_called_with()
+        self.mock_process.assert_called_with(request)
 
 
     def test_home_view_can_save_session(self):
-        form = Mock()
-        self.mock_form.return_value = form
-        form.is_valid.return_value = True
+        self.mock_process.return_value = Mock()
+        self.mock_process.return_value.is_valid.return_value = True
         request = self.make_request(
-         "---", method="post", data={"id": "xxx", "b": "C"}, loggedin=True
+         "---", method="post", data={"a": "u", "b": "p"}
         )
-        request.now = datetime.now()
-        home(request)
-        self.mock_form.assert_called_with(QueryDict("id=xxx&b=C"), user=request.user)
-        self.mock_project_form.assert_called_with(request.user, QueryDict("id=xxx&b=C"))
-        form.is_valid.assert_called_with()
-        form.save.assert_called_with(request.user)
+        request.now = datetime(1234, 5, 6, 7, 8, 9)
+        self.check_view_redirects(home, request, "/")
+        self.mock_process.return_value.save.assert_called_with(request.user)
+        self.mock_process.assert_called_with(request)
 
 
 
@@ -250,24 +234,24 @@ class ProfileViewTests(DjangoTest):
         self.patch1.stop()
 
 
-    def test_account_deletion_view_uses_profile_template(self):
+    def test_account_profile_view_uses_profile_template(self):
         request = self.make_request("---", loggedin=True)
         self.check_view_uses_template(profile, request, "profile.html")
 
 
-    def test_account_deletion_view_is_protected(self):
+    def test_account_profile_view_is_protected(self):
         request = self.make_request("---")
         self.check_view_redirects(profile, request, "/")
 
 
-    def test_account_deletion_view_sends_profile_form(self):
+    def test_account_profile_view_sends_profile_form(self):
         self.mock_form.return_value = "FORM"
         request = self.make_request("---", loggedin=True)
         self.check_view_has_context(profile, request, {"form": "FORM"})
         self.mock_form.assert_called_with(instance=request.user)
 
 
-    def test_account_deletion_view_can_update_timezone(self):
+    def test_account_profile_view_can_update_timezone(self):
         request = self.make_request(
          "---", loggedin=True, method="post", data={"timezone": "TZ"}
         )
