@@ -24,17 +24,25 @@ class UrlTests(DjangoTest):
         self.check_url_returns_view("/delete-account/", core_views.delete_account)
 
 
-    def test_time_tracking_month_url(self):
+    def test_day_url(self):
+        self.check_url_returns_view("/time/1990/09/04/", project_views.day)
+
+
+    def test_month_url(self):
         self.check_url_returns_view("/time/1990/09/", project_views.month)
 
 
-    def test_time_tracking_project_url(self):
+    def test_project_url(self):
         self.check_url_returns_view("/projects/199/", project_views.project)
 
 
-    def test_time_tracking_projects_url(self):
+    def test_projects_url(self):
         self.check_url_returns_view("/projects/", project_views.projects)
 
 
-    def test_time_tracking_edit_session_url(self):
+    def test_edit_session_url(self):
         self.check_url_returns_view("/sessions/199/", project_views.edit_session)
+
+
+    def test_delete_session_url(self):
+        self.check_url_returns_view("/sessions/199/delete/", project_views.delete_session)

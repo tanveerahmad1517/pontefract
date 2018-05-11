@@ -3,7 +3,7 @@ import core.views as core_views
 import projects.views as project_views
 
 urlpatterns = [
- path(r"login/", core_views.login, name="login"),
+ path(r"login/", core_views.login),
  path(r"logout/", core_views.logout),
  path(r"profile/", core_views.profile),
  path(r"delete-account/", core_views.delete_account),
