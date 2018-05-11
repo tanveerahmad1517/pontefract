@@ -35,7 +35,7 @@
 }
 
 .day-time-tracking table tr:nth-child(odd) {
-    background: #6b5ce817
+    background: #6b5ce817;
 }
 
 .day-time-tracking table tr td {
@@ -61,6 +61,13 @@
 .day-time-tracking table tr td.breaks-cell {
     width: 10%;
     font-size: 70%;
+}
+
+.no-sessions {
+    text-align: center;
+    background-color: #6b5ce806;
+    font-size: 70%;
+    padding: 10px;
 }
 
 .month-overview {

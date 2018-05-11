@@ -80,17 +80,13 @@ class SignupTests(FunctionalTest):
         # There is a starter section for time tracking
         now = datetime.now(tz=pytz.timezone("Pacific/Auckland"))
         time = self.browser.find_element_by_id("time-tracking")
-        self.assertEqual(time.find_element_by_tag_name("h2").text, "Time Tracking")
         new_session = time.find_element_by_tag_name("form")
         today = time.find_element_by_class_name("day-time-tracking")
         self.assertIn("0 minutes", today.text)
-        self.assertIn(str(now.year), today.text)
-        self.assertIn(str(now.day), today.text)
-        self.assertIn(str(now.strftime("%B")), today.text)
+        self.assertIn("Friday 2 May, 1997", today.text)
+        self.assertIn("no sessions", today.text)
         sessions = today.find_elements_by_class_name("session")
         self.assertEqual(len(sessions), 0)
-        with self.assertRaises(self.NoElement):
-            self.browser.find_element_by_class_name("projects-link")
         with self.assertRaises(self.NoElement):
             self.browser.find_element_by_class_name("month-link")
 
@@ -196,6 +192,13 @@ class LoginTests(FunctionalTest):
         self.click(login_link)
         self.check_page("/login/")
 
+        # There is a link back to the signup page
+        form = self.browser.find_element_by_tag_name("form")
+        link = form.find_element_by_tag_name("a")
+        self.click(link)
+        self.check_page("/")
+        self.browser.back()
+
         # There is a form, which they fill in
         form = self.browser.find_element_by_tag_name("form")
         username = form.find_elements_by_tag_name("input")[0]
@@ -268,19 +271,17 @@ class AccountModificationTests(FunctionalTest):
          password="password_"
         )
         self.login()
-        link = self.browser.find_element_by_class_name("account-link")
+        link = self.browser.find_element_by_id("account-link")
         self.click(link)
         self.check_page("/profile/")
         self.check_title("sarah")
-        self.check_h1("sarah")
 
         # There is a section for deleting an account
         deletion = self.browser.find_element_by_id("account-deletion")
-        button = deletion.find_element_by_class_name("delete-button")
+        button = deletion.find_element_by_class_name("delete-link")
         self.click(button)
         self.check_page("/delete-account/")
         self.check_title("Delete Account")
-        self.check_h1("Delete Account")
 
         # They enter their credentials incorrectly on the page
         form = self.browser.find_elements_by_tag_name("form")[1]
@@ -336,11 +337,10 @@ class AccountModificationTests(FunctionalTest):
 
     def test_can_change_timezone(self):
         self.login()
-        link = self.browser.find_element_by_class_name("account-link")
+        link = self.browser.find_element_by_id("account-link")
         self.click(link)
         self.check_page("/profile/")
         self.check_title("sarah")
-        self.check_h1("sarah")
 
         # There is a dropdown for timezone
         form = self.browser.find_element_by_id("settings-form")
@@ -353,6 +353,5 @@ class AccountModificationTests(FunctionalTest):
         self.click(save)
         self.check_page("/profile/")
         self.check_title("sarah")
-        self.check_h1("sarah")
         timezone = self.browser.find_element_by_id("id_timezone")
         self.assertEqual(self.get_select_value(timezone), "Europe/Istanbul")

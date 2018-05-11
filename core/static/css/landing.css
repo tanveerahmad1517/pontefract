@@ -32,6 +32,11 @@ form {
     margin-left: 0px;
     margin-right: 0px;
     border-radius: 0px;
+    margin-bottom: 40px;
+}
+
+.error {
+    font-size: 40%;
 }
 
 form input, form label, form select, form div {
