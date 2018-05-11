@@ -238,3 +238,17 @@ class SessionForm(forms.ModelForm):
             elif (self.cleaned_data["end"] - self.cleaned_data["start"]
              ).seconds <= self.cleaned_data.get("breaks", 0) * 60:
                 self.add_error("breaks", "Break cannot cancel out session")
+
+
+
+def process_session_form_data(request, date=None, instance=None):
+    """Takes a POST request with session form data, passes it through the
+    appropriate forms, and returns the SessionForm."""
+
+    try:
+        ProjectForm(request.user, request.POST).save()
+    except: pass
+    form = SessionForm(
+     request.POST, user=request.user, date=date, instance=instance
+    )
+    return form

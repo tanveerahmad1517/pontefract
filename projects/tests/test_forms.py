@@ -251,3 +251,46 @@ class SessionFormTests(DjangoTest):
         self.assertFalse(form.is_valid())
         self.mock_clean.assert_called_with(form)
         self.assertIn("breaks", form.errors)
+
+
+
+class SessionFormPostDataProcessingTests(DjangoTest):
+
+    def setUp(self):
+        self.patch1 = patch("projects.forms.ProjectForm")
+        self.patch2 = patch("projects.forms.SessionForm")
+        self.mock_project_form = self.patch1.start()
+        self.mock_session_form = self.patch2.start()
+        self.mock_project_form.return_value = Mock()
+        self.mock_session_form.return_value = "SESSIONFORM"
+        self.request = self.make_request("---", loggedin=True)
+
+
+    def tearDown(self):
+        self.patch1.stop()
+        self.patch2.stop()
+
+
+    def test_can_process_session_post_data_with_new_project(self):
+        form = process_session_form_data(
+         self.request, date=date(2001, 9, 11), instance="I"
+        )
+        self.assertEqual(form, "SESSIONFORM")
+        self.mock_project_form.assert_called_with(self.request.user, self.request.POST)
+        self.mock_project_form.return_value.save.assert_called_with()
+        self.mock_session_form.assert_called_with(
+         self.request.POST, user=self.request.user, date=date(2001, 9, 11), instance="I"
+        )
+
+
+    def test_can_process_session_post_data_with_existing_project(self):
+        self.mock_project_form.return_value.save.side_effect = Exception
+        form = process_session_form_data(
+         self.request, date=date(2001, 9, 11), instance="I"
+        )
+        self.assertEqual(form, "SESSIONFORM")
+        self.mock_project_form.assert_called_with(self.request.user, self.request.POST)
+        self.mock_project_form.return_value.save.assert_called_with()
+        self.mock_session_form.assert_called_with(
+         self.request.POST, user=self.request.user, date=date(2001, 9, 11), instance="I"
+        )

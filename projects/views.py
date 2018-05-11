@@ -6,7 +6,7 @@ import django.contrib.auth as auth
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from core.forms import SignupForm, LoginForm
-from projects.forms import SessionForm, ProjectForm
+from projects.forms import SessionForm, ProjectForm, process_session_form_data
 from projects.models import Session, Project
 
 
@@ -47,10 +47,7 @@ def edit_session(request, pk):
         raise Http404
     form = SessionForm(instance=session)
     if request.method == "POST":
-        try:
-            ProjectForm(request.user, request.POST).save()
-        except: pass
-        form = SessionForm(request.POST, user=request.user, instance=session)
+        form = process_session_form_data(request, instance=session)
         if form.is_valid():
             form.save(request.user)
             return redirect(form.instance.local_start().strftime("/time/%Y/%m/%d/"))
@@ -71,13 +68,9 @@ def delete_session(request, pk):
 
 @login_required(login_url="/", redirect_field_name=None)
 def time_day(request, year, month, day):
-    from django.utils import timezone
     form = SessionForm(date=date(year, month, day))
     if request.method == "POST":
-        try:
-            ProjectForm(request.user, request.POST).save()
-        except: pass
-        form = SessionForm(request.POST, user=request.user, date=date(year, month, day))
+        form = process_session_form_data(request, date=date(year, month, day))
         if form.is_valid():
             form.save(request.user)
             return redirect("/time/{}/{}/{}/".format(year, month, day))

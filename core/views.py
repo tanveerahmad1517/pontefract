@@ -6,7 +6,7 @@ import django.contrib.auth as auth
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from core.forms import SignupForm, LoginForm
-from projects.forms import SessionForm, ProjectForm
+from projects.forms import SessionForm, ProjectForm, process_session_form_data
 from projects.models import Session, Project
 
 def root(request):
@@ -37,10 +37,7 @@ def home(request):
 
     form = SessionForm()
     if request.method == "POST":
-        try:
-            ProjectForm(request.user, request.POST).save()
-        except: pass
-        form = SessionForm(request.POST, user=request.user)
+        form = process_session_form_data(request)
         if form.is_valid():
             form.save(request.user)
             return redirect("/")
