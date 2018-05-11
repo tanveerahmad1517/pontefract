@@ -43,7 +43,7 @@ class ProjectForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         """Saves the associated project object with the relevant user."""
-        
+
         model = forms.ModelForm.save(self, *args, commit=False, **kwargs)
         model.user = self.user
         model.save()
@@ -88,7 +88,7 @@ class DateTimeWidget(forms.SplitDateTimeWidget):
         otherwise no time is sent."""
 
         values = forms.SplitDateTimeWidget.decompress(self, *args, **kwargs)
-        return values if self.instance else (values[0], None)
+        return values if self.instance else [values[0], None]
 
 
 
@@ -121,13 +121,9 @@ class SessionBreaksField(forms.IntegerField):
         ))
 
 
+
 class SessionBreaksWidget(forms.NumberInput):
     """The widget used to take in breaks."""
-
-    def __init__(self, *args, **kwargs):
-        forms.NumberInput.__init__(self, *args, **kwargs)
-        self.is_required = False
-
 
     def value_from_datadict(self, data, files, name):
         """If no breaks are sent, it will pluck '0' out of nowhere."""
@@ -136,6 +132,8 @@ class SessionBreaksWidget(forms.NumberInput):
 
 
     def format_value(self, value):
+        """If the value is already zero, don't render that in the form."""
+
         return None if value == 0 else value
 
 
@@ -186,7 +184,10 @@ class SessionProjectWidget(forms.TextInput):
 class SessionForm(forms.ModelForm):
     """The form which allows a user to enter a session of work they have done.
 
-    They can provide a new project at the same time."""
+    They can provide a new project at the same time.
+
+    A user can be provided so that projects can be looked up, and a date can be
+    provided so that other default dates can be displayed."""
 
     class Meta:
         model = Session
@@ -219,6 +220,7 @@ class SessionForm(forms.ModelForm):
         self.fields["start"].initial = timezone.localtime()
         self.fields["end"].initial = timezone.localtime()
         self.fields["timezone"].widget.user = self.user
+        self.fields["breaks"].widget.is_required = False
         self.fields["project"].user = self.user
         self.fields["project"].widget.user = self.user
         if date:
