@@ -5,6 +5,9 @@ register = template.Library()
 
 @register.filter(name="time_string")
 def time_string(minutes):
+    """Turns a number of minutes into a human readable description of that
+    duration."""
+    
     if minutes < 60:
         return "{} minute{}".format(minutes, "" if minutes == 1 else "s")
     else:
