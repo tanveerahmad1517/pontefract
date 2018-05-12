@@ -21,14 +21,23 @@ class TimeTrackingTests(FunctionalTest):
         project_input = form.find_elements_by_tag_name("input")[5]
         with self.assertRaises(self.NoElement):
             form.find_element_by_tag_name("select")
+        now_buttons = form.find_elements_by_class_name("now-button")
 
         # They enter some values and submit
         if start_day:
-            self.browser.execute_script("arguments[0].value = '{}';".format(start_day), start_day_input)
-        self.browser.execute_script("arguments[0].value = '{}';".format(start_time), start_time_input)
+            self.browser.execute_script(
+             "arguments[0].value = '{}';".format(start_day), start_day_input
+            )
+        self.browser.execute_script(
+         "arguments[0].value = '{}';".format(start_time), start_time_input
+        )
         if end_day:
-            self.browser.execute_script("arguments[0].value = '{}';".format(end_day), end_day_input)
-        self.browser.execute_script("arguments[0].value = '{}';".format(end_time), end_time_input)
+            self.browser.execute_script(
+             "arguments[0].value = '{}';".format(end_day), end_day_input
+            )
+        self.browser.execute_script(
+         "arguments[0].value = '{}';".format(end_time), end_time_input
+        )
         breaks_input.clear()
         if breaks != "0": breaks_input.send_keys(breaks)
         project_input.clear()
@@ -109,12 +118,17 @@ class SessionAddingTests(TimeTrackingTests):
         # User goes to the home page
         self.login()
         self.get("/")
-        today = timezone.localtime(timezone.now()).date()
+
+        # There are two sessions already there
+        time = self.browser.find_element_by_id("time-tracking")
+        today = time.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
 
         # They fill out the session form that is there
-        self.check_session_form(
-         start_day=today.strftime("%Y-%m-%d"), end_day=today.strftime("%Y-%m-%d")
-        )
+        self.check_session_form(start_day="1997-05-02", end_day="1997-05-02")
         self.fill_in_session_form("06:05", "06:35", "10", "Dog Walking")
 
         # They are still on the main page
@@ -123,7 +137,9 @@ class SessionAddingTests(TimeTrackingTests):
         # The total for the day is updated
         time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(today, "20 minutes", [
+        self.check_day_report(today, "1 hour, 40 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None],
          ["06:05 - 06:35", "Dog Walking", "20 minutes", "10 minute break"]
         ])
 
@@ -134,10 +150,6 @@ class SessionAddingTests(TimeTrackingTests):
 
 
     def test_can_add_work_session_to_existing_project(self):
-        Project.objects.create(name="Running", user=self.user)
-        Project.objects.create(name="Cycling", user=self.user)
-        Project.objects.create(name="Swimming", user=self.user)
-
         # The user goes to the home page and fills out the form there
         self.login()
         self.get("/")
@@ -149,7 +161,9 @@ class SessionAddingTests(TimeTrackingTests):
         # The total for the day is updated
         time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(today, "30 minutes", [
+        self.check_day_report(today, "1 hour, 50 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None],
          ["16:05 - 16:35", "Cycling", "30 minutes", None]
         ])
 
@@ -178,13 +192,41 @@ class SessionAddingTests(TimeTrackingTests):
         # They fill out the session form that is there
         self.fill_in_session_form("06:05", "05:05", "10", "Dog Walking")
 
-        # They are still on the home page and there are no sessions
+        # They are still on the home page and there are no extra sessions
         self.check_page("/")
-        self.assertEqual(self.browser.find_elements_by_class_name("session"), [])
+        today = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
 
         # There is an error message and the form is still filled in
         self.check_session_form(
          start_time="06:05", end_time="05:05", breaks="10", end_error="before"
+        )
+
+
+    def test_time_must_be_daylight_savings_compliant(self):
+        # User goes to the home page
+        self.login()
+        self.get("/")
+
+        # They fill out the session form that is there
+        self.fill_in_session_form(
+         "02:30", "02:45", "", "Dog Walking", start_day="2018-09-30", end_day="2018-09-30"
+        )
+
+        # They are still on the home page and there are no extra sessions
+        self.check_page("/")
+        today = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
+
+        # There is an error message and the form is still filled in
+        self.check_session_form(
+         start_time="02:30", end_time="02:45", breaks="", start_error="time zone", end_error="time zone"
         )
 
 
@@ -196,9 +238,13 @@ class SessionAddingTests(TimeTrackingTests):
         # They fill out the session form that is there
         self.fill_in_session_form("06:05", "07:05", "-10", "Dog Walking")
 
-        # They are still on the home page and there are no sessions
+        # They are still on the home page and there are no extra sessions
         self.check_page("/")
-        self.assertEqual(self.browser.find_elements_by_class_name("session"), [])
+        today = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
 
         # There is an error message and the form is still filled in
         self.check_session_form(
@@ -214,9 +260,13 @@ class SessionAddingTests(TimeTrackingTests):
         # They fill out the session form that is there
         self.fill_in_session_form("06:05", "07:05", "70", "Dog Walking")
 
-        # They are still on the home page and there are no sessions
+        # They are still on the home page and there are no extra sessions
         self.check_page("/")
-        self.assertEqual(self.browser.find_elements_by_class_name("session"), [])
+        today = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
 
         # There is an error message and the form is still filled in
         self.check_session_form(
@@ -232,9 +282,13 @@ class SessionAddingTests(TimeTrackingTests):
         # They fill out the session form that is there
         self.fill_in_session_form("06:05", "07:05", "10", "   ")
 
-        # They are still on the home page and there are no sessions
+        # They are still on the home page and there are no extra sessions
         self.check_page("/")
-        self.assertEqual(self.browser.find_elements_by_class_name("session"), [])
+        today = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
 
         # There is an error message and the form is still filled in
         self.check_session_form(
