@@ -893,148 +893,89 @@ class SessionEditingTests(TimeTrackingTests):
 
     def setUp(self):
         FunctionalTest.setUp(self)
-
-        # Create some projects for Sarah
-        running = Project.objects.create(name="Running", user=self.user)
-        archery = Project.objects.create(name="Archery", user=self.user)
-        cooking = Project.objects.create(name="Cooking", user=self.user)
-        ultra = Project.objects.create(name="Project Ultra", user=self.user)
-        reading = Project.objects.create(name="Reading", user=self.user)
-
-        # Create some sessions for today
-        tz = pytz.timezone("Pacific/Auckland")
-        timezone.activate(self.user.timezone)
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 11, 0)),
-         end=tz.localize(datetime(1962, 10, 27, 11, 30)),
-         breaks=0, project=reading, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 12, 0)),
-         end=tz.localize(datetime(1962, 10, 27, 12, 15)),
-         breaks=0, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 9, 0)),
-         end=tz.localize(datetime(1962, 10, 27, 9, 45)),
-         breaks=5, project=cooking, timezone=tz
-        )
-        session = Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 18, 0)),
-         end=tz.localize(datetime(1962, 10, 27, 20, 30)),
-         breaks=10, project=reading, timezone=tz
-        )
-        self.session_id = session.id
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 23, 45)),
-         end=tz.localize(datetime(1962, 10, 28, 0, 30)),
-         breaks=0, project=reading, timezone=tz
-        )
-
-        # Create sessions from other user
-        user2 = User.objects.create_user(
-         username="john",
-         email="jfk@wash.gov",
-         password="onassis"
-        )
-        running2 = Project.objects.create(name="Running", user=user2)
-        other = Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 11, 0)),
-         end=tz.localize(datetime(1962, 10, 27, 11, 30)),
-         breaks=0, project=running2, timezone=tz
-        )
-        self.other_id = other.id
+        self.session_id = Project.objects.get(name="Yoga").session_set.get(start__day=2).id
+        self.other_id = Session.objects.last().id
         self.login()
 
 
-    @freeze_time("1962-10-27")
     def test_can_edit_session_to_new_project(self):
         # The user goes to the home page
         self.get("/")
         time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(today, "4 hours, 30 minutes", [
-         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
-         ["11:00 - 11:30", "Reading", "30 minutes", None],
-         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
-         ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
-         ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27 October, 1962")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
 
-        # They go to edit the excessive reading
-        row = today.find_elements_by_tag_name("tr")[3]
-        self.assertIn("2 hours, 20 minutes", row.text)
+        # They go to edit the Yoga
+        row = today.find_elements_by_tag_name("tr")[1]
+        self.assertIn("1 hour", row.text)
         link = row.find_element_by_class_name("edit-link")
         self.click(link)
         self.check_page("/sessions/{}/".format(self.session_id))
         self.check_title("Edit Session")
-        self.check_h1("Edit Session")
 
         # The form has pre-loaded values
         self.check_session_form(
-         start_day="1962-10-27", end_day="1962-10-27",
-         start_time="18:00", end_time="20:30", breaks="10", project="Reading"
+         start_day="1997-05-02", end_day="1997-05-02",
+         start_time="01:00", end_time="02:00", breaks="", project="Yoga"
         )
 
         # They change those values and submit
         self.fill_in_session_form(
-         "23:00", "02:00", "30", "Base Jumping",
-         start_day="1962-10-15", end_day="1962-10-16"
+         "23:45", "03:00", "10", "Base Jumping",
+         start_day="1996-05-01", end_day="1996-05-02"
         )
 
         # They are on the October page
-        self.check_page("/time/1962/10/15/")
+        self.check_page("/time/1996/05/01/")
 
         # The sessions are updated
         day = self.browser.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(day, "2 hours, 30 minutes", [
-         ["23:00 - 02:00", "Base Jumping", "2 hours, 30 minutes", "30 minutes"],
-        ], date="15 October, 1962")
+        self.check_day_report(day, "3 hours, 5 minutes", [
+         ["23:45 - 03:00", "Base Jumping", "3 hours, 5 minutes", "10 minutes"],
+        ], date="1 May, 1996")
 
 
-    @freeze_time("1962-10-27")
     def test_can_edit_session_to_existing_project(self):
         # The user goes to the home page
         self.get("/")
         time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(today, "4 hours, 30 minutes", [
-         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
-         ["11:00 - 11:30", "Reading", "30 minutes", None],
-         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
-         ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
-         ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27 October, 1962")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
 
-        # They go to edit the excessive reading
-        row = today.find_elements_by_tag_name("tr")[3]
-        self.assertIn("2 hours, 20 minutes", row.text)
+        # They go to edit the Yoga
+        row = today.find_elements_by_tag_name("tr")[1]
+        self.assertIn("1 hour", row.text)
         link = row.find_element_by_class_name("edit-link")
         self.click(link)
         self.check_page("/sessions/{}/".format(self.session_id))
         self.check_title("Edit Session")
-        self.check_h1("Edit Session")
 
         # The form has pre-loaded values
         self.check_session_form(
-         start_day="1962-10-27", end_day="1962-10-27",
-         start_time="18:00", end_time="20:30", breaks="10", project="Reading"
+         start_day="1997-05-02", end_day="1997-05-02",
+         start_time="01:00", end_time="02:00", breaks="", project="Yoga"
         )
 
         # They change those values and submit
         self.fill_in_session_form(
-         "23:00", "02:00", "30", "Project Ultra", existing=True,
-         start_day="1961-04-15", end_day="1961-04-16"
+         "23:45", "03:00", "10", "Base Jumping",
+         start_day="1996-05-01", end_day="1996-05-02"
         )
 
         # They are on the October page
-        self.check_page("/time/1961/04/15/")
+        self.check_page("/time/1996/05/01/")
 
         # The sessions are updated
         day = self.browser.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(day, "2 hours, 30 minutes", [
-         ["23:00 - 02:00", "Project Ultra", "2 hours, 30 minutes", "30 minutes"],
-        ], date="15 April, 1961")
+        self.check_day_report(day, "3 hours, 5 minutes", [
+         ["23:45 - 03:00", "Base Jumping", "3 hours, 5 minutes", "10 minutes"],
+        ], date="1 May, 1996")
 
 
     def test_session_editing_view_404(self):
@@ -1048,63 +989,54 @@ class SessionEditingTests(TimeTrackingTests):
         self.check_title("Not Found")
 
 
-    @freeze_time("1962-10-27")
     def test_can_delete_session(self):
         # The user goes to the home page
         self.get("/")
         time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(today, "4 hours, 30 minutes", [
-         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
-         ["11:00 - 11:30", "Reading", "30 minutes", None],
-         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
-         ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
-         ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27 October, 1962")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
 
-        # They go to edit the excessive reading
-        row = today.find_elements_by_tag_name("tr")[3]
-        self.assertIn("2 hours, 20 minutes", row.text)
+        # They go to edit the yoga
+        row = today.find_elements_by_tag_name("tr")[1]
+        self.assertIn("1 hour", row.text)
         link = row.find_element_by_class_name("edit-link")
         self.click(link)
         self.check_page("/sessions/{}/".format(self.session_id))
         self.check_title("Edit Session")
-        self.check_h1("Edit Session")
 
         # There is a link to the deletion page
         link = self.browser.find_element_by_class_name("delete-link")
         self.click(link)
         self.check_page("/sessions/{}/delete/".format(self.session_id))
         self.check_title("Delete Session")
-        self.check_h1("Delete Session")
 
         # They can go back
         main = self.browser.find_element_by_tag_name("main")
         self.assertIn("are you sure", main.text.lower())
-        self.assertIn("Reading", main.text)
-        self.assertIn("2 hours, 20 minutes", main.text)
+        self.assertIn("Yoga", main.text)
+        self.assertIn("1 hour", main.text)
         back_link = main.find_element_by_class_name("back-link")
         self.click(back_link)
         self.check_page("/sessions/{}/".format(self.session_id))
         self.check_title("Edit Session")
-        self.check_h1("Edit Session")
 
         # But they want to delete
         link = self.browser.find_element_by_class_name("delete-link")
         self.click(link)
         self.check_page("/sessions/{}/delete/".format(self.session_id))
         self.check_title("Delete Session")
-        self.check_h1("Delete Session")
-        delete = self.browser.find_element_by_class_name("delete-button")
+        delete = self.browser.find_element_by_class_name("delete-link")
         self.click(delete)
-        self.check_page("/time/1962/10/27/")
+        self.check_page("/time/1997/05/02/")
         day = self.browser.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(day, "2 hours, 10 minutes", [
-         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
-         ["11:00 - 11:30", "Reading", "30 minutes", None],
-         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
-         ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27 October, 1962")
+        time = self.browser.find_element_by_id("time-tracking")
+        today = time.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+        ])
 
 
     def test_session_deletion_view_404(self):

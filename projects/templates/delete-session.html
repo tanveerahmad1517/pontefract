@@ -12,13 +12,13 @@
 
 <div class="max-500">
     <form method="POST" class="deletion-form">
-      <div class="session-summary">{{ session.duration_string }} on project '{{ session.project }}'</div>
+      <div class="session-summary">{{ session.duration|time_string }} on project '{{ session.project }}'</div>
       <p>Are you sure you want to delete this session?</p>
       {% csrf_token %}
+      <div class="nav-buttons">
+        <a class="back-link" href="/sessions/{{ session.id }}/">Go back</a>
+        <input type="submit" value="Delete" class="delete-link">
+      </div>
     </form>
-    <div class="nav-buttons">
-      <a class="back-link" href="/sessions/{{ session.id }}/">Go back</a>
-      <input type="submit" value="Delete" class="delete-link">
-    </div>
 </div>
 {% endblock %}

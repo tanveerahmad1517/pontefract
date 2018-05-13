@@ -9,8 +9,8 @@ from django.utils import timezone
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 AUCK = pytz.timezone("Pacific/Auckland")
-def dt(year, month, day, hour, min=0, sec=0):
-    return AUCK.localize(datetime(year, month, day, hour, min, sec))
+def dt(year, month, day, hour, min=0, sec=0, tz=AUCK):
+    return tz.localize(datetime(year, month, day, hour, min, sec))
 
 class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
 
@@ -46,12 +46,26 @@ class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
          end=dt(1997, 5, 2, 0, 10), project=self.research
         )
 
+        user2 = User.objects.create_user(
+         username="Kurt", email="kurt@gmail.com",
+         timezone="Canada/Pacific", password="password"
+        )
+        running2 = Project.objects.create(name="Running", user=user2)
+        PAC = pytz.timezone("Canada/Pacific")
+        Session.objects.create(
+         start=dt(1997, 5, 1, 2, 30, tz=PAC), timezone=PAC, breaks=5,
+         end=dt(1997, 5, 2, 2, 40, tz=PAC), project=running2
+        )
+
+
         self.freezer = freeze_time("1997-05-1 15:00:00") #UTC time
         self.freezer.start()
         timezone.activate(self.user.timezone)
 
 
     def tearDown(self):
+        Session.objects.all().delete()
+        Project.objects.all().delete()
         self.freezer.stop()
         self.browser.close()
 
@@ -69,3 +83,4 @@ class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
     def logout(self):
         self.browser.get(self.live_server_url + "/")
         self.click(self.browser.find_element_by_id("logout-link"))
+        self.sleep(0.2)
