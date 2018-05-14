@@ -45,16 +45,50 @@ class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
          start=dt(1997, 5, 1, 23, 30), timezone=AUCK,
          end=dt(1997, 5, 2, 0, 10), project=self.research
         )
+        Session.objects.create(
+         start=dt(1997, 5, 1, 15, 30), timezone=AUCK,
+         end=dt(1997, 5, 1, 16, 10), project=self.research
+        )
+
+        Session.objects.create(
+         start=dt(1997, 4, 21, 15, 20), timezone=AUCK, breaks=5,
+         end=dt(1997, 4, 21, 16), project=self.teaching
+        )
+        Session.objects.create(
+         start=dt(1997, 4, 21, 20, 5), timezone=AUCK, breaks=15,
+         end=dt(1997, 4, 21, 21), project=self.coding
+        )
+        Session.objects.create(
+         start=dt(1997, 4, 2, 12, 0), timezone=AUCK,
+         end=dt(1997, 4, 2, 12, 10), project=self.fencing
+        )
+
+        Session.objects.create(
+         start=dt(1996, 12, 24, 15, 20), timezone=AUCK, breaks=5,
+         end=dt(1996, 12, 24, 16), project=self.cycling
+        )
+        Session.objects.create(
+         start=dt(1996, 12, 24, 20, 5), timezone=AUCK, breaks=15,
+         end=dt(1996, 12, 24, 21), project=self.running
+        )
+        Session.objects.create(
+         start=dt(1996, 12, 24, 12, 0), timezone=AUCK,
+         end=dt(1996, 12, 24, 12, 10), project=self.gym
+        )
+        Session.objects.create(
+         start=dt(1996, 12, 24, 19, 0), timezone=AUCK,
+         end=dt(1996, 12, 24, 20, 10), project=self.research
+        )
 
         user2 = User.objects.create_user(
          username="Kurt", email="kurt@gmail.com",
          timezone="Canada/Pacific", password="password"
         )
-        running2 = Project.objects.create(name="Running", user=user2)
+        self.running2 = Project.objects.create(name="Running", user=user2)
         PAC = pytz.timezone("Canada/Pacific")
         Session.objects.create(
          start=dt(1997, 5, 1, 2, 30, tz=PAC), timezone=PAC, breaks=5,
-         end=dt(1997, 5, 2, 2, 40, tz=PAC), project=running2
+         end=dt(1997, 5, 2, 2, 40, tz=PAC), project=self.running2
         )
 
 

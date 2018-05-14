@@ -302,7 +302,7 @@ class SessionViewingTests(TimeTrackingTests):
     def setUp(self):
         FunctionalTest.setUp(self)
 
-        # Create some projects for Sarah
+        '''# Create some projects for Sarah
         running = Project.objects.create(name="Running", user=self.user)
         archery = Project.objects.create(name="Archery", user=self.user)
         cooking = Project.objects.create(name="Cooking", user=self.user)
@@ -536,259 +536,213 @@ class SessionViewingTests(TimeTrackingTests):
         self.login()
         self.ultra_id = ultra.id
         self.health_id = health.id
-        self.archery_id = archery.id
+        self.archery_id = archery.id'''
+        self.login()
 
 
-    @freeze_time("1962-10-27")
+    def test_can_see_other_days(self):
+        # The main page shows today's times
+        self.get("/")
+        time = self.browser.find_element_by_id("time-tracking")
+        today = time.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
+
+        # They can view the work done yesterday
+        link = time.find_element_by_class_name("yesterday-link")
+        self.click(link)
+        self.check_page("/time/1997/05/01/")
+        self.check_title("1 May, 1997")
+        day = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(day, "1 hour, 20 minutes", [
+         ["15:30 - 16:10", "Research", "40 minutes", None],
+         ["23:30 - 00:10", "Research", "40 minutes", ""],
+        ])
+
+        # There is a form for adding to that day
+        form = self.browser.find_elements_by_tag_name("form")[1]
+        start_day_input = form.find_elements_by_tag_name("input")[0]
+        start_time_input = form.find_elements_by_tag_name("input")[1]
+        end_day_input = form.find_elements_by_tag_name("input")[2]
+        end_time_input = form.find_elements_by_tag_name("input")[3]
+        breaks_input = form.find_elements_by_tag_name("input")[4]
+        project_input = form.find_elements_by_tag_name("input")[5]
+        self.assertEqual(start_day_input.get_attribute("value"), "1997-05-01")
+        self.assertEqual(end_day_input.get_attribute("value"), "1997-05-01")
+
+        # They can navigate between days
+        link = self.browser.find_element_by_class_name("yesterday-link")
+        self.click(link)
+        self.check_page("/time/1997/04/30/")
+        self.check_title("30 April, 1997")
+        day = self.browser.find_element_by_class_name("day-time-tracking")
+        self.check_day_report(day, "0 minutes", [], date="30 April, 1997")
+        self.assertIn("no sessions", day.text)
+        link = self.browser.find_element_by_class_name("tomorrow-link")
+        self.click(link)
+        self.check_page("/time/1997/05/01/")
+        self.check_title("1 May, 1997")
+        link = self.browser.find_element_by_class_name("tomorrow-link")
+        self.click(link)
+        self.check_page("/")
+
+
+    def test_day_view_auth_required(self):
+        self.logout()
+        self.get("/time/1997/05/01/")
+        self.check_page("/")
+
+
     def test_can_view_months(self):
         # The main page shows today's times
         self.get("/")
         time = self.browser.find_element_by_id("time-tracking")
         today = time.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(today, "4 hours, 30 minutes", [
-         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
-         ["11:00 - 11:30", "Reading", "30 minutes", None],
-         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
-         ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
-         ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27 October, 1962")
+        self.check_day_report(today, "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ])
 
-        # They can view the work done in October
+        # They can view the work done in May
         link = time.find_element_by_class_name("month-link")
         self.click(link)
-        self.check_page("/time/1962/10/")
-        self.check_title("October 1962")
-        self.check_h1("October 1962")
+        self.check_page("/time/1997/05/")
+        self.check_title("May 1997")
         days = self.browser.find_elements_by_class_name("day-time-tracking")
-        self.assertEqual(len(days), 27)
-        for index, day in enumerate(days):
-            if index == 0:
-                self.check_day_report(day, "4 hours, 30 minutes", [
-                 ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
-                 ["11:00 - 11:30", "Reading", "30 minutes", None],
-                 ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
-                 ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
-                 ["23:45 - 00:30", "Reading", "45 minutes", None]
-                ], date="27 October, 1962")
-            elif index == 1:
-                self.check_day_report(day, "6 hours", [
-                 ["06:20 - 07:40", "Running", "1 hour", None],
-                 ["17:20 - 17:40", "Archery", "20 minutes", None],
-                 ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-                ], date="26 October, 1962")
-            elif index == 7:
-                self.check_day_report(day, "8 hours", [
-                 ["09:00 - 17:00", "Project Ultra", "8 hours", None],
-                ], date="20 October, 1962")
-            elif index == 11:
-                self.check_day_report(day, "12 hours", [
-                 ["09:00 - 17:00", "Project Ultra", "8 hours", None],
-                 ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-                ], date="16 October, 1962")
-            elif index == 15:
-                self.check_day_report(day, "12 hours", [
-                 ["09:00 - 17:00", "Project Ultra", "8 hours", None],
-                 ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-                ], date="12 October, 1962")
-            elif index == 19:
-                self.check_day_report(day, "12 hours", [
-                 ["09:00 - 17:00", "Project Ultra", "8 hours", None],
-                 ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-                ], date="8 October, 1962")
-            elif index == 24:
-                self.check_day_report(day, "6 hours, 20 minutes", [
-                 ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
-                 ["17:20 - 17:40", "Archery", "20 minutes", None],
-                 ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-                ], date="3 October, 1962")
-            else:
-                self.check_day_report(day, "0 minutes", [])
+        self.assertEqual(len(days), 2)
+        self.check_day_report(days[0], "1 hour, 20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+         ["01:00 - 02:00", "Yoga", "1 hour", None]
+        ], date="2 May, 1997")
+        self.check_day_report(days[1], "1 hour, 20 minutes", [
+         ["15:30 - 16:10", "Research", "40 minutes", None],
+         ["23:30 - 00:10", "Research", "40 minutes", ""],
+        ], date="1 May, 1997")
 
         # They can view the previous months
         previous = self.browser.find_element_by_id("previous-month")
         with self.assertRaises(self.NoElement):
             self.browser.find_element_by_id("next-month")
         self.click(previous)
-        self.check_page("/time/1962/09/")
-        self.check_title("September 1962")
-        self.check_h1("September 1962")
+        self.check_page("/time/1997/04/")
+        self.check_title("April 1997")
         days = self.browser.find_elements_by_class_name("day-time-tracking")
         self.assertEqual(len(days), 30)
         for index, day in enumerate(days):
-            if index == 0:
-                self.check_day_report(day, "6 hours, 20 minutes", [
-                ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
-                ["17:20 - 17:40", "Archery", "20 minutes", None],
-                ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-                ], date="30 September, 1962")
+            if index == 9:
+                self.check_day_report(day, "1 hour, 15 minutes", [
+                ["15:20 - 16:00", "Teaching", "35 minutes", "5 minutes"],
+                ["20:05 - 21:00", "Coding", "40 minutes", "15 minutes"],
+                ], date="21 April, 1997")
+            elif index == 28:
+                self.check_day_report(day, "10 minutes", [
+                ["12:00 - 12:10", "Fencing", "10 minutes", ""],
+                ], date="2 April, 1997")
             else:
                 self.check_day_report(day, "0 minutes", [])
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
-        self.check_page("/time/1962/08/")
-        self.check_title("August 1962")
-        self.check_h1("August 1962")
+        self.check_page("/time/1997/03/")
+        self.check_title("March 1997")
         days = self.browser.find_elements_by_class_name("day-time-tracking")
         self.assertEqual(len(days), 31)
         for day in days: self.check_day_report(day, "0 minutes", [])
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
-        self.check_page("/time/1962/07/")
-        self.check_title("July 1962")
-        self.check_h1("July 1962")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
-        self.assertEqual(len(days), 31)
-        previous = self.browser.find_element_by_id("previous-month")
-        self.click(previous)
-        self.check_page("/time/1962/06/")
-        self.check_title("June 1962")
-        self.check_h1("June 1962")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
-        self.assertEqual(len(days), 30)
-        previous = self.browser.find_element_by_id("previous-month")
-        self.click(previous)
-        self.check_page("/time/1962/05/")
-        self.check_title("May 1962")
-        self.check_h1("May 1962")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
-        self.assertEqual(len(days), 31)
-        previous = self.browser.find_element_by_id("previous-month")
-        self.click(previous)
-        self.check_page("/time/1962/04/")
-        self.check_title("April 1962")
-        self.check_h1("April 1962")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
-        self.assertEqual(len(days), 30)
-        previous = self.browser.find_element_by_id("previous-month")
-        self.click(previous)
-        self.check_page("/time/1962/03/")
-        self.check_title("March 1962")
-        self.check_h1("March 1962")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
-        self.assertEqual(len(days), 31)
-        for index, day in enumerate(days):
-            if index == 0:
-                self.check_day_report(day, "6 hours, 20 minutes", [
-                ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
-                ["17:20 - 17:40", "Archery", "20 minutes", None],
-                ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-                ], date="31 March, 1962")
-            elif index == 28:
-                self.check_day_report(day, "1 hour, 40 minutes", [
-                ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
-                ["17:20 - 17:40", "Archery", "20 minutes", None],
-                ], date="3 March, 1962")
-            else:
-                self.check_day_report(day, "0 minutes", [])
-        previous = self.browser.find_element_by_id("previous-month")
-        self.click(previous)
-        self.check_page("/time/1962/02/")
-        self.check_title("February 1962")
-        self.check_h1("February 1962")
+        self.check_page("/time/1997/02/")
+        self.check_title("February 1997")
         days = self.browser.find_elements_by_class_name("day-time-tracking")
         self.assertEqual(len(days), 28)
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
-        self.check_page("/time/1962/01/")
-        self.check_title("January 1962")
-        self.check_h1("January 1962")
+        self.check_page("/time/1997/01/")
+        self.check_title("January 1997")
         days = self.browser.find_elements_by_class_name("day-time-tracking")
         self.assertEqual(len(days), 31)
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
-        self.check_page("/time/1961/12/")
-        self.check_title("December 1961")
-        self.check_h1("December 1961")
+        self.check_page("/time/1996/12/")
+        self.check_title("December 1996")
         days = self.browser.find_elements_by_class_name("day-time-tracking")
         self.assertEqual(len(days), 31)
         for index, day in enumerate(days):
-            if index == 28:
-                self.check_day_report(day, "1 hour, 40 minutes", [
-                ["06:20 - 07:40", "Running", "1 hour, 20 minutes", None],
-                ["17:20 - 17:40", "Archery", "20 minutes", None],
-                ], date="3 December, 1961")
+            if index == 7:
+                self.check_day_report(day, "2 hours, 35 minutes", [
+                ["12:00 - 12:10", "Gym", "10 minutes", ""],
+                ["15:20 - 16:00", "Cycling", "35 minutes", "5 minutes"],
+                ["19:00 - 20:10", "Research", "1 hour, 10 minutes", None],
+                ["20:05 - 21:00", "Running", "40 minutes", "15 minutes"],
+                ], date="24 December, 1996")
             else:
                 self.check_day_report(day, "0 minutes", [])
         with self.assertRaises(self.NoElement):
             self.browser.find_element_by_id("previous-month")
-        for n in range(10):
+        for n in range(5):
             next = self.browser.find_element_by_id("next-month")
             self.click(next)
-        self.check_page("/time/1962/10/")
-        self.check_title("October 1962")
-        self.check_h1("October 1962")
+        self.check_page("/time/1997/05/")
+        self.check_title("May 1997")
 
 
     def test_month_view_404(self):
         self.logout()
-        self.get("/time/1962/10/")
+        self.get("/time/1997/05/")
         self.check_page("/")
         self.login()
-        self.get("/time/1962/10/")
-        self.check_page("/time/1962/10/")
-        self.check_h1("October 1962")
+        self.get("/time/1997/05/")
+        self.check_page("/time/1997/05/")
+        self.check_title("May 1997")
         self.get("/time/1952/10/")
         self.check_title("Not Found")
 
 
-    @freeze_time("1962-10-27")
-    def test_can_view_projects(self):
+    def test_can_view_project(self):
         # User goes to home page
         self.get("/")
 
-        # They decide to look at Project Ultra in more detail
+        # They decide to look at Research in more detail
         today = self.browser.find_element_by_class_name("day-time-tracking")
         table = today.find_element_by_tag_name("table")
         for row in table.find_elements_by_tag_name("tr"):
-            if "Project Ultra" in row.text:
+            if "Research" in row.text:
                 link = row.find_element_by_class_name("project-link")
                 self.click(link)
                 break
-        self.check_page("/projects/{}/".format(self.ultra_id))
-        self.check_title("Project Ultra")
-        self.check_h1("Project Ultra")
+        self.check_page("/projects/{}/".format(self.research.id))
+        self.check_title("Research")
+
+        # There is information at the top
+        title_div = self.browser.find_element_by_class_name("time-tracking-title")
+        self.assertEqual(
+         title_div.find_element_by_class_name("project-name").text, "Research"
+        )
+        self.assertEqual(
+         title_div.find_element_by_class_name("total-time").text, "2 hours, 50 minutes"
+        )
 
         # There are divs for each day of work on the project
         days = self.browser.find_elements_by_class_name("day-time-tracking")
-        self.assertEqual(len(days), 9)
-        self.check_day_report(days[0], "15 minutes", [
-         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
-        ], date="27 October, 1962")
-        self.check_day_report(days[1], "4 hours, 40 minutes", [
-         ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-        ], date="26 October, 1962")
-        self.check_day_report(days[2], "8 hours", [
-         ["09:00 - 17:00", "Project Ultra", "8 hours", None],
-        ], date="20 October, 1962")
-        self.check_day_report(days[3], "12 hours", [
-         ["09:00 - 17:00", "Project Ultra", "8 hours", None],
-         ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-        ], date="16 October, 1962")
-        self.check_day_report(days[4], "12 hours", [
-         ["09:00 - 17:00", "Project Ultra", "8 hours", None],
-         ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-        ], date="12 October, 1962")
-        self.check_day_report(days[5], "12 hours", [
-         ["09:00 - 17:00", "Project Ultra", "8 hours", None],
-         ["18:00 - 22:00", "Project Ultra", "4 hours", None],
-        ], date="8 October, 1962")
-        self.check_day_report(days[6], "4 hours, 40 minutes", [
-         ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-        ], date="3 October, 1962")
-        self.check_day_report(days[7], "4 hours, 40 minutes", [
-         ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-         ], date="30 September, 1962")
-        self.check_day_report(days[8], "4 hours, 40 minutes", [
-         ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-        ], date="31 March, 1962")
+        self.assertEqual(len(days), 3)
+        self.check_day_report(days[0], "20 minutes", [
+         ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
+        ], date="2 May, 1997")
+        self.check_day_report(days[1], "1 hour, 20 minutes", [
+         ["15:30 - 16:10", "Research", "40 minutes", None],
+         ["23:30 - 00:10", "Research", "40 minutes", None],
+        ], date="1 May, 1997")
+        self.check_day_report(days[2], "1 hour, 10 minutes", [
+         ["19:00 - 20:10", "Research", "1 hour, 10 minutes", None],
+        ], date="24 December, 1996")
 
 
     def test_project_view_404(self):
         self.logout()
-        self.get("/projects/{}/".format(self.ultra_id))
+        self.get("/projects/{}/".format(self.research.id))
         self.check_page("/")
         self.login()
-        self.get("/projects/{}/".format(self.health_id))
+        self.get("/projects/{}/".format(self.running2.id))
         self.check_title("Not Found")
         self.get("/projects/9999999/")
         self.check_title("Not Found")
@@ -799,25 +753,35 @@ class SessionViewingTests(TimeTrackingTests):
         self.get("/")
 
         # There is a link to the projects
-        time = self.browser.find_element_by_id("time-tracking")
-        link = time.find_element_by_class_name("projects-link")
+        nav = self.browser.find_element_by_tag_name("nav")
+        link = nav.find_element_by_id("projects-link")
         self.click(link)
         self.check_page("/projects/")
         self.check_title("All Projects")
-        self.check_h1("All Projects")
 
         # The projects are all there
         projects = self.browser.find_elements_by_class_name("project")
-        self.assertEqual(len(projects), 5)
-        h31 = projects[0].find_element_by_tag_name("h3")
-        self.assertEqual(h31.text, "Archery")
-        total_time = projects[0].find_element_by_class_name("total-time")
-        self.assertIn("2 hours", total_time.text)
-        last_done = projects[0].find_element_by_class_name("last-done")
-        self.assertIn("26 October, 1962", last_done.text)
-        self.click(h31.find_element_by_tag_name("a"))
-        self.check_page("/projects/{}/".format(self.archery_id))
-        self.browser.back()
+        self.assertEqual(len(projects), 8)
+        self.assertEqual(
+         projects[0].find_element_by_class_name("project-name").text, "Research"
+        )
+        self.assertIn(
+         "2 hours, 50 minutes", projects[0].find_element_by_class_name("total-time").text
+        )
+        self.assertIn(
+         "today", projects[0].find_element_by_class_name("last-done").text
+        )
+        self.assertEqual(
+         projects[-1].find_element_by_class_name("project-name").text, "Fencing"
+        )
+        self.assertIn(
+         "10 minutes", projects[-1].find_element_by_class_name("total-time").text
+        )
+        self.assertIn(
+         "2 April", projects[-1].find_element_by_class_name("last-done").text
+        )
+        self.click(projects[-1].find_element_by_class_name("project-name"))
+        self.check_page("/projects/{}/".format(self.fencing.id))
 
 
     def test_projects_are_out_of_bounds(self):
@@ -826,66 +790,6 @@ class SessionViewingTests(TimeTrackingTests):
         self.check_page("/")
 
 
-    @freeze_time("1962-10-27")
-    def test_can_see_other_days(self):
-        # The main page shows today's times
-        self.get("/")
-        time = self.browser.find_element_by_id("time-tracking")
-        today = time.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(today, "4 hours, 30 minutes", [
-         ["09:00 - 09:45", "Cooking", "40 minutes", "5 minutes"],
-         ["11:00 - 11:30", "Reading", "30 minutes", None],
-         ["12:00 - 12:15", "Project Ultra", "15 minutes", None],
-         ["18:00 - 20:30", "Reading", "2 hours, 20 minutes", "10 minutes"],
-         ["23:45 - 00:30", "Reading", "45 minutes", None]
-        ], date="27 October, 1962")
-
-        # They can view the work done yesterday
-        link = time.find_element_by_class_name("yesterday-link")
-        self.click(link)
-        self.check_page("/time/1962/10/26/")
-        self.check_title("26 October, 1962")
-        self.check_h1("26 October, 1962")
-        day = self.browser.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(day, "6 hours", [
-         ["06:20 - 07:40", "Running", "1 hour", None],
-         ["17:20 - 17:40", "Archery", "20 minutes", None],
-         ["23:30 - 04:30", "Project Ultra", "4 hours, 40 minutes", "20 minutes"],
-        ], date="26 October, 1962")
-
-        # There is a form for adding to that day
-        form = self.browser.find_elements_by_tag_name("form")[1]
-        start_day_input = form.find_elements_by_tag_name("input")[0]
-        start_time_input = form.find_elements_by_tag_name("input")[1]
-        end_day_input = form.find_elements_by_tag_name("input")[2]
-        end_time_input = form.find_elements_by_tag_name("input")[3]
-        breaks_input = form.find_elements_by_tag_name("input")[4]
-        project_input = form.find_elements_by_tag_name("input")[5]
-        self.assertEqual(start_day_input.get_attribute("value"), "1962-10-26")
-        self.assertEqual(end_day_input.get_attribute("value"), "1962-10-26")
-
-        # They can navigate between days
-        link = self.browser.find_element_by_class_name("yesterday-link")
-        self.click(link)
-        self.check_page("/time/1962/10/25/")
-        self.check_title("25 October, 1962")
-        self.check_h1("25 October, 1962")
-        day = self.browser.find_element_by_class_name("day-time-tracking")
-        self.check_day_report(day, "0 minutes", [], date="25 October, 1962")
-        link = self.browser.find_element_by_class_name("tomorrow-link")
-        self.click(link)
-        self.check_page("/time/1962/10/26/")
-        self.check_title("26 October, 1962")
-        self.check_h1("26 October, 1962")
-        link = self.browser.find_element_by_class_name("tomorrow-link")
-        self.click(link)
-        self.check_page("/")
-
-
-    def test_day_view_auth_required(self):
-        self.logout()
-        self.get("/time/1962/10/26/")
-        self.check_page("/")
 
 
 
