@@ -108,3 +108,15 @@ def edit_project(request, pk):
             form.save()
             return redirect("/projects/{}/".format(form.instance.id))
     return render(request, "edit-project.html", {"form": form})
+
+
+
+@login_required(login_url="/", redirect_field_name=None)
+def delete_project(request, pk):
+    """The view which lets users delete a project."""
+
+    project = get_object_or_404(Project, id=pk, user=request.user)
+    if request.method == "POST":
+        project.delete()
+        return redirect("/projects/")
+    return render(request, "delete-project.html", {"project": project})

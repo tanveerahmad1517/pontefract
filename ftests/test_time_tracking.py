@@ -839,3 +839,56 @@ class ProjectEditingTests(TimeTrackingTest):
         self.check_title("Not Found")
         self.get("/projects/9999999/edit/")
         self.check_title("Not Found")
+
+
+    def test_can_delete_project(self):
+        # User goes to project page
+        self.login()
+        self.get("/projects/")
+        first_project = self.browser.find_elements_by_class_name("project")[0]
+        self.click(first_project.find_element_by_tag_name("a"))
+
+        # They go to edit the research project
+        edit_link = self.browser.find_element_by_class_name("edit-link")
+        self.click(edit_link)
+        self.check_page("/projects/{}/edit/".format(self.research.id))
+        self.check_title("Edit Project")
+
+        # There is a link to the deletion page
+        link = self.browser.find_element_by_class_name("delete-link")
+        self.click(link)
+        self.check_page("/projects/{}/delete/".format(self.research.id))
+        self.check_title("Delete Project")
+
+        # They can go back
+        main = self.browser.find_element_by_tag_name("main")
+        self.assertIn("are you sure", main.text.lower())
+        self.assertIn("Research", main.text)
+        self.assertIn("4 sessions", main.text)
+        back_link = main.find_element_by_class_name("back-link")
+        self.click(back_link)
+        self.check_page("/projects/{}/edit/".format(self.research.id))
+        self.check_title("Edit Project")
+
+        # But they want to delete
+        link = self.browser.find_element_by_class_name("delete-link")
+        self.click(link)
+        self.check_page("/projects/{}/delete/".format(self.research.id))
+        self.check_title("Delete Project")
+        delete = self.browser.find_element_by_class_name("delete-link")
+        self.click(delete)
+        self.check_page("/projects/")
+        projects = self.browser.find_elements_by_class_name("project")
+        self.assertEqual(len(projects), 7)
+        for project in projects:
+            self.assertNotIn("Research", project.text)
+
+
+    def test_project_deletion_view_404(self):
+        self.get("/projects/{}/delete/".format(self.research.id))
+        self.check_page("/")
+        self.login()
+        self.get("/projects/{}/delete/".format(self.running2.id))
+        self.check_title("Not Found")
+        self.get("/projects/9999999/delete/")
+        self.check_title("Not Found")

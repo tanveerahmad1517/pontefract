@@ -54,3 +54,7 @@ class UrlTests(DjangoTest):
 
     def test_edit_project_url(self):
         self.check_url_returns_view("/projects/199/edit/", project_views.edit_project)
+
+
+    def test_delete_project_url(self):
+        self.check_url_returns_view("/projects/199/delete/", project_views.delete_project)

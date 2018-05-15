@@ -1,0 +1,24 @@
+{% extends "user-base.html" %}
+
+{% block title %}Delete Project{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/time.css">
+{% endblock %}
+
+{% block main %}
+
+<div class="max-500">
+    <form method="POST" class="deletion-form">
+      <div class="project-summary"></div>
+      <div class="project-title">{{ project.name }}</div>
+      <p>Are you sure you want to delete this project? It will remove the project and its
+      {{ project.session_set.count }} sessions permanently and cannot be undone.</p>
+      {% csrf_token %}
+      <div class="nav-buttons">
+        <a class="back-link" href="/projects/{{ project.id }}/edit/">Go back</a>
+        <input type="submit" value="Delete" class="delete-link">
+      </div>
+    </form>
+</div>
+{% endblock %}

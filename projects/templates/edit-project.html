@@ -9,5 +9,8 @@
 
 <div class="max-500">
     {% include "project-form.html" %}
+    <div class="nav-buttons">
+        <a href="/projects/{{ form.instance.id }}/delete/" class="delete-link">Delete this project</a>
+    </div>
 </div>
 {% endblock %}

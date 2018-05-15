@@ -427,3 +427,44 @@ class EditProjectViewTests(DjangoTest):
          user=request.user, instance="PROJECT", data=QueryDict("a=b")
         )
         self.assertFalse(form.save.called)
+
+
+
+class DeleteProjectViewTests(DjangoTest):
+
+    def setUp(self):
+        self.request = self.make_request("---", loggedin=True)
+        self.patch1 = patch("projects.views.get_object_or_404")
+        self.mock_get = self.patch1.start()
+        self.project = Mock()
+        self.mock_get.return_value = self.project
+
+
+    def tearDown(self):
+        self.patch1.stop()
+
+
+    def test_delete_project_view_uses_delete_project_template(self):
+        self.check_view_uses_template(
+         delete_project, self.request, "delete-project.html", 3
+        )
+
+
+    def test_delete_project_view_requires_auth(self):
+        request = self.make_request("---")
+        self.check_view_redirects(delete_project, request, "/", 3)
+
+
+    def test_delete_project_view_sends_project(self):
+        self.check_view_has_context(
+         delete_project, self.request, {"project": self.project}, 3
+        )
+        self.mock_get.assert_called_with(Project, id=3, user=self.request.user)
+
+
+    def test_delete_project_can_delete_project(self):
+        request = self.make_request(
+         "---", method="post", data={"a": "u", "b": "p"}, loggedin=True
+        )
+        self.check_view_redirects(delete_project, request, "/projects/", 3)
+        self.project.delete.assert_called_with()

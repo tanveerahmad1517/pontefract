@@ -15,5 +15,6 @@ urlpatterns = [
  path(r"sessions/<int:pk>/delete/", project_views.delete_session),
  path(r"projects/new/", project_views.new_project),
  path(r"projects/<int:pk>/edit/", project_views.edit_project),
+ path(r"projects/<int:pk>/delete/", project_views.delete_project),
  path(r"", core_views.root),
 ]
