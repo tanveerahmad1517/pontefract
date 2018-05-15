@@ -46,3 +46,7 @@ class UrlTests(DjangoTest):
 
     def test_delete_session_url(self):
         self.check_url_returns_view("/sessions/199/delete/", project_views.delete_session)
+
+
+    def test_new_project_url(self):
+        self.check_url_returns_view("/projects/new/", project_views.new_project)

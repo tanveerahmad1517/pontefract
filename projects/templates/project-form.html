@@ -1,0 +1,9 @@
+<form method="POST">
+    {% if form.errors.name %}
+    <div class="error" id="name-error">{{ form.errors.name.0 }}</div>
+    {% endif %}
+    {{ form.name.label_tag }}
+    {{ form.name }}
+    {% csrf_token %}
+    <input type="submit" value="Save">
+</form>

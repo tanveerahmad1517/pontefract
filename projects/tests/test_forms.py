@@ -22,11 +22,16 @@ class ProjectFormTests(DjangoTest):
         self.assertEqual(widget.input_type, "text")
         self.assertTrue(widget.is_required)
         self.assertEqual(widget.attrs, {
-         "autocomplete": "off", "placeholder": "Project's name"
+         "autocomplete": "off", "placeholder": "Project name"
         })
 
 
     def test_name_field_can_obtain_data_from_datadict(self):
+        self.assertEqual(
+         ProjectForm(self.user).fields["name"].widget.value_from_datadict(
+          {"name": "NNN", "project": "PPP"}, None, None
+         ), "NNN"
+        )
         self.assertEqual(
          ProjectForm(self.user).fields["name"].widget.value_from_datadict(
           {"project": "PPP"}, None, None
@@ -37,9 +42,11 @@ class ProjectFormTests(DjangoTest):
     def test_name_validation(self):
         name = ProjectForm(self.user).fields["name"]
         self.assertTrue(name.required)
-        for invalid in ("", None, "a\x00b"):
-            with self.assertRaises(ValidationError):
+        for invalid in ("", None, "a\x00b", "   "):
+            with self.assertRaises(ValidationError) as e:
                 name.clean(invalid)
+            if invalid == "   ":
+                self.assertIn("valid", str(e.exception))
 
 
     @patch("projects.forms.forms.ModelForm.save")

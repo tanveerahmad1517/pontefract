@@ -79,3 +79,17 @@ def delete_session(request, pk):
         session.delete()
         return redirect(session.local_start().strftime("/time/%Y/%m/%d/"))
     return render(request, "delete-session.html", {"session": session})
+
+
+@login_required(login_url="/", redirect_field_name=None)
+def new_project(request):
+    """The view which lets users create a new project without having to make a
+    new session."""
+
+    form = ProjectForm(user=request.user)
+    if request.method == "POST":
+        form = ProjectForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            p = form.save()
+            return redirect("/projects/{}/".format(form.instance.id))
+    return render(request, "new-project.html", {"form": form})

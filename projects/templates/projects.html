@@ -9,7 +9,10 @@
 
 {% block main %}
 
-<div class="time-tracking-title">All Projects</div>
+<div class="time-tracking-title">
+    <div class="project-title">All Projects</div>
+    <a href="/projects/new/" class="new-project-link">New Project</a>
+</div>
 
 <div class="projects">
     {% for project in projects %}

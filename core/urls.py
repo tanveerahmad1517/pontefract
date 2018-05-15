@@ -13,5 +13,6 @@ urlpatterns = [
  path(r"projects/", project_views.projects),
  path(r"sessions/<int:pk>/", project_views.edit_session),
  path(r"sessions/<int:pk>/delete/", project_views.delete_session),
+ path(r"projects/new/", project_views.new_project),
  path(r"", core_views.root),
 ]

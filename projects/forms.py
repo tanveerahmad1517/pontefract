@@ -18,7 +18,8 @@ class ProjectNameWidget(forms.TextInput):
         """Takes a POST dictionary from a SessionForm and returns the string
         containing the project name."""
 
-        name =  data.get("project")
+        name = data.get("name")
+        if not name: name = data.get("project")
         return name
 
 
@@ -31,14 +32,16 @@ class ProjectForm(forms.ModelForm):
         model = Project
         exclude = ["user"]
         widgets = {"name": ProjectNameWidget(attrs={
-         "autocomplete": "off", "placeholder": "Project's name"
+         "autocomplete": "off", "placeholder": "Project name"
         })}
+        error_messages = {"required": "ddd"}
 
 
     def __init__(self, user, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
         self.user = user
         del self.fields["name"].widget.attrs["maxlength"]
+        self.fields["name"].error_messages = {"required": "Invalid project name"}
 
 
     def save(self, *args, **kwargs):

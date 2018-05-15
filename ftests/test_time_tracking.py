@@ -7,7 +7,7 @@ from core.models import User
 from freezegun import freeze_time
 from .base import FunctionalTest
 
-class TimeTrackingTests(FunctionalTest):
+class TimeTrackingTest(FunctionalTest):
 
     def fill_in_session_form(self, start_time, end_time, breaks,
      project, existing=False, start_day=None, end_day=None):
@@ -111,8 +111,27 @@ class TimeTrackingTests(FunctionalTest):
                 self.assertEqual(cells[2].text, "")
 
 
+    def fill_in_project_form(self, name):
+        form = self.browser.find_elements_by_tag_name("form")[1]
+        name_input = form.find_elements_by_tag_name("input")[0]
+        name_input.clear()
+        name_input.send_keys(name)
+        submit = form.find_elements_by_tag_name("input")[-1]
+        self.click(submit)
 
-class SessionAddingTests(TimeTrackingTests):
+
+    def check_project_form(self, name=None, name_error=None):
+        form = self.browser.find_elements_by_tag_name("form")[1]
+        name_input = form.find_elements_by_tag_name("input")[0]
+        if name:
+            self.assertEqual(name_input.get_attribute("value"), name)
+        if name_error:
+            error = form.find_element_by_id("name-error")
+            self.assertIn(name_error, error.text)
+
+
+
+class SessionAddingTests(TimeTrackingTest):
 
     def test_can_add_work_session(self):
         # User goes to the home page
@@ -297,246 +316,75 @@ class SessionAddingTests(TimeTrackingTests):
 
 
 
-class SessionViewingTests(TimeTrackingTests):
+class ProjectAddingTests(TimeTrackingTest):
+
+    def test_can_add_new_project(self):
+        # User goes to projects page
+        self.login()
+        self.get("/")
+        self.click(self.browser.find_element_by_id("projects-link"))
+        self.check_page("/projects/")
+
+        # There is a link to add a new project
+        title = self.browser.find_element_by_class_name("time-tracking-title")
+        link = title.find_element_by_tag_name("a")
+        self.assertIn("new project", link.text.lower())
+        self.click(link)
+        self.check_page("/projects/new/")
+        self.check_title("New Project")
+
+        # There is a form
+        form = self.browser.find_elements_by_tag_name("form")[1]
+        name_input = form.find_elements_by_tag_name("input")[0]
+
+        # They enter some data
+        name_input.send_keys("Project Ultra")
+        submit = form.find_elements_by_tag_name("input")[-1]
+        self.click(submit)
+
+        # They are on the project page
+        self.check_page(
+         "/projects/{}/".format(Project.objects.get(name="Project Ultra").id)
+        )
+        title_div = self.browser.find_element_by_class_name("time-tracking-title")
+        self.assertEqual(
+         title_div.find_element_by_class_name("project-name").text, "Project Ultra"
+        )
+        self.assertEqual(
+         title_div.find_element_by_class_name("total-time").text, "0 minutes"
+        )
+        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.assertEqual(len(days), 0)
+
+
+
+    def test_need_to_be_logged_in_to_make_new_project(self):
+        self.get("/projects/new/")
+        self.check_page("/")
+
+
+    def test_project_name_must_be_valid(self):
+        # User goes to the new project page
+        self.login()
+        self.get("/projects/new/")
+
+        # They fill out the project form that is there
+        self.fill_in_project_form("    ")
+
+        # They are still on the new projects page
+        self.check_page("/projects/new/")
+
+        # There is an error message and the form is still filled in
+        self.check_project_form(
+         name="", name_error="valid"
+        )
+
+
+
+class SessionViewingTests(TimeTrackingTest):
 
     def setUp(self):
         FunctionalTest.setUp(self)
-
-        '''# Create some projects for Sarah
-        running = Project.objects.create(name="Running", user=self.user)
-        archery = Project.objects.create(name="Archery", user=self.user)
-        cooking = Project.objects.create(name="Cooking", user=self.user)
-        ultra = Project.objects.create(name="Project Ultra", user=self.user)
-        reading = Project.objects.create(name="Reading", user=self.user)
-
-        # Create some sessions for today
-        tz = pytz.timezone("Pacific/Auckland")
-        timezone.activate(self.user.timezone)
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 11, 0)),
-         end=tz.localize(datetime(1962, 10, 27, 11, 30)),
-         breaks=0, project=reading, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 12, 0)),
-         end=tz.localize(datetime(1962, 10, 27, 12, 15)),
-         breaks=0, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 9, 0)),
-         end=tz.localize(datetime(1962, 10, 27, 9, 45)),
-         breaks=5, project=cooking, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 18, 0)),
-         end=tz.localize(datetime(1962, 10, 27, 20, 30)),
-         breaks=10, project=reading, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 23, 45)),
-         end=tz.localize(datetime(1962, 10, 28, 0, 30)),
-         breaks=0, project=reading, timezone=tz
-        )
-
-        # Create sessions for current month
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 26, 23, 30)),
-         end=tz.localize(datetime(1962, 10, 27, 4, 30)),
-
-         breaks=20, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 26, 17,20)),
-         end=tz.localize(datetime(1962, 10, 26, 17, 40)),
-
-         breaks=0, project=archery, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 26, 6,20)),
-         end=tz.localize(datetime(1962, 10, 26, 7, 40)),
-
-         breaks=0, project=running, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 20, 9,00)),
-         end=tz.localize(datetime(1962, 10, 20, 17, 00)),
-
-         breaks=0, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 16, 9,00)),
-         end=tz.localize(datetime(1962, 10, 16, 17, 00)),
-
-         breaks=0, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 16, 18,00)),
-         end=tz.localize(datetime(1962, 10, 16, 22, 00)),
-
-         breaks=0, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 12, 9,00)),
-         end=tz.localize(datetime(1962, 10, 12, 17, 00)),
-
-         breaks=0, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 12, 18,00)),
-         end=tz.localize(datetime(1962, 10, 12, 22, 00)),
-
-         breaks=0, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 8, 9,00)),
-         end=tz.localize(datetime(1962, 10, 8, 17, 00)),
-
-         breaks=0, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 8, 18,00)),
-         end=tz.localize(datetime(1962, 10, 8, 22, 00)),
-
-         breaks=0, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 3, 23,30)),
-         end=tz.localize(datetime(1962, 10, 4, 4, 30)),
-
-         breaks=20, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 3, 17,20)),
-         end=tz.localize(datetime(1962, 10, 3, 17, 40)),
-
-         breaks=0, project=archery, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 3, 6,20)),
-         end=tz.localize(datetime(1962, 10, 3, 7, 40)),
-
-         breaks=0, project=running, timezone=tz
-        )
-
-        # Create sessions for previous months
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 9, 30, 23,30)),
-         end=tz.localize(datetime(1962, 10, 1, 4, 30)),
-
-         breaks=20, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 9, 30, 17,20)),
-         end=tz.localize(datetime(1962, 9, 30, 17, 40)),
-
-         breaks=0, project=archery, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 9, 30, 6,20)),
-         end=tz.localize(datetime(1962, 9, 30, 7, 40)),
-
-         breaks=0, project=running, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 3, 31, 23,30)),
-         end=tz.localize(datetime(1962, 4, 1, 4, 30)),
-
-         breaks=20, project=ultra, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 3, 31, 17,20)),
-         end=tz.localize(datetime(1962, 3, 31, 17, 40)),
-         breaks=0, project=archery, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 3, 31, 6,20)),
-         end=tz.localize(datetime(1962, 3, 31, 7, 40)),
-         breaks=0, project=running, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 3, 3, 17,20)),
-         end=tz.localize(datetime(1962, 3, 3, 17, 40)),
-         breaks=0, project=archery, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 3, 3, 6,20)),
-         end=tz.localize(datetime(1962, 3, 3, 7, 40)),
-         breaks=0, project=running, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1961, 12, 3, 17,20)),
-         end=tz.localize(datetime(1961, 12, 3, 17, 40)),
-         breaks=0, project=archery, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1961, 12, 3, 6,20)),
-         end=tz.localize(datetime(1961, 12, 3, 7, 40)),
-         breaks=0, project=running, timezone=tz
-        )
-
-        # Create things for other user that could clash if not set up properly
-        user2 = User.objects.create_user(
-         username="john",
-         email="jfk@wash.gov",
-         password="onassis"
-        )
-        running2 = Project.objects.create(name="Running", user=user2)
-        cycling2 = Project.objects.create(name="Cycling", user=user2)
-        health = Project.objects.create(name="Health", user=user2)
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 27, 11, 0)),
-         end=tz.localize(datetime(1962, 10, 27, 11, 30)),
-         breaks=0, project=running2, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 26, 11,00)),
-         end=tz.localize(datetime(1962, 10, 26, 11, 30)),
-         breaks=0, project=cycling2, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 10, 3, 11,00)),
-         end=tz.localize(datetime(1962, 10, 26, 11, 30)),
-         breaks=0, project=health, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 9, 30, 11, 0)),
-         end=tz.localize(datetime(1962, 9, 30, 11, 30)),
-         breaks=0, project=health, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 9, 27, 11, 0)),
-         end=tz.localize(datetime(1962, 9, 27, 11, 30)),
-         breaks=0, project=health, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 7, 1, 11,00)),
-         end=tz.localize(datetime(1962, 7, 1, 11, 30)),
-         breaks=0, project=health, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 3, 3, 11,00)),
-         end=tz.localize(datetime(1962, 3, 3, 11, 30)),
-         breaks=0, project=health, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1962, 3, 1, 11,00)),
-         end=tz.localize(datetime(1962, 3, 1, 11, 30)),
-         breaks=0, project=health, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1961, 3, 1, 11,00)),
-         end=tz.localize(datetime(1961, 3, 1, 11, 30)),
-         breaks=0, project=health, timezone=tz
-        )
-        Session.objects.create(
-         start=tz.localize(datetime(1958, 3, 1, 11,00)),
-         end=tz.localize(datetime(1958, 3, 1, 11, 30)),
-         breaks=0, project=health, timezone=tz
-        )
-        self.login()
-        self.ultra_id = ultra.id
-        self.health_id = health.id
-        self.archery_id = archery.id'''
         self.login()
 
 
@@ -791,9 +639,7 @@ class SessionViewingTests(TimeTrackingTests):
 
 
 
-
-
-class SessionEditingTests(TimeTrackingTests):
+class SessionEditingTests(TimeTrackingTest):
 
     def setUp(self):
         FunctionalTest.setUp(self)

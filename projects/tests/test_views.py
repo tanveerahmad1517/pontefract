@@ -311,3 +311,56 @@ class DeleteSessionViewTests(DjangoTest):
         )
         self.check_view_redirects(delete_session, request, "/time/1998/01/03/", 3)
         self.session.delete.assert_called_with()
+
+
+
+class NewProjectViewTests(DjangoTest):
+
+    def setUp(self):
+        self.request = self.make_request("---", loggedin=True)
+        self.patch1 = patch("projects.views.ProjectForm")
+        self.mock_form = self.patch1.start()
+        self.mock_form.return_value = "FORM"
+
+
+    def tearDown(self):
+        self.patch1.stop()
+
+
+    def test_new_project_view_uses_new_project_template(self):
+        self.check_view_uses_template(
+         new_project, self.request, "new-project.html"
+        )
+
+
+    def test_new_project_view_requires_auth(self):
+        request = self.make_request("---")
+        self.check_view_redirects(new_project, request, "/")
+
+
+    def test_new_project_view_sends_project_form(self):
+        self.mock_form.return_value = "FORM"
+        self.check_view_has_context(new_project, self.request, {"form": "FORM"})
+        self.mock_form.assert_called_with(user=self.request.user)
+
+
+    def test_can_save_new_project(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.instance.id = 10
+        form.is_valid.return_value = True
+        request = self.make_request("---", loggedin=True, data={"a": "b"}, method="post")
+        self.check_view_redirects(new_project, request, "/projects/10/")
+        self.mock_form.assert_called_with(user=request.user, data=QueryDict("a=b"))
+        form.save.assert_called_with()
+
+
+    def test_can_reject_invalid_form(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.instance.id = 10
+        form.is_valid.return_value = False
+        request = self.make_request("---", loggedin=True, data={"a": "b"}, method="post")
+        self.check_view_uses_template(new_project, request, "new-project.html")
+        self.mock_form.assert_called_with(user=request.user, data=QueryDict("a=b"))
+        self.assertFalse(form.save.called)
