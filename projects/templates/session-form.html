@@ -60,7 +60,7 @@
     <input type="submit" tabindex="7" value="Save">
 </form>
 <script>
-    if ($(".session-form").find(".error")) {
+    if ($(".session-form").find(".error").length) {
       $("html, body").animate({
         scrollTop: $(".session-form").offset().top
       }, 800);
