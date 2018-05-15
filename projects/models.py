@@ -10,6 +10,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
 from django.db.models import F, ExpressionWrapper
+from django.db.models.functions import Cast
 User = get_user_model()
 
 class Project(models.Model):
@@ -44,19 +45,15 @@ class Project(models.Model):
 
         SQL queries: 2"""
 
-        duration_ = ExpressionWrapper(
-         (F('end') - F('start')) / 60000000 - F("breaks"),
-         output_field=models.fields.IntegerField()
-        )
         sessions = list(Session.objects.filter(project__user=user).annotate(
-         project_id=models.F("project"), d=duration_
+         project_id=models.F("project")
         ).order_by("start"))
         projects = {
          p.id: p for p in Project.objects.filter(user=user).order_by("id")
         }
         for project in projects.values(): project.duration = 0
         for session in sessions:
-            projects[session.project_id].duration += session.d
+            projects[session.project_id].duration += session.duration()
             projects[session.project_id].recent = session
         return reversed(sorted(projects.values(), key=lambda p: p.duration))
 
