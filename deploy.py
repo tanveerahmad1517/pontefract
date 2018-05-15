@@ -18,11 +18,16 @@ tracked_files = subprocess.check_output("git ls-files", shell=True).decode()
 tracked_files = list(filter(bool, tracked_files.split("\n")))
 
 # Push source code to remote
+commands = []
 for file_ in tracked_files:
     directory = "/".join(file_.split("/")[:-1])
-    subprocess.call(
-     "ssh {} 'mkdir -p ~/{}/source/{}'".format(sitename, sitename, directory), shell=True
-    )
+    commands.append("mkdir -p ~/{}/source/{}".format(sitename, directory))
+commands = set(commands)
+subprocess.call(
+ "ssh {} '{}'".format(sitename, ";".join(commands)), shell=True
+)
+files = []
+for file_ in tracked_files:
     subprocess.call(
      "scp -r ./{} {}:~/{}/source/{}".format(file_, sitename, sitename, file_), shell=True
     )
