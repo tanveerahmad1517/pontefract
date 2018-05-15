@@ -798,3 +798,44 @@ class SessionEditingTests(TimeTrackingTest):
         self.check_title("Not Found")
         self.get("/sessions/9999999/delete/")
         self.check_title("Not Found")
+
+
+
+class ProjectEditingTests(TimeTrackingTest):
+
+    def test_can_edit_project(self):
+        # User goes to project page
+        self.login()
+        self.get("/projects/")
+        first_project = self.browser.find_elements_by_class_name("project")[0]
+        self.click(first_project.find_element_by_tag_name("a"))
+
+        # There is a link to edit the project
+        edit_link = self.browser.find_element_by_class_name("edit-link")
+        self.click(edit_link)
+        self.check_page("/projects/{}/edit/".format(self.research.id))
+        self.check_title("Edit Project")
+
+        # There is a form, which they modify
+        self.check_project_form(name="Research")
+        self.fill_in_project_form(name="Super Research")
+
+        # They are back on the project page and the project is changed
+        self.check_page("/projects/{}/".format(self.research.id))
+        title_div = self.browser.find_element_by_class_name("time-tracking-title")
+        self.assertEqual(
+         title_div.find_element_by_class_name("project-name").text, "Super Research"
+        )
+        self.assertEqual(
+         title_div.find_element_by_class_name("total-time").text, "2 hours, 50 minutes"
+        )
+
+
+    def test_project_editing_requires_auth(self):
+        self.get("/projects/{}/edit/".format(self.research.id))
+        self.check_page("/")
+        self.login()
+        self.get("/projects/{}/edit/".format(self.running2.id))
+        self.check_title("Not Found")
+        self.get("/projects/9999999/edit/")
+        self.check_title("Not Found")

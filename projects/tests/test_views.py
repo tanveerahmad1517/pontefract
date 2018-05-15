@@ -364,3 +364,66 @@ class NewProjectViewTests(DjangoTest):
         self.check_view_uses_template(new_project, request, "new-project.html")
         self.mock_form.assert_called_with(user=request.user, data=QueryDict("a=b"))
         self.assertFalse(form.save.called)
+
+
+
+class EditProjectViewTests(DjangoTest):
+
+    def setUp(self):
+        self.request = self.make_request("---", loggedin=True)
+        self.patch1 = patch("projects.views.ProjectForm")
+        self.mock_form = self.patch1.start()
+        self.mock_form.return_value = "FORM"
+        self.patch2 = patch("projects.views.get_object_or_404")
+        self.mock_get = self.patch2.start()
+        self.mock_get.return_value = "PROJECT"
+
+
+    def tearDown(self):
+        self.patch1.stop()
+        self.patch2.stop()
+
+
+    def test_edit_project_view_uses_edit_project_template(self):
+        self.check_view_uses_template(
+         edit_project, self.request, "edit-project.html", 4
+        )
+
+
+    def test_edit_project_view_requires_auth(self):
+        request = self.make_request("---")
+        self.check_view_redirects(edit_project, request, "/", 4)
+
+
+    def test_edit_project_view_sends_form(self):
+        self.check_view_has_context(edit_project, self.request, {"form": "FORM"}, 4)
+        self.mock_get.assert_called_with(Project, id=4, user=self.request.user)
+        self.mock_form.assert_called_with(user=self.request.user, instance="PROJECT")
+
+
+    def test_can_save_edited_project(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.instance.id = 10
+        form.is_valid.return_value = True
+        request = self.make_request("---", loggedin=True, data={"a": "b"}, method="post")
+        self.check_view_redirects(edit_project, request, "/projects/10/", 10)
+        self.mock_get.assert_called_with(Project, id=10, user=request.user)
+        self.mock_form.assert_called_with(
+         user=request.user, instance="PROJECT", data=QueryDict("a=b")
+        )
+        form.save.assert_called_with()
+
+
+    def test_can_reject_invalid_form_project(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.instance.id = 10
+        form.is_valid.return_value = False
+        request = self.make_request("---", loggedin=True, data={"a": "b"}, method="post")
+        self.check_view_uses_template(edit_project, request, "edit-project.html", 10)
+        self.mock_get.assert_called_with(Project, id=10, user=request.user)
+        self.mock_form.assert_called_with(
+         user=request.user, instance="PROJECT", data=QueryDict("a=b")
+        )
+        self.assertFalse(form.save.called)

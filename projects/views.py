@@ -90,6 +90,21 @@ def new_project(request):
     if request.method == "POST":
         form = ProjectForm(user=request.user, data=request.POST)
         if form.is_valid():
-            p = form.save()
+            form.save()
             return redirect("/projects/{}/".format(form.instance.id))
     return render(request, "new-project.html", {"form": form})
+
+
+
+@login_required(login_url="/", redirect_field_name=None)
+def edit_project(request, pk):
+    """The view which lets users edit a project."""
+
+    project = get_object_or_404(Project, id=pk, user=request.user)
+    form = ProjectForm(user=request.user, instance=project)
+    if request.method == "POST":
+        form = ProjectForm(user=request.user, data=request.POST, instance=project)
+        if form.is_valid():
+            form.save()
+            return redirect("/projects/{}/".format(form.instance.id))
+    return render(request, "edit-project.html", {"form": form})

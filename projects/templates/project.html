@@ -10,6 +10,7 @@
 <div class="time-tracking-title">
      <div class="project-name">{{ project.name }}</div>
      <div class="total-time">{{ project.total_time|time_string }}</div>
+     <a href="/projects/{{ project.id }}/edit/" class="edit-link">Edit Project</a>
 </div>
 
 {% for day in days %}

@@ -50,3 +50,7 @@ class UrlTests(DjangoTest):
 
     def test_new_project_url(self):
         self.check_url_returns_view("/projects/new/", project_views.new_project)
+
+
+    def test_edit_project_url(self):
+        self.check_url_returns_view("/projects/199/edit/", project_views.edit_project)
