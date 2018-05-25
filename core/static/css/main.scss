@@ -1,0 +1,69 @@
+$font: Montserrat;
+$logo-font: "Patua One";
+
+$back-gray: #e9ebee;
+$border-gray: #dddbef;
+$purple: #6c5ce7;
+$green: #00b894;
+$pale-purple: #f2f1fd;
+$very-pale-purple: #fcfcfe;
+$hyperlink-blue: #0074D9;
+$error-red: #a94442;
+$white: #ffffff;
+
+$nav-margin: 3rem;
+$padding: 1.5rem;
+$curvature: 0.4rem;
+
+$tablet-width: 600px;
+$laptop-width: 900px;
+$desktop-width: 1200px;
+
+@mixin margin-side($val) {
+    margin: {left: $val; right: $val;}
+}
+
+@mixin non-left-margin($val) {
+    margin: $val;
+    margin-left: 0px;
+}
+
+@mixin white-box {
+    background-color: $white;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+}
+
+@mixin button {
+    height: fit-content;
+    display: inline-block;
+    width: auto;
+    text-align: center;
+    background-color: $green;
+    color: $white;
+    padding: 1rem;
+    border-radius: $curvature;
+    border-width: 0px;
+    cursor: pointer;
+}
+
+@import "base";
+@import "containers";
+@import "forms";
+@import "components";
+@import "core";
+
+
+@media (min-width: $tablet-width) {
+    @include nav--tablet();
+    @include containers--tablet();
+    @include forms--tablet();
+    @include components--tablet();
+}
+
+@media (min-width: $laptop-width) {
+    @include containers--laptop();
+    @include components--laptop();
+}
+
+@media (min-width: $desktop-width) {
+}

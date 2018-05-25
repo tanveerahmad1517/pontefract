@@ -58,6 +58,12 @@
 
     {% csrf_token %}
     <input type="submit" tabindex="7" value="Save">
+
+    {% if delete %}
+    <div class="container-foot">
+        <a href="/sessions/{{ form.instance.id }}/delete/" class="delete-button">Delete this session</a>
+    </div>
+    {% endif %}
 </form>
 <script>
     if ($(".session-form").find(".error").length) {

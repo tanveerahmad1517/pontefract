@@ -1,0 +1,44 @@
+<div class="day-sessions">
+
+    <div class="about-day">
+        <div class="date">{{ day.day }}</div>
+        <div class="total-time">{{ day.total_duration|time_string }}</div>
+    </div>
+
+
+    <table>
+        {% if day.sessions %}
+        {% for session in day %}
+        <tr class="session">
+            <td class="time-cell"><a href="/sessions/{{ session.id }}/" class="edit-link">
+                {{ session.start|date:"H:i" }} - {{ session.end|date:"H:i" }}
+            </a></td>
+            <td class="name-cell"><a class="project-link" href="/projects/{{ session.project_id }}/">
+                {{ session.project_name}}
+            </a></td>
+            <td class="duration-cell">{{ session.duration|time_string }}</td>
+            <td class="breaks-cell">{% if session.breaks %}({{ session.breaks }} minute break){% else %}-{% endif %}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr class="no-sessions"><td>You have no sessions for this day.</td></tr>
+        {% endif %}
+    </table>
+
+    {% if day_context == "generic" %}
+    <div class="nav-buttons">
+        <a href="/time/{{ day.yesterday|date:'Y/m/d/'}}" class="yesterday-link">Previous Day</a>
+        {% if day.tomorrow == request.now.date %}
+        <a href="/" class="tomorrow-link">Next Day</a>
+        {% else %}
+        <a href="/time/{{ day.tomorrow|date:'Y/m/d/'}}" class="tomorrow-link">Next Day</a>
+        {% endif %}
+    </div>
+    {% elif day_context == "today" %}
+    <div class="nav-buttons">
+        <a href="/time/{{ day.yesterday|date:'Y/m/d/'}}" class="yesterday-link">Yesterday</a>
+        {% if user.first_month %}<a href="/time/{{ day.day|date:'Y/m/'}}" class="month-link">This Month</a>{% endif %}
+    </div>
+    {% endif %}
+
+</div>

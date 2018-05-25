@@ -2,7 +2,6 @@
 {% block title %}{{ day.day }}{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/time.css">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 {% endblock %}
 {% block scripts %}
@@ -11,20 +10,8 @@
 
 {% block main %}
 
-<div id="time-tracking">
-    <div id="time-tracking-today">
-        {% include "day-sessions.html" %}
-        <div class="nav-buttons">
-            <a href="/time/{{ day.yesterday|date:'Y/m/d/'}}" class="yesterday-link">Previous Day</a>
-            {% if day.tomorrow == request.now.date %}
-            <a href="/" class="tomorrow-link">Next Day</a>
-            {% else %}
-            <a href="/time/{{ day.tomorrow|date:'Y/m/d/'}}" class="tomorrow-link">Next Day</a>
-            {% endif %}
-        </div>
-    </div><div id="time-tracking-today-form">
-        {% include "session-form.html" %}
-    </div>
-</div>
+{% with "generic" as day_context %}
+{% include "containers/day-container.html" %}
+{% endwith %}
 
 {% endblock %}

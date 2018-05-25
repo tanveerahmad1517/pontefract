@@ -16,6 +16,7 @@ INSTALLED_APPS = [
  "django.contrib.sessions",
  "django.contrib.humanize",
  "timezone_field",
+ 'sass_processor',
  "core",
  "projects"
 ]
@@ -32,6 +33,8 @@ MIDDLEWARE = [
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, "../static"))
+
+SASS_PROCESSOR_ROOT = os.path.abspath(os.path.join(BASE_DIR, "core", "static"))
 
 AUTH_USER_MODEL = "core.User"
 

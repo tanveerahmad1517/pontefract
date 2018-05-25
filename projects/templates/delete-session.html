@@ -4,20 +4,18 @@
 {% block title %}Delete Session{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" type="text/css" href="/static/css/time.css">
-<link rel="stylesheet" type="text/css" href="/static/css/forms.css">
 {% endblock %}
 
 {% block main %}
 
-<div class="max-500">
+<div class="single-container">
     <form method="POST" class="deletion-form">
-      <div class="session-summary">{{ session.duration|time_string }} on project '{{ session.project }}'</div>
+      <div class="delete-summary">{{ session.duration|time_string }} on project '{{ session.project }}'</div>
       <p>Are you sure you want to delete this session?</p>
       {% csrf_token %}
       <div class="nav-buttons">
-        <a class="back-link" href="/sessions/{{ session.id }}/">Go back</a>
-        <input type="submit" value="Delete" class="delete-link">
+        <a id="back-link" href="/sessions/{{ session.id }}/">Go back</a>
+        <input type="submit" value="Delete" class="delete-button">
       </div>
     </form>
 </div>

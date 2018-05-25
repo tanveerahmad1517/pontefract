@@ -3,18 +3,17 @@
 {% load humanize %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/time.css">
 {% endblock %}
 
 
 {% block main %}
 
-<div class="time-tracking-title">
-    <div class="project-title">All Projects</div>
+<div class="title-box">
+    <h1>All Projects</h1>
     <a href="/projects/new/" class="new-project-link">New Project</a>
 </div>
 
-<div class="projects">
+<div class="projects-container">
     {% for project in projects %}
     <div class="project">
         <a class="project-name" href="/projects/{{ project.id }}/">{{ project.name }}</a>

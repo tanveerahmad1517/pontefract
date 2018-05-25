@@ -139,8 +139,7 @@ class SessionAddingTests(TimeTrackingTest):
         self.get("/")
 
         # There are two sessions already there
-        time = self.browser.find_element_by_id("time-tracking")
-        today = time.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
@@ -154,8 +153,7 @@ class SessionAddingTests(TimeTrackingTest):
         self.check_page("/")
 
         # The total for the day is updated
-        time = self.browser.find_element_by_id("time-tracking")
-        today = time.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 40 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None],
@@ -178,8 +176,7 @@ class SessionAddingTests(TimeTrackingTest):
         self.check_page("/")
 
         # The total for the day is updated
-        time = self.browser.find_element_by_id("time-tracking")
-        today = time.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 50 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None],
@@ -197,7 +194,7 @@ class SessionAddingTests(TimeTrackingTest):
         self.check_page("/time/2009/10/1/")
 
         # The total for the day is updated
-        today = self.browser.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "30 minutes", [
          ["16:05 - 16:35", "Cycling", "30 minutes", None]
         ])
@@ -213,7 +210,7 @@ class SessionAddingTests(TimeTrackingTest):
 
         # They are still on the home page and there are no extra sessions
         self.check_page("/")
-        today = self.browser.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
@@ -237,7 +234,7 @@ class SessionAddingTests(TimeTrackingTest):
 
         # They are still on the home page and there are no extra sessions
         self.check_page("/")
-        today = self.browser.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
@@ -259,7 +256,7 @@ class SessionAddingTests(TimeTrackingTest):
 
         # They are still on the home page and there are no extra sessions
         self.check_page("/")
-        today = self.browser.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
@@ -281,7 +278,7 @@ class SessionAddingTests(TimeTrackingTest):
 
         # They are still on the home page and there are no extra sessions
         self.check_page("/")
-        today = self.browser.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
@@ -303,7 +300,7 @@ class SessionAddingTests(TimeTrackingTest):
 
         # They are still on the home page and there are no extra sessions
         self.check_page("/")
-        today = self.browser.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
@@ -326,7 +323,7 @@ class ProjectAddingTests(TimeTrackingTest):
         self.check_page("/projects/")
 
         # There is a link to add a new project
-        title = self.browser.find_element_by_class_name("time-tracking-title")
+        title = self.browser.find_element_by_class_name("title-box")
         link = title.find_element_by_tag_name("a")
         self.assertIn("new project", link.text.lower())
         self.click(link)
@@ -346,14 +343,14 @@ class ProjectAddingTests(TimeTrackingTest):
         self.check_page(
          "/projects/{}/".format(Project.objects.get(name="Project Ultra").id)
         )
-        title_div = self.browser.find_element_by_class_name("time-tracking-title")
+        title_div = self.browser.find_element_by_class_name("title-box")
         self.assertEqual(
-         title_div.find_element_by_class_name("project-name").text, "Project Ultra"
+         title_div.find_element_by_tag_name("h1").text, "Project Ultra"
         )
         self.assertEqual(
          title_div.find_element_by_class_name("total-time").text, "0 minutes"
         )
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 0)
 
 
@@ -391,19 +388,18 @@ class SessionViewingTests(TimeTrackingTest):
     def test_can_see_other_days(self):
         # The main page shows today's times
         self.get("/")
-        time = self.browser.find_element_by_id("time-tracking")
-        today = time.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
         ])
 
         # They can view the work done yesterday
-        link = time.find_element_by_class_name("yesterday-link")
+        link = self.browser.find_element_by_class_name("yesterday-link")
         self.click(link)
         self.check_page("/time/1997/05/01/")
         self.check_title("1 May, 1997")
-        day = self.browser.find_element_by_class_name("day-time-tracking")
+        day = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(day, "1 hour, 20 minutes", [
          ["15:30 - 16:10", "Research", "40 minutes", None],
          ["23:30 - 00:10", "Research", "40 minutes", ""],
@@ -425,10 +421,10 @@ class SessionViewingTests(TimeTrackingTest):
         self.click(link)
         self.check_page("/time/1997/04/30/")
         self.check_title("30 April, 1997")
-        day = self.browser.find_element_by_class_name("day-time-tracking")
+        day = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(day, "0 minutes", [], date="30 April, 1997")
         self.assertIn("no sessions", day.text)
-        link = self.browser.find_element_by_class_name("tomorrow-link")
+        link = day.find_element_by_class_name("tomorrow-link")
         self.click(link)
         self.check_page("/time/1997/05/01/")
         self.check_title("1 May, 1997")
@@ -446,19 +442,19 @@ class SessionViewingTests(TimeTrackingTest):
     def test_can_view_months(self):
         # The main page shows today's times
         self.get("/")
-        time = self.browser.find_element_by_id("time-tracking")
-        today = time.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
         ])
 
         # They can view the work done in May
-        link = time.find_element_by_class_name("month-link")
+        link = today.find_element_by_class_name("month-link")
         self.click(link)
         self.check_page("/time/1997/05/")
         self.check_title("May 1997")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        self.check_h1("May 1997")
+        days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 2)
         self.check_day_report(days[0], "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
@@ -476,7 +472,7 @@ class SessionViewingTests(TimeTrackingTest):
         self.click(previous)
         self.check_page("/time/1997/04/")
         self.check_title("April 1997")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 30)
         for index, day in enumerate(days):
             if index == 9:
@@ -494,26 +490,26 @@ class SessionViewingTests(TimeTrackingTest):
         self.click(previous)
         self.check_page("/time/1997/03/")
         self.check_title("March 1997")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 31)
         for day in days: self.check_day_report(day, "0 minutes", [])
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
         self.check_page("/time/1997/02/")
         self.check_title("February 1997")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 28)
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
         self.check_page("/time/1997/01/")
         self.check_title("January 1997")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 31)
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
         self.check_page("/time/1996/12/")
         self.check_title("December 1996")
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 31)
         for index, day in enumerate(days):
             if index == 7:
@@ -551,7 +547,7 @@ class SessionViewingTests(TimeTrackingTest):
         self.get("/")
 
         # They decide to look at Research in more detail
-        today = self.browser.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         table = today.find_element_by_tag_name("table")
         for row in table.find_elements_by_tag_name("tr"):
             if "Research" in row.text:
@@ -560,18 +556,19 @@ class SessionViewingTests(TimeTrackingTest):
                 break
         self.check_page("/projects/{}/".format(self.research.id))
         self.check_title("Research")
+        self.check_h1("Research")
 
         # There is information at the top
-        title_div = self.browser.find_element_by_class_name("time-tracking-title")
+        title_div = self.browser.find_element_by_class_name("title-box")
         self.assertEqual(
-         title_div.find_element_by_class_name("project-name").text, "Research"
+         title_div.find_element_by_tag_name("h1").text, "Research"
         )
         self.assertEqual(
          title_div.find_element_by_class_name("total-time").text, "2 hours, 50 minutes"
         )
 
         # There are divs for each day of work on the project
-        days = self.browser.find_elements_by_class_name("day-time-tracking")
+        days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 3)
         self.check_day_report(days[0], "20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
@@ -651,8 +648,7 @@ class SessionEditingTests(TimeTrackingTest):
     def test_can_edit_session_to_new_project(self):
         # The user goes to the home page
         self.get("/")
-        time = self.browser.find_element_by_id("time-tracking")
-        today = time.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
@@ -682,7 +678,7 @@ class SessionEditingTests(TimeTrackingTest):
         self.check_page("/time/1996/05/01/")
 
         # The sessions are updated
-        day = self.browser.find_element_by_class_name("day-time-tracking")
+        day = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(day, "3 hours, 5 minutes", [
          ["23:45 - 03:00", "Base Jumping", "3 hours, 5 minutes", "10 minutes"],
         ], date="1 May, 1996")
@@ -691,8 +687,7 @@ class SessionEditingTests(TimeTrackingTest):
     def test_can_edit_session_to_existing_project(self):
         # The user goes to the home page
         self.get("/")
-        time = self.browser.find_element_by_id("time-tracking")
-        today = time.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
@@ -722,7 +717,7 @@ class SessionEditingTests(TimeTrackingTest):
         self.check_page("/time/1996/05/01/")
 
         # The sessions are updated
-        day = self.browser.find_element_by_class_name("day-time-tracking")
+        day = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(day, "3 hours, 5 minutes", [
          ["23:45 - 03:00", "Base Jumping", "3 hours, 5 minutes", "10 minutes"],
         ], date="1 May, 1996")
@@ -742,8 +737,7 @@ class SessionEditingTests(TimeTrackingTest):
     def test_can_delete_session(self):
         # The user goes to the home page
         self.get("/")
-        time = self.browser.find_element_by_id("time-tracking")
-        today = time.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "1 hour, 20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None]
@@ -758,7 +752,7 @@ class SessionEditingTests(TimeTrackingTest):
         self.check_title("Edit Session")
 
         # There is a link to the deletion page
-        link = self.browser.find_element_by_class_name("delete-link")
+        link = self.browser.find_element_by_class_name("delete-button")
         self.click(link)
         self.check_page("/sessions/{}/delete/".format(self.session_id))
         self.check_title("Delete Session")
@@ -768,22 +762,20 @@ class SessionEditingTests(TimeTrackingTest):
         self.assertIn("are you sure", main.text.lower())
         self.assertIn("Yoga", main.text)
         self.assertIn("1 hour", main.text)
-        back_link = main.find_element_by_class_name("back-link")
+        back_link = main.find_element_by_id("back-link")
         self.click(back_link)
         self.check_page("/sessions/{}/".format(self.session_id))
         self.check_title("Edit Session")
 
         # But they want to delete
-        link = self.browser.find_element_by_class_name("delete-link")
+        link = self.browser.find_element_by_class_name("delete-button")
         self.click(link)
         self.check_page("/sessions/{}/delete/".format(self.session_id))
         self.check_title("Delete Session")
-        delete = self.browser.find_element_by_class_name("delete-link")
+        delete = self.browser.find_element_by_class_name("delete-button")
         self.click(delete)
         self.check_page("/time/1997/05/02/")
-        day = self.browser.find_element_by_class_name("day-time-tracking")
-        time = self.browser.find_element_by_id("time-tracking")
-        today = time.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
         ])
@@ -822,9 +814,9 @@ class ProjectEditingTests(TimeTrackingTest):
 
         # They are back on the project page and the project is changed
         self.check_page("/projects/{}/".format(self.research.id))
-        title_div = self.browser.find_element_by_class_name("time-tracking-title")
+        title_div = self.browser.find_element_by_class_name("title-box")
         self.assertEqual(
-         title_div.find_element_by_class_name("project-name").text, "Super Research"
+         title_div.find_element_by_tag_name("h1").text, "Super Research"
         )
         self.assertEqual(
          title_div.find_element_by_class_name("total-time").text, "2 hours, 50 minutes"
@@ -855,7 +847,7 @@ class ProjectEditingTests(TimeTrackingTest):
         self.check_title("Edit Project")
 
         # There is a link to the deletion page
-        link = self.browser.find_element_by_class_name("delete-link")
+        link = self.browser.find_element_by_class_name("delete-button")
         self.click(link)
         self.check_page("/projects/{}/delete/".format(self.research.id))
         self.check_title("Delete Project")
@@ -865,17 +857,17 @@ class ProjectEditingTests(TimeTrackingTest):
         self.assertIn("are you sure", main.text.lower())
         self.assertIn("Research", main.text)
         self.assertIn("4 sessions", main.text)
-        back_link = main.find_element_by_class_name("back-link")
+        back_link = main.find_element_by_id("back-link")
         self.click(back_link)
         self.check_page("/projects/{}/edit/".format(self.research.id))
         self.check_title("Edit Project")
 
         # But they want to delete
-        link = self.browser.find_element_by_class_name("delete-link")
+        link = self.browser.find_element_by_class_name("delete-button")
         self.click(link)
         self.check_page("/projects/{}/delete/".format(self.research.id))
         self.check_title("Delete Project")
-        delete = self.browser.find_element_by_class_name("delete-link")
+        delete = self.browser.find_element_by_class_name("delete-button")
         self.click(delete)
         self.check_page("/projects/")
         projects = self.browser.find_elements_by_class_name("project")

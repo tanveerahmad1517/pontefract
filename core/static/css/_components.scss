@@ -1,0 +1,159 @@
+// Discrete little widgets
+
+.day-sessions {
+    // The box which contains a day's date, a list of sessions, and some nav
+    // buttons maybe
+    @include white-box;
+
+    .about-day {
+        margin: 2rem;
+        margin-top: 2.5rem;
+        margin-bottom: 2.5rem;
+        .date {
+            font-size: 1.9em;
+        }
+        .total-time {
+            font-size: 1.2em;
+        }
+    }
+
+    table {
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+        width: 100%;
+        table-layout: auto;
+        box-sizing: border-box;
+
+        tr {
+            font-size: 70%;
+            height: 3.5rem;
+            box-sizing: border-box;
+            background: $pale-purple;
+
+            td {
+                box-sizing: border-box;
+                text-align: center;
+                white-space: nowrap;
+                padding: 1rem;
+            }
+
+            td.time-cell {
+                width: 15%;
+            }
+
+            td.name-cell {
+                text-align: left;
+                white-space: normal;
+            }
+
+            td.duration-cell {
+                width: 15%;
+            }
+
+            td.breaks-cell {
+                width: 10%;
+                font-size: 0.7em;
+            }
+        }
+
+        tr:nth-child(even), tr.no-sessions {
+            background: $very-pale-purple;
+        }
+    }
+}
+
+
+.title-box {
+    // The box which serves as the heading for numerous pages
+    @include white-box;
+    text-align: center;
+    font-size: 1.2em;
+    padding: 3rem;
+    text-align: center;
+
+    .total-time {
+        font-size: 1em;
+        margin-top: 2rem;
+    }
+
+    a {
+        font-size: 0.8em;
+    }
+
+    .nav-buttons {
+        padding: 1rem;
+    }
+}
+
+
+.project {
+    // The box which represents a project summary on a page full of projects
+    @include white-box;
+    padding: 1rem;
+    font-size: 0.8em;
+
+    .project-name {
+        display: block;
+        font-size: 1.5em;
+        @include non-left-margin(1.5rem);
+    }
+
+    .total-time {
+        margin-bottom: 0.8rem;
+    }
+}
+
+
+#top-panel {
+    // The top panel on the landing page
+    background-color: $purple;
+    color: $white;
+    padding: 1em;
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+
+    h1 {
+        font-family: $logo-font;
+        font-size: 4em;
+        margin-bottom: 4rem;
+    }
+
+    #site-description {
+        font-size: 1.3em;
+        line-height: 2;
+    }
+}
+
+
+#signup-panel {
+    // The second panel on the landing page
+    background-color: $border-gray;
+}
+
+
+@mixin components--tablet() {
+    .day-sessions {
+        table {
+            tr {
+                font-size: 0.8em;
+            }
+        }
+    }
+
+    #signup-panel {
+        padding: $padding;
+    }
+}
+
+
+@mixin components--laptop() {
+    #top-panel {
+        font-size: 1.3em;
+        padding: 3em;
+
+        h1 {
+            font-size: 4.5em;
+            margin-bottom: 5rem;
+        }
+    }
+}

@@ -1,25 +1,27 @@
 {% extends "base.html" %}
 {% block title %}Life Tracking{% endblock %}
 {% block css %}
-<link rel="stylesheet" href="/static/css/landing.css">
 {% endblock %}
 
 {% block scripts %}
 <script src="/static/js/moment.js"></script>
 {% endblock %}
 {% block head %}
+<style>main {padding: 0px; text-align: center; max-width: none;}</style>
 {% endblock %}
 
 {% block body %}
-<div id="top-panel">
-    <h1>pontefract</h1>
-    <div id="site-description">
-        Time tracking for individuals - track how much time you spend on your
-        projects.
+<main>
+    <div id="top-panel">
+        <h1>pontefract</h1>
+        <div id="site-description">
+            Time tracking for individuals - track how much time you spend on your
+            projects.
+        </div>
     </div>
-</div>
 
-<div id="signup-panel">
-{% include "signup-form.html" %}
-</div>
+    <div id="signup-panel">
+    {% include "components/signup-form.html" %}
+    </div>
+</main>
 {% endblock %}

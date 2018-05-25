@@ -1,4 +1,4 @@
-<form method="POST">
+<form method="POST" class="project-form">
     {% if form.errors.name %}
     <div class="error" id="name-error">{{ form.errors.name.0 }}</div>
     {% endif %}
@@ -6,4 +6,10 @@
     {{ form.name }}
     {% csrf_token %}
     <input type="submit" value="Save">
+
+    {% if delete %}
+    <div class="container-foot">
+        <a href="/projects/{{ form.instance.id }}/delete/" class="delete-button">Delete this project</a>
+    </div>
+    {% endif %}
 </form>

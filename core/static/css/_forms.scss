@@ -1,0 +1,177 @@
+// Style relating to forms and their components. It also contains some specific
+// form styling. And it also contains general button styling
+
+form {
+	@include white-box;
+	padding: $padding;
+
+	.form-title {
+	    font-size: 1.3em;
+	    @include non-left-margin(2rem);
+	}
+
+	.error {
+	    text-align: left;
+	    font-size: 0.8em;
+	    margin-bottom: 0.2rem;
+	    color: $error-red;
+	}
+
+	.error + input, .error + label + input,
+	.error + label + input[type=password] + input[type=password],
+	.error + label + .datetime input {
+	    border-color: $error-red;
+	}
+
+	label {
+	    font-size: 0.8em;
+	}
+
+	input, select {
+	    display: block;
+	    padding: 1rem;
+	    font-size: 1em;
+	    font-family: $font;
+	    width: 100%;
+	    border-radius: $curvature;
+	    border: 0.1rem solid $border-gray;
+	    margin-bottom: 2rem;
+	    box-sizing: border-box;
+	    -webkit-appearance: none;
+	    box-shadow: inset 0 1px 2px rgba(27,31,35,0.05);
+	    background-color: $white;
+	}
+
+	.ui-menu-item {
+	    font-size: 1.5em;
+	    line-height: 2;
+	}
+
+	input[type=number] {
+	    width: 50%;
+	}
+
+	input[type=submit] {
+	    @include button;
+	    @include margin-side(auto);
+	    display: block;
+	}
+
+	.container-foot {
+	    padding: 3rem;
+	    border-top: 0.1rem solid $border-gray;
+	    margin-top: 4rem;
+		@include margin-side(-$padding)
+	}
+}
+
+
+.nav-buttons {
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 2rem;
+    padding: 4rem;
+
+    a {
+        @include button;
+        @include margin-side(auto);
+    }
+}
+
+.delete-button {
+    @include button;
+    width: fit-content;
+    @include margin-side(auto);
+    display: block;
+    padding: 0.6rem;
+    background-color: $error-red;
+    font-size: 0.9em;
+}
+
+
+.session-form {
+
+    .datetime {
+        display: flex;
+
+        input[type=date] {
+            width: 55%;
+            border-right-width: 0px;
+            border-top-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+            -webkit-appearance: none;
+        }
+
+        input[type=time] {
+            width: 45%;
+            border-top-left-radius: 0px;
+            border-bottom-left-radius: 0px;
+            -webkit-appearance: none;
+        }
+
+        .now-button {
+            width: 19px;
+            height: 19px;
+            padding-top: 14px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+    }
+}
+
+
+.deletion-form {
+    text-align: center;
+
+    .delete-summary {
+        font-size: 2em;
+        margin-bottom: 2 * $padding;
+    }
+
+    p {
+        line-height: 1.5;
+    }
+
+    .delete-button {
+        background-color: $error-red;
+    }
+}
+
+
+.login-form {
+
+    a#logo {
+        font-family: $logo-font;
+        display: block;
+        font-size: 1.5em;
+        padding: 1rem;
+        border-radius: $curvature;
+        background-color: $purple;
+        color: $white;
+        width: fit-content;
+        @include margin-side(auto);
+        margin-bottom: 4.5rem;
+    }
+}
+
+
+.signup-form {
+	@include white-box;
+	padding: $padding;
+	text-align: left;
+	max-width: $tablet-width;
+	@include margin-side(auto);
+
+	.login {
+		margin-top: 4rem;
+		text-align: center;
+		margin-bottom: 2rem;
+	}
+}
+
+
+@mixin forms--tablet() {
+	.login-form {
+		margin-top: 3 * $padding;
+	}
+}

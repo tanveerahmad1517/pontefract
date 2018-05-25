@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/landing.css">
 {% endblock %}
 
 {% block title %}Log In{% endblock %}
 
 {% block body %}
-{% include "login-form.html" %}
+<main>
+    <div class="single-container">
+        {% include "components/login-form.html" %}
+    </div>
+</main>
 {% endblock %}

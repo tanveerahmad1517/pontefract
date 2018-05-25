@@ -1,0 +1,44 @@
+// Top-level containers that nest immediately within <main></main>. Usually
+// just one per page, or one after the other in a column.
+
+.day-container {
+    display: grid;
+    grid-gap: $padding;
+}
+
+.day-list-container {
+    display: grid;
+    grid-row-gap: $padding;
+    max-width: $laptop-width;
+    @include margin-side(auto);
+}
+
+.projects-container {
+    display: grid;
+    grid-gap: $padding;
+    margin-top: $padding;
+}
+
+.single-container {
+    max-width: $tablet-width;
+    @include margin-side(auto);
+}
+
+
+@mixin containers--tablet() {
+
+    .projects-container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+
+@mixin containers--laptop() {
+    .day-container {
+        grid-template-columns: auto 35rem;
+    }
+
+    .projects-container {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+}

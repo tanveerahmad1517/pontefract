@@ -2,29 +2,27 @@
 {% block title %}{{ month|date:'F Y'}}{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/time.css">
 {% endblock %}
 
 {% block main %}
 
-<div class="month-overview">
-    <h1>{{ month|date:'F Y'}}</h1>
-    <div class="nav-buttons">
-        {% if previous %}
-        <a class="month-link" id="previous-month" class="block" href="/time/{{ days.0.previous_month|date:'Y/m/'}}">{{ days.0.previous_month|date:'F Y'}}</a>
-        {% else %}
-        <div style="width:100px"></div>
-        {% endif %}
+<div class="day-list-container">
 
-        {% if next %}
-        <a class="month-link" id="next-month" class="block" href="/time/{{ days.0.next_month|date:'Y/m/'}}">{{ days.0.next_month|date:'F Y'}}</a>
-        {% else %}
-        <div style="width:100px"></div>
-        {% endif %}
+    <div class="title-box">
+        <h1>{{ month|date:'F Y'}}</h1>
+        <div class="nav-buttons">
+            {% if previous %}
+            <a class="button" id="previous-month" class="block" href="/time/{{ days.0.previous_month|date:'Y/m/'}}">{{ days.0.previous_month|date:'F Y'}}</a>
+            {% endif %}
+
+            {% if next %}
+            <a class="button" id="next-month" class="block" href="/time/{{ days.0.next_month|date:'Y/m/'}}">{{ days.0.next_month|date:'F Y'}}</a>
+            {% endif %}
+        </div>
     </div>
-</div>
 
-{% for day in days %}
-{% include "day-sessions.html" %}
-{% endfor %}
+    {% for day in days %}
+    {% include "components/day-sessions.html" %}
+    {% endfor %}
+</div>
 {% endblock %}

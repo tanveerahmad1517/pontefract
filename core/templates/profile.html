@@ -2,12 +2,11 @@
 {% block title %}{{ user.username }}{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/forms.css">
 {% endblock %}
 
 {% block main %}
 
-<div id="user-profile" class="max-500">
+<div id="user-profile" class="single-container">
 
     <form id="settings-form" method="POST">
     {{ form.timezone.label_tag }}

@@ -6,8 +6,10 @@
 
 {% block body %}
 <nav>
-    <div id="logo"><a href="/">pontefract</a></div>
-    <div id="mobile-menu"><div id="mobile-menu-icon">&#9776;</div></div>
+    <a href="/" id="logo">pontefract</a>
+    <div id="mobile-menu">
+        <div id="mobile-menu-icon"><div></div><div></div><div></div></div>
+    </div>
     <div id="nav-links">
         <a href="/projects/" id="projects-link">Projects</a>
         <a href="/profile/" id="account-link">{{ user.username }}</a>

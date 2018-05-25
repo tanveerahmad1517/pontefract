@@ -1,6 +1,5 @@
 {% extends "user-base.html" %}
 {% block css %}
-<link rel="stylesheet" href="/static/css/time.css">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 {% endblock %}
 {% block scripts %}
@@ -9,15 +8,9 @@
 {% block title %}Home{% endblock %}
 
 {% block main %}
-<div id="time-tracking">
-    <div id="time-tracking-today">
-        {% include "day-sessions.html" %}
-        <div class="nav-buttons">
-            <a href="/time/{{ day.yesterday|date:'Y/m/d/'}}" class="yesterday-link">Yesterday</a>
-            {% if user.first_month %}<a href="/time/{{ day.day|date:'Y/m/'}}" class="month-link">This Month</a>{% endif %}
-        </div>
-    </div><div id="time-tracking-today-form">
-        {% include "session-form.html" %}
-    </div>
-</div>
+
+{% with "today" as day_context %}
+{% include "containers/day-container.html" %}
+{% endwith %}
+
 {% endblock %}

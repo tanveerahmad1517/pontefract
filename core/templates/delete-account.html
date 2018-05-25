@@ -2,20 +2,19 @@
 {% block title %}Delete Account{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/forms.css">
 {% endblock %}
 
 {% block main %}
 
 
-<div class="max-500">
+<div class="narrow-single-container">
     <div class="warning">
       <div class="sure">Are you sure you want to delete your account?</div>
       <p>This action can <strong>not</strong> be undone.</p>
       <p>If you are sure, enter your login details again below, and hit 'Delete'.</p>
     </div>
 
-    {% include "login-form.html" %}
+    {% include "components/login-form.html" %}
 </div>
 
 

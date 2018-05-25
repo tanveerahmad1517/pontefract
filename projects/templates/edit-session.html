@@ -1,8 +1,6 @@
 {% extends "user-base.html" %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/time.css">
-<link rel="stylesheet" href="/static/css/forms.css">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 {% endblock %}
 {% block scripts %}
@@ -12,11 +10,10 @@
 {% block title %}Edit Session{% endblock %}
 
 {% block main %}
-<div class="max-500">
-    {% include "session-form.html" %}
-    <div class="nav-buttons">
-        <a href="/sessions/{{ form.instance.id }}/delete/" class="delete-link">Delete this session</a>
-    </div>
+<div class="single-container">
+    {% with True as delete %}
+    {% include "components/session-form.html" %}
+    {% endwith %}
 </div>
 
 

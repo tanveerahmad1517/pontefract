@@ -2,15 +2,13 @@
 {% block title %}Edit Project{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/time.css">
 {% endblock %}
 
 {% block main %}
 
-<div class="max-500">
-    {% include "project-form.html" %}
-    <div class="nav-buttons">
-        <a href="/projects/{{ form.instance.id }}/delete/" class="delete-link">Delete this project</a>
-    </div>
+<div class="single-container">
+    {% with True as delete %}
+    {% include "components/project-form.html" %}
+    {% endwith %}
 </div>
 {% endblock %}

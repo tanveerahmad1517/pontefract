@@ -79,9 +79,7 @@ class SignupTests(FunctionalTest):
 
         # There is a starter section for time tracking
         now = datetime.now(tz=pytz.timezone("Pacific/Auckland"))
-        time = self.browser.find_element_by_id("time-tracking")
-        new_session = time.find_element_by_tag_name("form")
-        today = time.find_element_by_class_name("day-time-tracking")
+        today = self.browser.find_element_by_class_name("day-sessions")
         self.assertIn("0 minutes", today.text)
         self.assertIn("Friday 2 May, 1997", today.text)
         self.assertIn("no sessions", today.text)
@@ -264,18 +262,12 @@ class AccountModificationTests(FunctionalTest):
 
     def test_can_delete_account(self):
         # User goes to their account page
-        User.objects.create_user(
-         username="bill",
-         email="bill@gmail.com",
-         timezone="Pacific/Auckland",
-         password="password_"
-        )
+
         self.login()
         link = self.browser.find_element_by_id("account-link")
         self.click(link)
         self.check_page("/profile/")
         self.check_title("sarah")
-
         # There is a section for deleting an account
         deletion = self.browser.find_element_by_id("account-deletion")
         button = deletion.find_element_by_class_name("delete-link")
