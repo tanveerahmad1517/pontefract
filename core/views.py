@@ -67,14 +67,23 @@ def logout(request):
 
 @login_required(login_url="/", redirect_field_name=None)
 def profile(request):
-    """The view dealing with the user's profile and settings."""
+    """The view dealing with the user's profile."""
 
-    form = SignupForm(instance=request.user)
-    if request.method == "POST":
-        request.user.timezone = request.POST["timezone"]
-        request.user.save()
-        return redirect("/profile/")
-    return render(request, "profile.html", {"form": form})
+    return render(request, "profile.html", {"page": "profile"})
+
+
+@login_required(login_url="/", redirect_field_name=None)
+def time_settings(request):
+    """The view dealing with the user's time tracking settings."""
+
+    return render(request, "profile.html", {"page": "time"})
+
+
+@login_required(login_url="/", redirect_field_name=None)
+def account_settings(request):
+    """The view dealing with the user's account settings."""
+
+    return render(request, "profile.html", {"page": "account"})
 
 
 @login_required(login_url="/", redirect_field_name=None)

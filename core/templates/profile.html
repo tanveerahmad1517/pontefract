@@ -6,18 +6,34 @@
 
 {% block main %}
 
-<div id="user-profile" class="single-container">
+<div class="profile-container">
 
-    <form id="settings-form" method="POST">
-    {{ form.timezone.label_tag }}
-    {{ form.timezone }}
-    {% csrf_token %}
-    <input type="submit" value="Save">
-    </form>
+    <div id="user">
+        <div id="sections">
+            <a href="/profile/"class="section{% if page == 'profile' %} selected{% endif %}">Profile</a>
+            <a href="/profile/time/" class="section{% if page == 'time' %} selected{% endif %}">Time</a>
+            <a href="/profile/account/" class="section{% if page == 'account' %} selected{% endif %}">Account</a>
+        </div>
 
-    <div id="account-deletion"><div class="nav-buttons">
-      <a href="/delete-account/" class="delete-link">Delete Account</a>
-    </div></div>
+        <div id="user-settings">
+            {% if page == 'profile' %}
+            <div class="row">
+                <span class="field">Username</span>: <span class="value">{{ user.username }}</span>
+            </div>
+            <div class="row">
+                <span class="field">Signed Up</span>: <span class="value">{{ user.date_joined.date }}</span>
+            </div>
+            <div class="row">
+                <span class="field">Projects</span>: <span class="value">{{ user.project_count }}</span>
+            </div>
+            <div class="row">
+                <span class="field">Hours logged</span>: <span class="value">{{ user.total_time|time_string }}</span>
+            </div>
+            {% elif page == 'time' %}
+            {% elif page == 'settings' %}
+            {% endif %}
+        </div>
+    </div>
 </div>
 
 {% endblock %}

@@ -260,7 +260,30 @@ class LogoutTests(FunctionalTest):
 
 class AccountModificationTests(FunctionalTest):
 
-    def test_can_delete_account(self):
+    def test_can_view_profile(self):
+        # User goes to their account page
+        self.login()
+        link = self.browser.find_element_by_id("account-link")
+        self.click(link)
+        self.check_page("/profile/")
+        self.check_title("sarah")
+
+        # There is a user div with the profile selected
+        user_div = self.browser.find_element_by_id("user")
+        sections = user_div.find_elements_by_class_name("section")
+        self.assertIn("selected", sections[0].get_attribute("class"))
+        for section in sections[1:]:
+            self.assertNotIn("selected", section.get_attribute("class"))
+
+        # The user's details are there
+        info = user_div.find_element_by_id("user-settings")
+        self.assertIn("Username: sarah", info.text)
+        self.assertIn("Signed Up: Thursday 1 May, 1997", info.text)
+        self.assertIn("Projects: 8", info.text)
+        self.assertIn("Hours logged: 6 hours, 40 minutes", info.text)
+
+
+    '''def test_can_delete_account(self):
         # User goes to their account page
 
         self.login()
@@ -320,13 +343,6 @@ class AccountModificationTests(FunctionalTest):
         self.assertIn("credentials", error.text)
 
 
-    def test_profile_page_protection(self):
-        self.get("/profile/")
-        self.check_page("/")
-        self.get("/delete-account/")
-        self.check_page("/")
-
-
     def test_can_change_timezone(self):
         self.login()
         link = self.browser.find_element_by_id("account-link")
@@ -346,4 +362,10 @@ class AccountModificationTests(FunctionalTest):
         self.check_page("/profile/")
         self.check_title("sarah")
         timezone = self.browser.find_element_by_id("id_timezone")
-        self.assertEqual(self.get_select_value(timezone), "Europe/Istanbul")
+        self.assertEqual(self.get_select_value(timezone), "Europe/Istanbul")'''
+
+
+    def test_profile_page_protection(self):
+        for page in ["/", "/time/", "/account/"]:
+            self.get(f"/profile{page}")
+            self.check_page("/")

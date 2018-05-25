@@ -225,39 +225,55 @@ class LogoutViewTests(DjangoTest):
 
 class ProfileViewTests(DjangoTest):
 
-    def setUp(self):
-        self.patch1 = patch("core.views.SignupForm")
-        self.mock_form = self.patch1.start()
-
-
-    def tearDown(self):
-        self.patch1.stop()
-
-
-    def test_account_profile_view_uses_profile_template(self):
+    def test_profile_view_uses_profile_template(self):
         request = self.make_request("---", loggedin=True)
         self.check_view_uses_template(profile, request, "profile.html")
 
 
-    def test_account_profile_view_is_protected(self):
+    def test_profile_view_is_protected(self):
         request = self.make_request("---")
         self.check_view_redirects(profile, request, "/")
 
 
-    def test_account_profile_view_sends_profile_form(self):
-        self.mock_form.return_value = "FORM"
+    def test_profile_view_sends_profile_flag(self):
         request = self.make_request("---", loggedin=True)
-        self.check_view_has_context(profile, request, {"form": "FORM"})
-        self.mock_form.assert_called_with(instance=request.user)
+        self.check_view_has_context(profile, request, {"page": "profile"})
 
 
-    def test_account_profile_view_can_update_timezone(self):
-        request = self.make_request(
-         "---", loggedin=True, method="post", data={"timezone": "TZ"}
-        )
-        self.check_view_redirects(profile, request, "/profile/")
-        self.assertEqual(request.user.timezone, "TZ")
-        request.user.save.assert_called_with()
+
+class TimeSettingsViewTests(DjangoTest):
+
+    def test_time_settings_view_uses_profile_template(self):
+        request = self.make_request("---", loggedin=True)
+        self.check_view_uses_template(time_settings, request, "profile.html")
+
+
+    def test_time_settings_view_is_protected(self):
+        request = self.make_request("---")
+        self.check_view_redirects(time_settings, request, "/")
+
+
+    def test_time_settings_view_sends_time_flag(self):
+        request = self.make_request("---", loggedin=True)
+        self.check_view_has_context(time_settings, request, {"page": "time"})
+
+
+
+class AccountSettingsViewTests(DjangoTest):
+
+    def test_account_settings_view_uses_profile_template(self):
+        request = self.make_request("---", loggedin=True)
+        self.check_view_uses_template(account_settings, request, "profile.html")
+
+
+    def test_account_settings_view_is_protected(self):
+        request = self.make_request("---")
+        self.check_view_redirects(account_settings, request, "/")
+
+
+    def test_account_settings_view_sends_account_flag(self):
+        request = self.make_request("---", loggedin=True)
+        self.check_view_has_context(account_settings, request, {"page": "account"})
 
 
 

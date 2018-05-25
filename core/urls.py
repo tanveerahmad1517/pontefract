@@ -6,6 +6,8 @@ urlpatterns = [
  path(r"login/", core_views.login),
  path(r"logout/", core_views.logout),
  path(r"profile/", core_views.profile),
+ path(r"profile/time/", core_views.time_settings),
+ path(r"profile/account/", core_views.account_settings),
  path(r"delete-account/", core_views.delete_account),
  path(r"time/<int:year>/<int:month>/", project_views.month),
  path(r"time/<int:year>/<int:month>/<int:day>/", project_views.day),

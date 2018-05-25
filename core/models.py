@@ -28,3 +28,18 @@ class User(AbstractUser):
         if sessions:
             start = tz.localtime(sessions[0].start)
             return date(start.year, start.month, 1)
+
+
+    def project_count(self):
+        """Returns the number of projects the user has saved."""
+
+        from projects.models import Project
+        return Project.objects.filter(user=self).count()
+
+
+    def total_time(self):
+        """Returns the number of minutes in the user's sessions."""
+        
+        from projects.models import Session
+        sessions = Session.objects.filter(project__user=self)
+        return sum(session.duration() for session in sessions)

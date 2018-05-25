@@ -54,3 +54,20 @@ class UserTests(DjangoTest):
         s2 = mixer.blend(Session, start=datetime(1996, 1, 1, 8, 2, tzinfo=AUCK), project=p1)
         s3 = mixer.blend(Session, start=datetime(1992, 1, 1, 8, 2, tzinfo=AUCK), project=p2)
         self.assertEqual(user.first_month(), date(1995, 12, 1))
+
+
+    def test_user_project_count(self):
+        user = User.objects.create(username="sam", email="sam@sam.sam")
+        for _ in range(4):
+            mixer.blend(Project, user=user)
+        for _ in range(3):
+            mixer.blend(Project)
+        self.assertEqual(user.project_count(), 4)
+
+
+    @patch("projects.models.Session.objects.filter")
+    def test_user_total_time(self, mock_filter):
+        mock_filter.return_value = [Mock(duration=lambda: 50) for _ in range(5)]
+        user = User.objects.create(username="sam", email="sam@sam.sam")
+        self.assertEqual(user.total_time(), 250)
+        mock_filter.assert_called_with(project__user=user)

@@ -24,6 +24,11 @@
     @include margin-side(auto);
 }
 
+.profile-container {
+    max-width: $laptop-width;
+    @include margin-side(auto);
+}
+
 
 @mixin containers--tablet() {
 

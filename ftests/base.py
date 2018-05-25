@@ -16,11 +16,14 @@ class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
 
     def setUp(self):
         self.browser = webdriver.Chrome()
+        self.freezer = freeze_time("1997-05-1 15:00:00") #UTC time
+        self.freezer.start()
 
         self.user = User.objects.create_user(
          username="sarah", email="sarah@gmail.com",
          timezone="Pacific/Auckland", password="password"
         )
+        timezone.activate(self.user.timezone)
 
         self.research = Project.objects.create(name="Research", user=self.user)
         self.cycling = Project.objects.create(name="Cycling", user=self.user)
@@ -90,11 +93,6 @@ class FunctionalTest(StaticLiveServerTestCase, BrowserTest):
          start=dt(1997, 5, 1, 2, 30, tz=PAC), timezone=PAC, breaks=5,
          end=dt(1997, 5, 2, 2, 40, tz=PAC), project=self.running2
         )
-
-
-        self.freezer = freeze_time("1997-05-1 15:00:00") #UTC time
-        self.freezer.start()
-        timezone.activate(self.user.timezone)
 
 
     def tearDown(self):

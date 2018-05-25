@@ -20,6 +20,14 @@ class UrlTests(DjangoTest):
         self.check_url_returns_view("/profile/", core_views.profile)
 
 
+    def test_profile_url(self):
+        self.check_url_returns_view("/profile/time/", core_views.time_settings)
+
+
+    def test_profile_url(self):
+        self.check_url_returns_view("/profile/account/", core_views.account_settings)
+
+
     def test_delete_account_url(self):
         self.check_url_returns_view("/delete-account/", core_views.delete_account)
 

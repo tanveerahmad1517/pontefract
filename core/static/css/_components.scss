@@ -103,6 +103,59 @@
     }
 }
 
+#user {
+
+    #sections {
+        display: grid;
+        grid-template-columns: 10rem 10rem 10rem;
+        font-size: 0.9em;
+        width: fit-content;
+        margin-left: $padding;
+        margin-right: $padding;
+        width: fit-content;
+        @include margin-side(auto);
+
+        .section {
+            display: block;
+            text-align: center;
+            padding: 1rem;
+            background-color: #FaFAfa;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            transition: background-color 0.8s;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        .section:hover {
+            background-color: $white;
+            transition: 0.8s;
+        }
+
+        .section.selected {
+            background-color: $white;
+            border: 0.1rem solid $border-gray;
+            border-bottom: none;
+            margin-bottom: -0.1rem;
+        }
+    }
+
+    #user-settings {
+        @include white-box;
+        border-top: 0.1rem solid $border-gray;
+        padding: 2 * $padding;
+
+        .row {
+            margin-top: $padding;
+            margin-bottom: $padding;
+
+            .field {
+                font-weight: bold;
+            }
+        }
+    }
+}
+
 
 #top-panel {
     // The top panel on the landing page
@@ -140,6 +193,14 @@
         }
     }
 
+    #user {
+        font-size: 1.1em;
+
+        #sections {
+            grid-template-columns: 14rem 14rem 14rem;
+        }
+    }
+
     #signup-panel {
         padding: $padding;
     }
@@ -147,6 +208,14 @@
 
 
 @mixin components--laptop() {
+    #user {
+        font-size: 1.2em;
+
+        #sections {
+            grid-template-columns: 18rem 18rem 18rem;
+        }
+    }
+
     #top-panel {
         font-size: 1.3em;
         padding: 3em;
