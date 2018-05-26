@@ -74,7 +74,7 @@ else:
 
 # Install pip packages
 subprocess.call(
- "ssh {} '~/{}/env/bin/pip install -r ~/{}/source/requirements.txt'".format(sitename, sitename, sitename),
+ "ssh {} '~/{}/env/bin/pip install -r ~/{}/source/requirements.txt -r ~/{}/source/requirements-live.txt'".format(sitename, sitename, sitename),
  shell=True
 )
 
