@@ -17,17 +17,19 @@
 
         <div id="user-settings">
             {% if page == 'profile' %}
-            <div class="row">
-                <span class="field">Username</span>: <span class="value">{{ user.username }}</span>
-            </div>
-            <div class="row">
-                <span class="field">Signed Up</span>: <span class="value">{{ user.date_joined.date }}</span>
-            </div>
-            <div class="row">
-                <span class="field">Projects</span>: <span class="value">{{ user.project_count }}</span>
-            </div>
-            <div class="row">
-                <span class="field">Hours logged</span>: <span class="value">{{ user.total_time|time_string }}</span>
+            <div class="rows">
+                <div class="row">
+                    <span class="field">Username</span>: <span class="value">{{ user.username }}</span>
+                </div>
+                <div class="row">
+                    <span class="field">Signed Up</span>: <span class="value">{{ user.date_joined.date }}</span>
+                </div>
+                <div class="row">
+                    <span class="field">Projects</span>: <span class="value">{{ user.project_count }}</span>
+                </div>
+                <div class="row">
+                    <span class="field">Hours logged</span>: <span class="value">{{ user.total_time|time_string }}</span>
+                </div>
             </div>
             {% else %}
             <form method="POST" class="settings-form">
@@ -59,10 +61,12 @@
                 {% endif %}
                 {% csrf_token %}
                 <input type="submit" value="Save">
-                <div class="container-foot">
-                    <a href="/delete-account/" class="delete-button">Delete Account</a>
-                </div>
             </form>
+            {% if page == 'account' %}
+            <div class="container-foot">
+                <a href="/delete-account/" class="delete-button">Delete Account</a>
+            </div>
+            {% endif %}
             {% endif %}
         </div>
     </div>

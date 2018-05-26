@@ -146,12 +146,17 @@
         border-top: 0.1rem solid $border-gray;
         padding: 2 * $padding;
 
-        .row {
-            margin-top: $padding;
-            margin-bottom: $padding;
+        .rows {
+            max-width: 50rem;
+            @include margin-side(auto);
 
-            .field {
-                font-weight: bold;
+            .row {
+                margin-top: 2 * $padding;
+                margin-bottom: 2 * $padding;
+
+                .field {
+                    font-weight: bold;
+                }
             }
         }
 
@@ -168,6 +173,10 @@
             .form-title:first-child {
                 margin-top: 0px;
             }
+        }
+
+        .container-foot {
+            @include margin-side(-2 * $padding);
         }
     }
 }
@@ -228,6 +237,7 @@
         #sections {
             grid-template-columns: 18rem 18rem 18rem;
         }
+
     }
 
     #top-panel {
