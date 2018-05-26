@@ -184,7 +184,7 @@ class ProjectsViewTests(DjangoTest):
 
     def setUp(self):
         self.request = self.make_request("---", loggedin=True)
-        self.patch1 = patch("projects.views.Project.by_total_duration")
+        self.patch1 = patch("projects.views.Project.by_user_order")
         self.mock_all = self.patch1.start()
         self.mock_all.return_value = "PROJECTS"
 

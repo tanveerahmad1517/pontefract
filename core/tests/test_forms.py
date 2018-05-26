@@ -137,7 +137,7 @@ class TimeSettingsFormTests(DjangoTest):
         form = TimeSettingsForm()
         self.assertEqual(
          set(form.fields.keys()),
-         {"timezone"}
+         {"timezone", "project_order"}
         )
 
 

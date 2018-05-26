@@ -13,12 +13,16 @@ AUCK = pytz.timezone("Pacific/Auckland")
 class UserTests(DjangoTest):
 
     def test_can_create_user(self):
-        user = User(username="sam", email="sam@sam.sam", timezone="Europe/Paris")
+        user = User(
+         username="sam", email="sam@sam.sam", timezone="Europe/Paris",
+         project_order="LD"
+        )
         user.set_password("password")
         self.assertEqual(user.username, "sam")
         self.assertEqual(user.email, "sam@sam.sam")
         self.assertNotEqual(user.password, "password")
         self.assertEqual(user.timezone, "Europe/Paris")
+        self.assertEqual(user.project_order, "LD")
         user.full_clean()
 
 
@@ -40,6 +44,11 @@ class UserTests(DjangoTest):
     def test_default_timezone(self):
         user = User(username="sam", email="sam@sam.sam")
         self.assertEqual(str(user.timezone), "UTC")
+
+
+    def test_default_project_order(self):
+        user = User(username="sam", email="sam@sam.sam")
+        self.assertEqual(user.project_order, "TD")
 
 
     def test_user_first_session_month_none(self):

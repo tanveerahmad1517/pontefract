@@ -48,9 +48,10 @@ def project(request, pk):
 
 @login_required(login_url="/", redirect_field_name=None)
 def projects(request):
-    """The view that sends all projects, sorted by total time spent on them."""
+    """The view that sends all projects, sorted by the user's custom sort
+    order."""
 
-    projects = Project.by_total_duration(request.user)
+    projects = Project.by_user_order(request.user)
     return render(request, "projects.html", {"projects": projects})
 
 

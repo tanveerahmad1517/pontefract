@@ -113,6 +113,7 @@
         margin-left: $padding;
         margin-right: $padding;
         width: fit-content;
+        width: -moz-max-content;
         @include margin-side(auto);
 
         .section {

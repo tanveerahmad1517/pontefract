@@ -12,8 +12,13 @@ class User(AbstractUser):
     class Meta:
         db_table = "users"
 
+    PROJECT_ORDER_CHOICES = (("TD", "Total Duration"), ("LD", "Last Done"))
+
     email = models.EmailField(unique=True)
     timezone = TimeZoneField(default="UTC")
+    project_order = models.CharField(
+     max_length=2, choices=PROJECT_ORDER_CHOICES, default="TD"
+    )
 
 
     def first_month(self):
@@ -39,7 +44,7 @@ class User(AbstractUser):
 
     def total_time(self):
         """Returns the number of minutes in the user's sessions."""
-        
+
         from projects.models import Session
         sessions = Session.objects.filter(project__user=self)
         return sum(session.duration() for session in sessions)

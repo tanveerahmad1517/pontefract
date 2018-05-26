@@ -76,7 +76,7 @@ class ProjectTests(DjangoTest):
          start=datetime(2008, 1, 1, 9, 15, 0, tzinfo=pytz.timezone("UTC")),
          end=datetime(2008, 1, 1, 10, i, 0, tzinfo=pytz.timezone("UTC"))
         ) for i in range(10)]
-        ordered = list(Project.by_total_duration(user1))
+        ordered = list(Project.by_user_order(user1))
         self.assertEqual(
          ordered, [projects[1], projects[2], projects[0], projects[3]]
         )
@@ -88,6 +88,19 @@ class ProjectTests(DjangoTest):
         self.assertEqual(ordered[1].recent, sessions[5])
         self.assertEqual(ordered[2].recent, sessions[1])
         self.assertEqual(ordered[3].recent, sessions[7])
+
+
+    def test_can_get_projects_by_last_done(self):
+        user1, user2 = mixer.blend(User, project_order="LD"), mixer.blend(User)
+        projects = [Project.objects.create(name=str(i), user=user1) for i in range(4)]
+        projects.append(Project.objects.create(name="4", user=user2))
+        sessions = [mixer.blend(
+         Session, project=projects[i // 2], breaks = 40 if i == 1 else i * 5,
+         start=datetime(2008, 1, 1, 9, i, 0, tzinfo=pytz.timezone("UTC")),
+         end=datetime(2008, 1, 1, 10, i, 0, tzinfo=pytz.timezone("UTC"))
+        ) for i in range(10)]
+        ordered = list(Project.by_user_order(user1))
+        self.assertEqual(ordered, projects[:4][::-1])
 
 
 

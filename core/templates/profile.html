@@ -34,6 +34,8 @@
                 {{ form.errors }}
                 {{ form.timezone.label_tag }}
                 {{ form.timezone }}
+                {{ form.project_order.label_tag }}
+                {{ form.project_order }}
                 {% csrf_token %}
                 <input type="submit" value="Save">
             </form>

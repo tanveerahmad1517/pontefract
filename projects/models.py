@@ -38,8 +38,9 @@ class Project(models.Model):
 
 
     @classmethod
-    def by_total_duration(cls, user):
-        """Gets all of a user's projects, sorted by total duration. Each project
+    def by_user_order(cls, user):
+        """Gets all of a user's projects, sorted by either total duration or
+        when it was last done, depending on the user's settings. Each project
         object will be annotated with a duration (in minutes) and a most recent
         session.
 
@@ -55,8 +56,9 @@ class Project(models.Model):
         for session in sessions:
             projects[session.project_id].duration += session.duration()
             projects[session.project_id].recent = session
-        return reversed(sorted(projects.values(), key=lambda p: p.duration))
 
+        criteria = lambda p: p.recent.end if user.project_order == "LD" else p.duration
+        return reversed(sorted(projects.values(), key=criteria))
 
 
 class Session(models.Model):

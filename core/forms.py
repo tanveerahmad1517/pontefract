@@ -74,7 +74,7 @@ class TimeSettingsForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("timezone",)
+        fields = ("timezone", "project_order")
 
 
 
