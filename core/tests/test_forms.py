@@ -133,7 +133,7 @@ class SignupFormTests(DjangoTest):
 
 class TimeSettingsFormTests(DjangoTest):
 
-    def test_signup_form_has_correct_fields(self):
+    def test_form_has_correct_fields(self):
         form = TimeSettingsForm()
         self.assertEqual(
          set(form.fields.keys()),
@@ -153,6 +153,99 @@ class TimeSettingsFormTests(DjangoTest):
         for invalid in ("", None, "a\x00b", "wrong"):
             with self.assertRaises(ValidationError):
                 timezone.clean(invalid)
+
+
+
+class AccountSettingsFormTests(DjangoTest):
+
+    def test_form_has_correct_fields(self):
+        form = AccountSettingsForm()
+        self.assertEqual(
+         set(form.fields.keys()),
+         {"email", "new_password", "confirm_password", "current_password"}
+        )
+
+
+    def test_email_widget(self):
+        widget = AccountSettingsForm().fields["email"].widget
+        self.assertEqual(widget.input_type, "email")
+        self.assertTrue(widget.is_required)
+        self.assertEqual(widget.attrs, {"autocomplete": "off"})
+
+
+    def test_new_password_widget(self):
+        widget = AccountSettingsForm().fields["new_password"].widget
+        self.assertEqual(widget.input_type, "password")
+        self.assertFalse(widget.is_required)
+        self.assertEqual(widget.attrs, {"placeholder": "New Password"})
+
+
+    def test_confirm_password_widget(self):
+        widget = AccountSettingsForm().fields["confirm_password"].widget
+        self.assertEqual(widget.input_type, "password")
+        self.assertFalse(widget.is_required)
+        self.assertEqual(widget.attrs, {"placeholder": "Confirm New Password"})
+
+
+    def test_current_password_widget(self):
+        widget = AccountSettingsForm().fields["current_password"].widget
+        self.assertEqual(widget.input_type, "password")
+        self.assertTrue(widget.is_required)
+        self.assertEqual(widget.attrs, {"placeholder": "Current Password"})
+
+
+    def test_email_validation(self):
+        email = AccountSettingsForm().fields["email"]
+        self.assertTrue(email.required)
+        for invalid in ("", None, "a\x00b"):
+            with self.assertRaises(ValidationError):
+                email.clean(invalid)
+
+
+    def test_current_password_validation(self):
+        password = AccountSettingsForm().fields["current_password"]
+        self.assertTrue(password.required)
+        for invalid in ("", None, "1\x003456789"):
+            with self.assertRaises(ValidationError):
+                password.clean(invalid)
+
+
+    @patch("django.forms.ModelForm.clean")
+    @patch("core.forms.authenticate")
+    @patch("core.forms.AccountSettingsForm.add_error")
+    def test_form_rejects_incorrect_current_password(self, mock_add, mock_auth, mock_clean):
+        form = AccountSettingsForm(data={"p": "p", "c": "p2"})
+        mock_auth.return_value = False
+        form.instance = Mock()
+        form.cleaned_data = {"current_password": "ppp"}
+        form.clean()
+        mock_clean.assert_called_with(form)
+        mock_auth.assert_called_with(username=form.instance.username, password="ppp")
+        mock_add.assert_called_with("current_password", "Invalid password")
+
+
+    @patch("django.forms.ModelForm.clean")
+    @patch("core.forms.authenticate")
+    @patch("core.forms.AccountSettingsForm.add_error")
+    def test_form_accepts_correct_current_password(self, mock_add, mock_auth, mock_clean):
+        form = AccountSettingsForm(data={"p": "p", "c": "p2"})
+        mock_auth.return_value = True
+        form.instance = Mock()
+        form.cleaned_data = {"current_password": "ppp"}
+        form.clean()
+        mock_clean.assert_called_with(form)
+        mock_auth.assert_called_with(username=form.instance.username, password="ppp")
+        self.assertFalse(mock_add.called)
+
+
+    def test_form_can_save_changes(self):
+        form = AccountSettingsForm()
+        form.instance = Mock(email="PPP")
+        form.cleaned_data = {"email": "EEE"}
+        self.assertEqual(form.instance.email, "PPP")
+        form.save()
+        self.assertEqual(form.instance.email, "EEE")
+        form.instance.save.assert_called_with()
 
 
 

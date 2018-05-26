@@ -29,17 +29,34 @@
             <div class="row">
                 <span class="field">Hours logged</span>: <span class="value">{{ user.total_time|time_string }}</span>
             </div>
-            {% elif page == 'time' %}
+            {% else %}
             <form method="POST" class="settings-form">
-                {{ form.errors }}
+                {% if page == 'time' %}
                 {{ form.timezone.label_tag }}
                 {{ form.timezone }}
                 {{ form.project_order.label_tag }}
                 {{ form.project_order }}
+                {% elif page == 'account' %}
+                <div class="form-title">Update your Email address</div>
+                {% if form.email.errors %}
+                <div class="error" id="email-error">{{ form.email.errors.0 }}</div>
+                {% endif %}
+                {{ form.email.label_tag }}
+                {{ form.email }}
+                <div class="form-title">Update your Password</div>
+                {{ form.new_password.label_tag }}
+                {{ form.new_password }}
+                {{ form.confirm_password.label_tag }}
+                {{ form.confirm_password }}
+                <div class="form-title">Enter current password to save changes</div>
+                {% if form.current_password.errors %}
+                <div class="error" id="current-password-error">{{ form.current_password.errors.0 }}</div>
+                {% endif %}
+                {{ form.current_password }}
+                {% endif %}
                 {% csrf_token %}
                 <input type="submit" value="Save">
             </form>
-            {% elif page == 'settings' %}
             {% endif %}
         </div>
     </div>

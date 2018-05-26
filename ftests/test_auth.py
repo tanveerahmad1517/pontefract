@@ -345,6 +345,63 @@ class AccountModificationTests(FunctionalTest):
         ])
 
 
+    def test_can_change_email_address(self):
+        # User goes to their time settings page
+        self.login()
+        link = self.browser.find_element_by_id("account-link")
+        self.click(link)
+        self.check_page("/profile/")
+        sections = self.browser.find_elements_by_class_name("section")
+        self.click(sections[2])
+        self.check_page("/profile/account/")
+
+        # There is an input for email
+        form = self.browser.find_element_by_class_name("settings-form")
+        email = form.find_element_by_id("id_email")
+        self.assertEqual(email.get_attribute("value"), "sarah@gmail.com")
+
+        # They change it and enter their password
+        email.clear(); email.send_keys("sarah@sarah.com")
+        current_password = form.find_element_by_id("id_current_password")
+        current_password.send_keys("password")
+        save = form.find_elements_by_tag_name("input")[-1]
+        self.click(save)
+        self.check_page("/profile/account/")
+
+        # The email has changed
+        self.get("/profile/account/")
+        email = self.browser.find_element_by_id("id_email")
+        self.assertEqual(email.get_attribute("value"), "sarah@sarah.com")
+
+
+    def test_need_password_to_change_email_address(self):
+        # User goes to their time settings page
+        self.login()
+        self.get("/profile/account/")
+
+        # They enter a new email and a wrong password
+        form = self.browser.find_element_by_class_name("settings-form")
+        email = form.find_element_by_id("id_email")
+        email.clear(); email.send_keys("sarah@sarah.com")
+        current_password = form.find_element_by_id("id_current_password")
+        current_password.send_keys("passwordX")
+        save = form.find_elements_by_tag_name("input")[-1]
+        self.click(save)
+
+        # It doesn't work
+        self.check_page("/profile/account/")
+        form = self.browser.find_element_by_class_name("settings-form")
+        email = form.find_element_by_id("id_email")
+        self.assertEqual(email.get_attribute("value"), "sarah@sarah.com")
+        current_password = form.find_element_by_id("id_current_password")
+        self.assertFalse(current_password.get_attribute("value"))
+        error = form.find_element_by_id("current-password-error")
+        self.assertIn("valid", error.text)
+        self.get("/profile/account/")
+        email = self.browser.find_element_by_id("id_email")
+        self.assertEqual(email.get_attribute("value"), "sarah@gmail.com")
+
+
     '''def test_can_delete_account(self):
         # User goes to their account page
 

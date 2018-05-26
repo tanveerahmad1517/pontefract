@@ -159,6 +159,15 @@
             box-shadow: none;
             max-width: 50rem;
             @include margin-side(auto);
+
+            .form-title {
+                font-size: 1.1em;
+                margin-top: 5rem;
+            }
+
+            .form-title:first-child {
+                margin-top: 0px;
+            }
         }
     }
 }

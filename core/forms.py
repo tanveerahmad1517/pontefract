@@ -78,6 +78,54 @@ class TimeSettingsForm(forms.ModelForm):
 
 
 
+class AccountSettingsForm(forms.ModelForm):
+
+    new_password_widget = forms.PasswordInput(attrs={
+     "placeholder": "New Password"
+    })
+    new_password = forms.CharField(widget=new_password_widget, required=False)
+    confirm_password_widget = forms.PasswordInput(attrs={
+     "placeholder": "Confirm New Password"
+    })
+    confirm_password = forms.CharField(widget=confirm_password_widget, required=False)
+    current_password_widget = forms.PasswordInput(attrs={
+     "placeholder": "Current Password"
+    })
+    current_password = forms.CharField(widget=current_password_widget)
+
+    class Meta:
+        model = User
+        fields = ("email",)
+
+
+    def __init__(self, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        self.fields["email"].widget.attrs["autocomplete"] = "off"
+        del self.fields["email"].widget.attrs["maxlength"]
+        self.fields["new_password"].required = False
+        self.fields["confirm_password"].required = False
+        self.fields["new_password"].widget.is_required = False
+        self.fields["confirm_password"].widget.is_required = False
+
+
+    def clean(self):
+        """Do the usual cleaning that a ModelForm would perform, and then also
+        check the current password is correct."""
+
+        forms.ModelForm.clean(self)
+        user = authenticate(
+         username=self.instance.username,
+         password=self.cleaned_data.get("current_password")
+        )
+        if not user: self.add_error("current_password", "Invalid password")
+
+
+    def save(self):
+        self.instance.email = self.cleaned_data["email"]
+        self.instance.save()
+
+
+
 class LoginForm(forms.Form):
     """The form users use to validate who they are."""
 
