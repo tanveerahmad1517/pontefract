@@ -43,11 +43,6 @@ form {
 	    background-color: $white;
 	}
 
-	.ui-menu-item {
-	    font-size: 1.5em;
-	    line-height: 2;
-	}
-
 	input[type=number] {
 	    width: 40%;
 	}
@@ -77,6 +72,11 @@ form {
         @include button;
         @include margin-side(auto);
     }
+}
+
+.ui-menu-item {
+    font-size: 1.5em;
+    line-height: 2;
 }
 
 .delete-button {
@@ -141,21 +141,10 @@ form {
         margin-bottom: -3rem;
     }
 }
-
-
 .login-form {
 
     a#logo {
-        font-family: $logo-font;
-        display: block;
-        font-size: 1.5em;
-        padding: 1rem;
-        border-radius: $curvature;
-        background-color: $purple;
-        color: $white;
-        width: fit-content;
-        @include margin-side(auto);
-        margin-bottom: 4.5rem;
+        @include logo;
     }
 }
 
@@ -172,6 +161,13 @@ form {
 		text-align: center;
 		margin-bottom: 2rem;
 	}
+
+    #terms {
+        font-size: 0.8em;
+        margin-top: 3rem;
+        margin-bottom: 4rem;
+        text-align: center;
+    }
 }
 
 

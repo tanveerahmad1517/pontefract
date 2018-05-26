@@ -16,15 +16,19 @@ class UrlTests(DjangoTest):
         self.check_url_returns_view("/logout/", core_views.logout)
 
 
+    def test_policy_url(self):
+        self.check_url_returns_view("/policy/", core_views.policy)
+
+
     def test_profile_url(self):
         self.check_url_returns_view("/profile/", core_views.profile)
 
 
-    def test_profile_url(self):
+    def test_time_settings_url(self):
         self.check_url_returns_view("/profile/time/", core_views.time_settings)
 
 
-    def test_profile_url(self):
+    def test_account_settings_url(self):
         self.check_url_returns_view("/profile/account/", core_views.account_settings)
 
 

@@ -79,6 +79,14 @@ class LandingViewTests(DjangoTest):
 
 
 
+class PolicyViewTests(DjangoTest):
+
+    def test_policy_view_uses_policy_template(self):
+        request = self.make_request("---")
+        self.check_view_uses_template(policy, request, "policy.html")
+
+
+
 class HomeViewTests(DjangoTest):
 
     def setUp(self):

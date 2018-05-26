@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy and Terms{% endblock %}
+{% block css %}
+{% endblock %}
+
+{% block body %}
+<main>
+    <div class="day-list-container">
+        <div class="title-box">
+            <a id="logo" href="/">pontefract</a>
+            <h1>Privacy Policy and Terms</h1>
+        </div>
+
+        <div class="policy-box">
+            <h2>Privacy and Data</h2>
+
+            <ul>
+                <li><div class="question">Where is my data stored?</div>
+                Your data is stored in a single database on a secure server.
+                Only one person has access to this database.</li>
+
+                <li><div class="question">Is data backed up?</div>
+                Yes backups are performed a few times a day. These backups
+                are stored encrypted in a separate location. Between the
+                main database and these encrypted backups, your data does
+                not exist anywhere else.</li>
+
+                <li><div class="question">What data is stored <em>about</em> me?</div>
+                Your username and email address, the date you signed up, the
+                date that you last logged in, and your preferences.</li>
+
+                <li><div class="question">Who has access to my data other than me?</div>
+                Pontefract currently consists of a single individual, and only I
+                can access the database. Your data is not, and will never be,
+                shared with or sold to another individual or organisation.</li>
+
+                <li><div class="question">How do I remove my data from your database?</div>
+                You can delete your data at any time by deleting your account.
+                This will remove all traces of you and your data from the database.</li>
+
+                <li><div class="question">And what about the backups?</div>
+                By default, deleting your account will not remove your data from
+                past backups. However this is perfectly possible technically, so
+                if you want to have all traces of your presence on Pontefract
+                removed from even the backups, get in touch and this will be done.</li>
+
+                <li><div class="question">What happens if there is a data breach?</div>
+                In the unlikely event that your data is compromised in any way,
+                you will be notified at the earliest possible time.</li>
+            </ul>
+        </div>
+
+        <div class="policy-box">
+            <h2>Terms of Use</h2>
+
+            <ul>
+                <li><div class="question">Beta Software</div>
+                Pontefract is still a baby, and there may be bugs. Please bear
+                this in mind and remember that Pontefract can accept no
+                liability for lost data. By using this software you have to be
+                ok with that.</li>
+
+                <li><div class="question">Fixes</div>
+                If you do encounter a bug, I will try to provide a fix as soon
+                as possible, but no guarantee of this is made, and using these
+                services confers upon the user no inherent right to have their
+                issue resolved in a given time frame.</li>
+
+                <li><div class="question">Illegality</div>
+                Don't use Pontefract to do illegal stuff.</li>
+            </ul>
+        </div>
+    </div>
+</main>
+{% endblock %}

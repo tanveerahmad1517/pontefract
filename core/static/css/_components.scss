@@ -71,6 +71,10 @@
     padding: 3rem;
     text-align: center;
 
+    a#logo {
+        @include logo;
+    }
+
     .total-time {
         font-size: 1em;
         margin-top: 2rem;
@@ -102,6 +106,7 @@
         margin-bottom: 0.8rem;
     }
 }
+
 
 #user {
 
@@ -209,6 +214,30 @@
 }
 
 
+.policy-box {
+    //The box that contains a section of terms and conditions
+    @include white-box;
+    padding: $padding;
+
+    h2 {
+        margin-bottom: 3rem;
+    }
+
+    ul {
+        padding-left: 0px;
+
+        li {
+            list-style: none;
+            line-height: 1.75;
+            margin-bottom: 3rem;
+
+            .question {
+                font-weight: bold;
+            }
+        }
+    }
+}
+
 @mixin components--tablet() {
     .day-sessions {
         table {
@@ -227,6 +256,10 @@
 
     #signup-panel {
         padding: $padding;
+    }
+
+    .policy-box {
+        padding: 2 * $padding;
     }
 }
 
@@ -248,5 +281,9 @@
             font-size: 4.5em;
             margin-bottom: 5rem;
         }
+    }
+
+    .policy-box {
+        padding: 3 * $padding;
     }
 }

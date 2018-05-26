@@ -46,6 +46,19 @@ $desktop-width: 1200px;
     cursor: pointer;
 }
 
+@mixin logo {
+    font-family: $logo-font;
+    display: block;
+    font-size: 1.5em;
+    padding: 1rem;
+    border-radius: $curvature;
+    background-color: $purple;
+    color: $white;
+    width: fit-content;
+    @include margin-side(auto);
+    margin-bottom: 4.5rem;
+}
+
 @import "base";
 @import "containers";
 @import "forms";

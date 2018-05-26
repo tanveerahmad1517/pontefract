@@ -66,6 +66,15 @@ class SignupTests(FunctionalTest):
         description = self.browser.find_element_by_id("site-description")
         self.assertIn("time tracking for individuals", description.text.lower())
 
+        # They look at the signup form and see there is a link to privacy info
+        form = self.browser.find_element_by_tag_name("form")
+        link = form.find_element_by_id("policy-link")
+        self.get("/policy/")
+        self.check_title("Privacy Policy and Terms")
+        self.check_h1("Privacy Policy and Terms")
+        self.assertGreaterEqual(len(self.browser.find_elements_by_class_name("question")), 8)
+        self.browser.back()
+
         # They enter their details in the signup form
         self.fill_in_signup_form(
          "joe23", "joe@gmail.com", "Pacific/Auckland", "swordfish"

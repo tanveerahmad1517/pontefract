@@ -13,6 +13,10 @@
     {% if form.errors.password %}<div class="error" id="password-error">{{ form.errors.password.0 }}</div>{% endif %}
     {{ form.password.label_tag }}{{ form.password }}{{ form.confirm_password }}
     {% csrf_token %}
+    <div id="terms">By signing up you agree to the
+        <a href="/policy/" id="policy-link" target="_blank">Privacy Policy and Terms</a> (have
+        a read - it doesn't take long).
+    </div>
     <input type="submit" value="Sign Up">
     <div class="login">Already signed up? <a href="/login/">Log in to your account</a></div>
 </form>

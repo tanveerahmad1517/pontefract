@@ -29,6 +29,12 @@ def landing(request):
     return render(request, "landing.html", {"form": form})
 
 
+def policy(request):
+    """The view that serves the policy page."""
+    
+    return render(request, "policy.html")
+
+
 def home(request):
     """The view that serves the home page to logged in users."""
 
