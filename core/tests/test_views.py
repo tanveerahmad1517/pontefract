@@ -292,10 +292,13 @@ class AccountSettingsViewTests(DjangoTest):
     def setUp(self):
         self.patch1 = patch("core.views.AccountSettingsForm")
         self.mock_form = self.patch1.start()
+        self.patch2 = patch("django.contrib.auth.update_session_auth_hash")
+        self.mock_update = self.patch2.start()
 
 
     def tearDown(self):
         self.patch1.stop()
+        self.patch2.stop()
 
 
     def test_account_settings_view_uses_profile_template(self):
@@ -330,6 +333,7 @@ class AccountSettingsViewTests(DjangoTest):
         self.check_view_redirects(account_settings, request, "/profile/account/")
         self.mock_form.assert_called_with(QueryDict("a=u&v=p"), instance=request.user)
         form.save.assert_called_with()
+        self.mock_update.assert_called_with(request, form.instance)
 
 
 

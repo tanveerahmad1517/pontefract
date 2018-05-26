@@ -202,6 +202,14 @@ class AccountSettingsFormTests(DjangoTest):
                 email.clean(invalid)
 
 
+    def test_new_password_validation(self):
+        password = AccountSettingsForm().fields["new_password"]
+        self.assertFalse(password.required)
+        for invalid in ("1\x003456789", "1234567"):
+            with self.assertRaises(ValidationError):
+                password.clean(invalid)
+
+
     def test_current_password_validation(self):
         password = AccountSettingsForm().fields["current_password"]
         self.assertTrue(password.required)
@@ -211,31 +219,53 @@ class AccountSettingsFormTests(DjangoTest):
 
 
     @patch("django.forms.ModelForm.clean")
-    @patch("core.forms.authenticate")
     @patch("core.forms.AccountSettingsForm.add_error")
-    def test_form_rejects_incorrect_current_password(self, mock_add, mock_auth, mock_clean):
+    def test_form_rejects_incorrect_current_password(self, mock_add, mock_clean):
         form = AccountSettingsForm(data={"p": "p", "c": "p2"})
-        mock_auth.return_value = False
         form.instance = Mock()
+        form.instance.check_password.return_value = False
         form.cleaned_data = {"current_password": "ppp"}
         form.clean()
         mock_clean.assert_called_with(form)
-        mock_auth.assert_called_with(username=form.instance.username, password="ppp")
+        form.instance.check_password.assert_called_with("ppp")
         mock_add.assert_called_with("current_password", "Invalid password")
 
 
     @patch("django.forms.ModelForm.clean")
-    @patch("core.forms.authenticate")
     @patch("core.forms.AccountSettingsForm.add_error")
-    def test_form_accepts_correct_current_password(self, mock_add, mock_auth, mock_clean):
+    def test_form_accepts_correct_current_password(self, mock_add, mock_clean):
         form = AccountSettingsForm(data={"p": "p", "c": "p2"})
-        mock_auth.return_value = True
         form.instance = Mock()
+        form.instance.check_password.return_value = True
         form.cleaned_data = {"current_password": "ppp"}
         form.clean()
         mock_clean.assert_called_with(form)
-        mock_auth.assert_called_with(username=form.instance.username, password="ppp")
+        form.instance.check_password.assert_called_with("ppp")
         self.assertFalse(mock_add.called)
+
+
+    @patch("django.forms.ModelForm.clean")
+    @patch("core.forms.AccountSettingsForm.add_error")
+    def test_form_accepts_matched_passwords(self, mock_add, mock_clean):
+        form = AccountSettingsForm(data={"p": "p", "c": "p2"})
+        form.instance = Mock()
+        form.instance.check_password.return_value = True
+        form.cleaned_data = {"new_password": "pppppppp", "confirm_password": "pppppppp"}
+        form.clean()
+        mock_clean.assert_called_with(form)
+        self.assertFalse(mock_add.called)
+
+
+    @patch("django.forms.ModelForm.clean")
+    @patch("core.forms.AccountSettingsForm.add_error")
+    def test_form_rejects_mismatched_passwords(self, mock_add, mock_clean):
+        form = AccountSettingsForm(data={"p": "p", "c": "p2"})
+        form.instance = Mock()
+        form.instance.check_password.return_value = True
+        form.cleaned_data = {"new_password": "p", "confirm_password": "p2"}
+        form.clean()
+        mock_clean.assert_called_with(form)
+        mock_add.assert_called_with("new_password", "Passwords don't match")
 
 
     def test_form_can_save_changes(self):
@@ -245,6 +275,18 @@ class AccountSettingsFormTests(DjangoTest):
         self.assertEqual(form.instance.email, "PPP")
         form.save()
         self.assertEqual(form.instance.email, "EEE")
+        self.assertFalse(form.instance.set_password.called)
+        form.instance.save.assert_called_with()
+
+
+    def test_form_can_save_changes_with_password(self):
+        form = AccountSettingsForm()
+        form.instance = Mock(email="PPP")
+        form.cleaned_data = {"email": "EEE", "new_password": "P"}
+        self.assertEqual(form.instance.email, "PPP")
+        form.save()
+        self.assertEqual(form.instance.email, "EEE")
+        form.instance.set_password.assert_called_with("P")
         form.instance.save.assert_called_with()
 
 

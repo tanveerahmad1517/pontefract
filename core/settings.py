@@ -21,8 +21,6 @@ INSTALLED_APPS = [
  "projects"
 ]
 
-
-
 MIDDLEWARE = [
  "django.contrib.sessions.middleware.SessionMiddleware",
  "django.middleware.common.CommonMiddleware",

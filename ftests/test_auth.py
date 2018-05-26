@@ -402,6 +402,147 @@ class AccountModificationTests(FunctionalTest):
         self.assertEqual(email.get_attribute("value"), "sarah@gmail.com")
 
 
+    def test_can_change_password(self):
+        # User goes to their time settings page
+        self.login()
+        link = self.browser.find_element_by_id("account-link")
+        self.click(link)
+        self.check_page("/profile/")
+        sections = self.browser.find_elements_by_class_name("section")
+        self.click(sections[2])
+        self.check_page("/profile/account/")
+
+        # There are inputs for passwords
+        form = self.browser.find_element_by_class_name("settings-form")
+        password1 = form.find_element_by_id("id_new_password")
+        password2 = form.find_element_by_id("id_confirm_password")
+
+        # They enter a new password and confirm
+        password1.send_keys("betterpassword")
+        password2.send_keys("betterpassword")
+        current_password = form.find_element_by_id("id_current_password")
+        current_password.send_keys("password")
+        save = form.find_elements_by_tag_name("input")[-1]
+        self.click(save)
+        self.check_page("/profile/account/")
+
+        # The password has changed
+        self.logout()
+        self.get("/login/")
+        username = self.browser.find_element_by_id("id_username")
+        password = self.browser.find_element_by_id("id_password")
+        username.send_keys("sarah")
+        password.send_keys("password")
+        self.click(self.browser.find_elements_by_tag_name("input")[-1])
+        self.check_page("/login/")
+        password = self.browser.find_element_by_id("id_password")
+        password.send_keys("betterpassword")
+        self.click(self.browser.find_elements_by_tag_name("input")[-1])
+        self.check_title("Home")
+
+
+    def test_passwords_must_match_to_change(self):
+        # User goes to their time settings page
+        self.login()
+        self.get("/profile/account/")
+
+        # There are inputs for passwords
+        form = self.browser.find_element_by_class_name("settings-form")
+        password1 = form.find_element_by_id("id_new_password")
+        password2 = form.find_element_by_id("id_confirm_password")
+
+        # They enter a new password and confirm
+        password1.send_keys("betterpassword")
+        password2.send_keys("betterpasswordX")
+        current_password = form.find_element_by_id("id_current_password")
+        current_password.send_keys("password")
+        save = form.find_elements_by_tag_name("input")[-1]
+        self.click(save)
+        self.check_page("/profile/account/")
+
+        # It doesn't work
+        self.check_page("/profile/account/")
+        form = self.browser.find_element_by_class_name("settings-form")
+        error = form.find_element_by_id("password-error")
+        self.assertIn("match", error.text)
+        self.logout()
+        self.get("/login/")
+        username = self.browser.find_element_by_id("id_username")
+        password = self.browser.find_element_by_id("id_password")
+        username.send_keys("sarah")
+        password.send_keys("password")
+        self.click(self.browser.find_elements_by_tag_name("input")[-1])
+        self.check_title("Home")
+
+
+    def test_passwords_must_be_long_enough(self):
+        # User goes to their time settings page
+        self.login()
+        self.get("/profile/account/")
+
+        # There are inputs for passwords
+        form = self.browser.find_element_by_class_name("settings-form")
+        password1 = form.find_element_by_id("id_new_password")
+        password2 = form.find_element_by_id("id_confirm_password")
+
+        # They enter a new password and confirm
+        password1.send_keys("psswd")
+        password2.send_keys("psswd")
+        current_password = form.find_element_by_id("id_current_password")
+        current_password.send_keys("password")
+        save = form.find_elements_by_tag_name("input")[-1]
+        self.click(save)
+        self.check_page("/profile/account/")
+
+        # It doesn't work
+        self.check_page("/profile/account/")
+        form = self.browser.find_element_by_class_name("settings-form")
+        error = form.find_element_by_id("password-error")
+        self.assertIn("8 characters", error.text)
+        self.logout()
+        self.get("/login/")
+        username = self.browser.find_element_by_id("id_username")
+        password = self.browser.find_element_by_id("id_password")
+        username.send_keys("sarah")
+        password.send_keys("password")
+        self.click(self.browser.find_elements_by_tag_name("input")[-1])
+        self.check_title("Home")
+
+
+    def test_need_password_to_change_password(self):
+        # User goes to their time settings page
+        self.login()
+        self.get("/profile/account/")
+
+        # They enter a new email and a wrong password
+        form = self.browser.find_element_by_class_name("settings-form")
+        password1 = form.find_element_by_id("id_new_password")
+        password2 = form.find_element_by_id("id_confirm_password")
+        password1.send_keys("betterpassword")
+        password2.send_keys("betterpassword")
+        current_password = form.find_element_by_id("id_current_password")
+        current_password.send_keys("passwordX")
+        save = form.find_elements_by_tag_name("input")[-1]
+        self.click(save)
+
+        # It doesn't work
+        self.check_page("/profile/account/")
+        form = self.browser.find_element_by_class_name("settings-form")
+        current_password = form.find_element_by_id("id_current_password")
+        self.assertFalse(current_password.get_attribute("value"))
+        error = form.find_element_by_id("current-password-error")
+        self.assertIn("valid", error.text)
+        self.logout()
+        self.get("/login/")
+        username = self.browser.find_element_by_id("id_username")
+        password = self.browser.find_element_by_id("id_password")
+        username.send_keys("sarah")
+        password.send_keys("password")
+        self.click(self.browser.find_elements_by_tag_name("input")[-1])
+        self.check_title("Home")
+
+        
+
     '''def test_can_delete_account(self):
         # User goes to their account page
 

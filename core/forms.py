@@ -106,6 +106,9 @@ class AccountSettingsForm(forms.ModelForm):
         self.fields["confirm_password"].required = False
         self.fields["new_password"].widget.is_required = False
         self.fields["confirm_password"].widget.is_required = False
+        self.fields["new_password"].validators.append(
+         MinLengthValidator(8, message="Password must be at least 8 characters")
+        )
 
 
     def clean(self):
@@ -113,15 +116,20 @@ class AccountSettingsForm(forms.ModelForm):
         check the current password is correct."""
 
         forms.ModelForm.clean(self)
-        user = authenticate(
-         username=self.instance.username,
-         password=self.cleaned_data.get("current_password")
-        )
-        if not user: self.add_error("current_password", "Invalid password")
+        if not self.instance.check_password(self.cleaned_data.get("current_password")):
+            self.add_error("current_password", "Invalid password")
+        new_password = self.cleaned_data.get("new_password")
+        confirm_password = self.cleaned_data.get("confirm_password")
+        if new_password != confirm_password:
+            self.add_error("new_password", "Passwords don't match")
 
 
     def save(self):
+        """Saves the email and password supplied as needed."""
+
         self.instance.email = self.cleaned_data["email"]
+        if self.cleaned_data.get("new_password"):
+            self.instance.set_password(self.cleaned_data.get("new_password"))
         self.instance.save()
 
 

@@ -95,6 +95,7 @@ def account_settings(request):
         form = AccountSettingsForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
+            auth.update_session_auth_hash(request, form.instance)
             return redirect("/profile/account/")
     return render(request, "profile.html", {"page": "account", "form": form})
 

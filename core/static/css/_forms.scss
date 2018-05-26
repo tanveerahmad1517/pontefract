@@ -19,6 +19,7 @@ form {
 
 	.error + input, .error + label + input,
 	.error + label + input[type=password] + input[type=password],
+    .error + label + input[type=password] + label + input[type=password],
 	.error + label + .datetime input {
 	    border-color: $error-red;
 	}

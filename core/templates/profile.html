@@ -44,6 +44,9 @@
                 {{ form.email.label_tag }}
                 {{ form.email }}
                 <div class="form-title">Update your Password</div>
+                {% if form.new_password.errors %}
+                <div class="error" id="password-error">{{ form.new_password.errors.0 }}</div>
+                {% endif %}
                 {{ form.new_password.label_tag }}
                 {{ form.new_password }}
                 {{ form.confirm_password.label_tag }}
