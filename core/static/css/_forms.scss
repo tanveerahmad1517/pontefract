@@ -136,6 +136,10 @@ form {
     .delete-button {
         background-color: $error-red;
     }
+
+    input[type=password] {
+        margin-bottom: -3rem;
+    }
 }
 
 

@@ -339,15 +339,6 @@ class AccountSettingsViewTests(DjangoTest):
 
 class AccountDeletionViewTests(DjangoTest):
 
-    def setUp(self):
-        self.patch1 = patch("core.views.LoginForm")
-        self.mock_form = self.patch1.start()
-
-
-    def tearDown(self):
-        self.patch1.stop()
-
-
     def test_account_deletion_view_uses_delete_account_template(self):
         request = self.make_request("---", loggedin=True)
         self.check_view_uses_template(delete_account, request, "delete-account.html")
@@ -358,34 +349,21 @@ class AccountDeletionViewTests(DjangoTest):
         self.check_view_redirects(delete_account, request, "/")
 
 
-    def test_account_deletion_view_sends_login_form(self):
-        self.mock_form.return_value = "FORM"
-        request = self.make_request("---", loggedin=True)
-        self.check_view_has_context(delete_account, request, {"form": "FORM"})
-        self.mock_form.assert_called_with()
-
-
     def test_account_deletion_view_can_delete_user(self):
-        user, form = Mock(), Mock()
-        self.mock_form.return_value = form
-        form.validate_credentials.return_value = user
         request = self.make_request(
-         "---", loggedin=True, method="post", data={"a": "b"}
+         "---", loggedin=True, method="post", data={"password": "ppp"}
         )
+        request.user.check_password.return_value = True
         self.check_view_redirects(delete_account, request, "/")
-        self.mock_form.assert_called_with(QueryDict("a=b"))
-        form.validate_credentials.assert_called_with(user_to_match=request.user)
-        user.delete.assert_called_with()
+        request.user.check_password.assert_called_with("ppp")
+        request.user.delete.assert_called_with()
 
 
     def test_account_deletion_view_can_reject_credentials(self):
-        user, form = Mock(), Mock()
-        self.mock_form.return_value = form
-        form.validate_credentials.return_value = False
         request = self.make_request(
-         "---", loggedin=True, method="post", data={"a": "b"}
+         "---", loggedin=True, method="post", data={"password": "ppp"}
         )
-        self.check_view_uses_template(delete_account, request, "delete-account.html")
-        self.mock_form.assert_called_with(QueryDict("a=b"))
-        form.validate_credentials.assert_called_with(user_to_match=request.user)
-        self.assertFalse(user.delete.called)
+        request.user.check_password.return_value = False
+        self.check_view_has_context(delete_account, request, {"error": "Invalid credentials"})
+        request.user.check_password.assert_called_with("ppp")
+        self.assertFalse(request.user.delete.called)

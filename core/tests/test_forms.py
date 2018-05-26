@@ -361,18 +361,3 @@ class LoginFormTests(DjangoTest):
         mock_valid.assert_called_with()
         mock_auth.assert_called_with(username="u", password="p")
         mock_add.assert_called_with("username", "Invalid credentials")
-
-
-    @patch("core.forms.LoginForm.is_valid")
-    @patch("core.forms.authenticate")
-    @patch("core.forms.LoginForm.add_error")
-    def test_can_reject_credentials_on_user(self, mock_add, mock_auth, mock_valid):
-        mock_valid.return_value = True
-        request = Mock()
-        mock_auth.return_value = "USER"
-        form = LoginForm(data={"a": 1, "b": 2})
-        form.cleaned_data = {"username": "u", "password": "p"}
-        self.assertFalse(form.validate_credentials(user_to_match="USER2"))
-        mock_valid.assert_called_with()
-        mock_auth.assert_called_with(username="u", password="p")
-        mock_add.assert_called_with("username", "Invalid credentials")

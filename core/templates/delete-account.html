@@ -6,16 +6,22 @@
 
 {% block main %}
 
-
-<div class="narrow-single-container">
-    <div class="warning">
-      <div class="sure">Are you sure you want to delete your account?</div>
+<div class="single-container">
+    <form method="POST" class="deletion-form">
+      <div class="delete-summary">Are you sure you want to delete your account?</div>
       <p>This action can <strong>not</strong> be undone.</p>
       <p>If you are sure, enter your login details again below, and hit 'Delete'.</p>
-    </div>
+      {% if error %}
+      <div class="error" id="password-error">{{ error}}</div>
+      {% endif %}
 
-    {% include "components/login-form.html" %}
+      <input type="password" placeholder="Password" name="password">
+      {% csrf_token %}
+      <div class="nav-buttons">
+        <a id="back-link" href="/profile/">Go back</a>
+        <input type="submit" value="Delete" class="delete-button">
+      </div>
+    </form>
 </div>
-
 
 {% endblock %}

@@ -146,22 +146,19 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=password_widget)
 
 
-    def validate_credentials(self, user_to_match=None):
+    def validate_credentials(self):
         """Validates the form using full_clean, and if it's valid, tries to
         authenticate the credentials. If that succeeds, ``True`` is returned.
 
         If the form is invalid, or the credentials incorrect, ``False`` is
-        returned.
-
-        You can also supply a user if you want to also check that the
-        credentials are for a given user."""
+        returned."""
 
         if self.is_valid():
             user = authenticate(
              username=self.cleaned_data.get("username"),
              password=self.cleaned_data.get("password")
             )
-            if user and (not user_to_match or user_to_match == user):
+            if user:
                 return user
             else:
                 self.add_error("username", "Invalid credentials")

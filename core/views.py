@@ -104,11 +104,10 @@ def account_settings(request):
 def delete_account(request):
     """The view dealing with deleting a user account."""
 
-    form = LoginForm()
+    error = False
     if request.method == "POST":
-        form = LoginForm(request.POST)
-        user = form.validate_credentials(user_to_match=request.user)
-        if user:
-            user.delete()
+        if request.user.check_password(request.POST["password"]):
+            request.user.delete()
             return redirect("/")
-    return render(request, "delete-account.html", {"form": form})
+        else: error = "Invalid credentials"
+    return render(request, "delete-account.html", {"error": error})

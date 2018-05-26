@@ -541,28 +541,22 @@ class AccountModificationTests(FunctionalTest):
         self.click(self.browser.find_elements_by_tag_name("input")[-1])
         self.check_title("Home")
 
-        
 
-    '''def test_can_delete_account(self):
+    def test_can_delete_account(self):
         # User goes to their account page
-
         self.login()
-        link = self.browser.find_element_by_id("account-link")
-        self.click(link)
-        self.check_page("/profile/")
-        self.check_title("sarah")
+        self.get("/profile/account/")
+
         # There is a section for deleting an account
-        deletion = self.browser.find_element_by_id("account-deletion")
-        button = deletion.find_element_by_class_name("delete-link")
+        deletion = self.browser.find_element_by_class_name("container-foot")
+        button = deletion.find_element_by_class_name("delete-button")
         self.click(button)
         self.check_page("/delete-account/")
         self.check_title("Delete Account")
 
         # They enter their credentials incorrectly on the page
         form = self.browser.find_elements_by_tag_name("form")[1]
-        username = form.find_elements_by_tag_name("input")[0]
-        password = form.find_elements_by_tag_name("input")[1]
-        username.send_keys("bill")
+        password = form.find_elements_by_tag_name("input")[0]
         password.send_keys("password_")
         submit = form.find_elements_by_tag_name("input")[-1]
         self.click(submit)
@@ -570,16 +564,12 @@ class AccountModificationTests(FunctionalTest):
         # The account is not deleted
         self.check_page("/delete-account/")
         form = self.browser.find_elements_by_tag_name("form")[1]
-        username = form.find_elements_by_tag_name("input")[0]
-        password = form.find_elements_by_tag_name("input")[1]
-        self.assertEqual(username.get_attribute("value"), "bill")
+        password = form.find_elements_by_tag_name("input")[0]
         self.assertEqual(password.get_attribute("value"), "")
-        error = form.find_element_by_id("username-error")
-        self.assertIn("credentials", error.text)
+        error = form.find_element_by_id("password-error")
+        self.assertIn("valid", error.text)
 
         # They enter the correct details and delete
-        username.clear()
-        username.send_keys("sarah")
         password.send_keys("password")
         submit = form.find_elements_by_tag_name("input")[-1]
         self.click(submit)
@@ -600,7 +590,7 @@ class AccountModificationTests(FunctionalTest):
         self.assertEqual(username.get_attribute("value"), "sarah")
         self.assertEqual(password.get_attribute("value"), "")
         error = form.find_element_by_id("username-error")
-        self.assertIn("credentials", error.text)'''
+        self.assertIn("credentials", error.text)
 
 
     def test_profile_page_protection(self):
