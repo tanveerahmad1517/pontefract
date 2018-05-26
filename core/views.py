@@ -2,7 +2,7 @@ from datetime import date
 from django.shortcuts import render, redirect
 import django.contrib.auth as auth
 from django.contrib.auth.decorators import login_required
-from core.forms import SignupForm, LoginForm
+from core.forms import SignupForm, LoginForm, TimeSettingsForm
 from projects.forms import SessionForm, ProjectForm, process_session_form_data
 from projects.models import Session, Project
 
@@ -46,6 +46,7 @@ def login(request):
     """This view serves the login page on GET requests, and handles requests to
     log in on POST requests.
     It expects there to be a template called 'login.html' somewhere."""
+
     form = LoginForm()
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -76,7 +77,13 @@ def profile(request):
 def time_settings(request):
     """The view dealing with the user's time tracking settings."""
 
-    return render(request, "profile.html", {"page": "time"})
+    form = TimeSettingsForm(instance=request.user)
+    if request.method == "POST":
+        form = TimeSettingsForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect("/profile/time/")
+    return render(request, "profile.html", {"page": "time", "form": form})
 
 
 @login_required(login_url="/", redirect_field_name=None)

@@ -30,6 +30,13 @@
                 <span class="field">Hours logged</span>: <span class="value">{{ user.total_time|time_string }}</span>
             </div>
             {% elif page == 'time' %}
+            <form method="POST" class="settings-form">
+                {{ form.errors }}
+                {{ form.timezone.label_tag }}
+                {{ form.timezone }}
+                {% csrf_token %}
+                <input type="submit" value="Save">
+            </form>
             {% elif page == 'settings' %}
             {% endif %}
         </div>

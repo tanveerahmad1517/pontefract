@@ -131,6 +131,31 @@ class SignupFormTests(DjangoTest):
 
 
 
+class TimeSettingsFormTests(DjangoTest):
+
+    def test_signup_form_has_correct_fields(self):
+        form = TimeSettingsForm()
+        self.assertEqual(
+         set(form.fields.keys()),
+         {"timezone"}
+        )
+
+
+    def test_timezone_widget(self):
+        widget = TimeSettingsForm().fields["timezone"].widget
+        self.assertEqual(widget.input_type, "select")
+        self.assertTrue(widget.is_required)
+
+
+    def test_timezone_validation(self):
+        timezone = SignupForm().fields["timezone"]
+        self.assertTrue(timezone.required)
+        for invalid in ("", None, "a\x00b", "wrong"):
+            with self.assertRaises(ValidationError):
+                timezone.clean(invalid)
+
+
+
 class LoginFormTests(DjangoTest):
 
     def test_login_form_has_correct_fields(self):

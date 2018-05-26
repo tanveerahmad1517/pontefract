@@ -70,6 +70,14 @@ class SignupForm(forms.ModelForm):
 
 
 
+class TimeSettingsForm(forms.ModelForm):
+
+    class Meta:
+        model = User
+        fields = ("timezone",)
+
+
+
 class LoginForm(forms.Form):
     """The form users use to validate who they are."""
 

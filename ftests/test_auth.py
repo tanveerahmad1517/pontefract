@@ -283,6 +283,36 @@ class AccountModificationTests(FunctionalTest):
         self.assertIn("Hours logged: 6 hours, 40 minutes", info.text)
 
 
+    def test_can_change_timezone(self):
+        # User goes to their time settings page
+        self.login()
+        link = self.browser.find_element_by_id("account-link")
+        self.click(link)
+        self.check_page("/profile/")
+        sections = self.browser.find_elements_by_class_name("section")
+        self.click(sections[1])
+        self.check_page("/profile/time/")
+
+        # There is a dropdown for timezone
+        form = self.browser.find_element_by_class_name("settings-form")
+        timezone = form.find_element_by_id("id_timezone")
+        self.assertEqual(self.get_select_value(timezone), "Pacific/Auckland")
+
+        # They change it
+        self.select_dropdown(timezone, "Europe/Istanbul")
+        save = form.find_elements_by_tag_name("input")[-1]
+        self.click(save)
+        self.check_page("/profile/time/")
+        self.check_title("sarah")
+        timezone = self.browser.find_element_by_id("id_timezone")
+        self.assertEqual(self.get_select_value(timezone), "Europe/Istanbul")
+
+        # The timezone has really changed
+        self.get("/")
+        today = self.browser.find_element_by_class_name("day-sessions")
+        self.assertIn("Thursday 1 May, 1997", today.text)
+
+
     '''def test_can_delete_account(self):
         # User goes to their account page
 
@@ -340,29 +370,7 @@ class AccountModificationTests(FunctionalTest):
         self.assertEqual(username.get_attribute("value"), "sarah")
         self.assertEqual(password.get_attribute("value"), "")
         error = form.find_element_by_id("username-error")
-        self.assertIn("credentials", error.text)
-
-
-    def test_can_change_timezone(self):
-        self.login()
-        link = self.browser.find_element_by_id("account-link")
-        self.click(link)
-        self.check_page("/profile/")
-        self.check_title("sarah")
-
-        # There is a dropdown for timezone
-        form = self.browser.find_element_by_id("settings-form")
-        timezone = form.find_element_by_id("id_timezone")
-        self.assertEqual(self.get_select_value(timezone), "Pacific/Auckland")
-
-        # They change it
-        self.select_dropdown(timezone, "Europe/Istanbul")
-        save = form.find_elements_by_tag_name("input")[-1]
-        self.click(save)
-        self.check_page("/profile/")
-        self.check_title("sarah")
-        timezone = self.browser.find_element_by_id("id_timezone")
-        self.assertEqual(self.get_select_value(timezone), "Europe/Istanbul")'''
+        self.assertIn("credentials", error.text)'''
 
 
     def test_profile_page_protection(self):

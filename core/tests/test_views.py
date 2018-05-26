@@ -243,6 +243,15 @@ class ProfileViewTests(DjangoTest):
 
 class TimeSettingsViewTests(DjangoTest):
 
+    def setUp(self):
+        self.patch1 = patch("core.views.TimeSettingsForm")
+        self.mock_form = self.patch1.start()
+
+
+    def tearDown(self):
+        self.patch1.stop()
+
+
     def test_time_settings_view_uses_profile_template(self):
         request = self.make_request("---", loggedin=True)
         self.check_view_uses_template(time_settings, request, "profile.html")
@@ -256,6 +265,25 @@ class TimeSettingsViewTests(DjangoTest):
     def test_time_settings_view_sends_time_flag(self):
         request = self.make_request("---", loggedin=True)
         self.check_view_has_context(time_settings, request, {"page": "time"})
+
+
+    def test_time_settings_view_sends_form(self):
+        self.mock_form.return_value = "FORM"
+        request = self.make_request("---", loggedin=True)
+        self.check_view_has_context(time_settings, request, {"page": "time"})
+        self.mock_form.assert_called_with(instance=request.user)
+
+
+    def test_can_save_time_settings(self):
+        form = Mock()
+        self.mock_form.return_value = form
+        form.is_valid.return_value = True
+        request = self.make_request(
+         "---", method="post", data={"a": "u", "v": "p"}, loggedin=True
+        )
+        self.check_view_redirects(time_settings, request, "/profile/time/")
+        self.mock_form.assert_called_with(QueryDict("a=u&v=p"), instance=request.user)
+        form.save.assert_called_with()
 
 
 

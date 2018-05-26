@@ -153,6 +153,12 @@
                 font-weight: bold;
             }
         }
+
+        form {
+            box-shadow: none;
+            max-width: 50rem;
+            @include margin-side(auto);
+        }
     }
 }
 
@@ -194,7 +200,6 @@
     }
 
     #user {
-        font-size: 1.1em;
 
         #sections {
             grid-template-columns: 14rem 14rem 14rem;
@@ -209,7 +214,6 @@
 
 @mixin components--laptop() {
     #user {
-        font-size: 1.2em;
 
         #sections {
             grid-template-columns: 18rem 18rem 18rem;
