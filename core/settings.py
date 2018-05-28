@@ -1,7 +1,7 @@
 import os
 from .secrets import SECRET_KEY, BASE_DIR, DATABASES
 
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 
 
 ALLOWED_HOSTS = []
