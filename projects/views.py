@@ -6,44 +6,25 @@ from projects.forms import SessionForm, ProjectForm, process_session_form_data
 from projects.models import Session, Project
 
 @login_required(login_url="/", redirect_field_name=None)
-def day(request, year, month, day):
-    """The view that responds to requests for a given time tracking day."""
-
-    form = SessionForm(date=date(year, month, day))
-    if request.method == "POST":
-        form = process_session_form_data(request, date=date(year, month, day))
-        if form.is_valid():
-            form.save(request.user)
-            return redirect("/time/{}/{}/{}/".format(year, month, day))
-    day = Session.from_day(request.user, date(year, month, day))
-    return render(request, "day.html", {"day": day, "form": form})
-
-
-@login_required(login_url="/", redirect_field_name=None)
-def month(request, year, month):
-    """The view that responds to requests for a given time tracking month. If
-    the month requested is before the user's first month, 404 is returned."""
-
-    month_date, first_month = date(year, month, 1), request.user.first_month()
-    if not first_month or month_date < first_month:
-        raise Http404
-    days = Session.from_month(request.user, year, month)
-    return render(request, "month.html", {
-     "month": date(year, month, 1),
+def time(request, month=None, project=None):
+    """This view sends a list of sessions clustered into days. A few diverse
+    URLs point to it."""
+    
+    month_date, title, days = None, None, None
+    if month:
+        month_date = date(*[int(x) for x in month.split("-")], 1)
+        days = Session.from_month(request.user, month_date)
+        title = month_date.strftime("%B %Y")
+    if project:
+         project = get_object_or_404(Project, id=project, user=request.user)
+         days = Session.from_project(project)
+         title = project.name
+    return render(request, "time.html", {
+     "title": title,
      "days": days,
-     "next": not days[0].next_month() > request.now.date(),
-     "previous": not days[0].previous_month() < first_month
+     "month_date": month_date,
+     "project": project
     })
-
-
-@login_required(login_url="/", redirect_field_name=None)
-def project(request, pk):
-    """The view that responds to requests for a given time tracking month. If
-    the user has no matching project, 404 is returned."""
-
-    project = get_object_or_404(Project, id=pk, user=request.user)
-    days = Session.from_project(project)
-    return render(request, "project.html", {"project": project, "days": days})
 
 
 @login_required(login_url="/", redirect_field_name=None)
@@ -56,29 +37,29 @@ def projects(request):
 
 
 @login_required(login_url="/", redirect_field_name=None)
-def edit_session(request, pk):
+def edit_session(request, session):
     """The view which lets users edit a session."""
 
-    session = get_object_or_404(Session, id=pk, project__user=request.user)
+    session = get_object_or_404(Session, id=session, project__user=request.user)
     form = SessionForm(instance=session)
     if request.method == "POST":
         form = process_session_form_data(request, instance=session)
         if form.is_valid():
             form.save(request.user)
             return redirect(
-             form.instance.local_start().strftime("/time/%Y/%m/%d/")
+             form.instance.local_start().strftime("/day/%Y-%m-%d/")
             )
     return render(request, "edit-session.html", {"form": form})
 
 
 @login_required(login_url="/", redirect_field_name=None)
-def delete_session(request, pk):
+def delete_session(request, session):
     """The view which lets users delete a session."""
 
-    session = get_object_or_404(Session, id=pk, project__user=request.user)
+    session = get_object_or_404(Session, id=session, project__user=request.user)
     if request.method == "POST":
         session.delete()
-        return redirect(session.local_start().strftime("/time/%Y/%m/%d/"))
+        return redirect(session.local_start().strftime("/day/%Y-%m-%d/"))
     return render(request, "delete-session.html", {"session": session})
 
 
@@ -96,12 +77,11 @@ def new_project(request):
     return render(request, "new-project.html", {"form": form})
 
 
-
 @login_required(login_url="/", redirect_field_name=None)
-def edit_project(request, pk):
+def edit_project(request, project):
     """The view which lets users edit a project."""
 
-    project = get_object_or_404(Project, id=pk, user=request.user)
+    project = get_object_or_404(Project, id=project, user=request.user)
     form = ProjectForm(user=request.user, instance=project)
     if request.method == "POST":
         form = ProjectForm(user=request.user, data=request.POST, instance=project)
@@ -111,12 +91,11 @@ def edit_project(request, pk):
     return render(request, "edit-project.html", {"form": form})
 
 
-
 @login_required(login_url="/", redirect_field_name=None)
-def delete_project(request, pk):
+def delete_project(request, project):
     """The view which lets users delete a project."""
 
-    project = get_object_or_404(Project, id=pk, user=request.user)
+    project = get_object_or_404(Project, id=project, user=request.user)
     if request.method == "POST":
         project.delete()
         return redirect("/projects/")

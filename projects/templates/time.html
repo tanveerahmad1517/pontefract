@@ -1,0 +1,31 @@
+{% extends "user-base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block main %}
+
+<div class="day-list-container">
+
+    <div class="title-box">
+        <h1>{{ title }}</h1>
+        {% if month_date %}
+        <div class="nav-buttons">
+            <a class="button" id="previous-month" class="block" href="/time/{{ days.0.previous_month|date:'Y-m/'}}">{{ days.0.previous_month|date:'F Y'}}</a>
+            {% if not days.0.next_month > request.now.date %}
+            <a class="button" id="next-month" class="block" href="/time/{{ days.0.next_month|date:'Y-m/'}}">{{ days.0.next_month|date:'F Y'}}</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if project %}
+        <div class="total-time">{{ project.total_time|time_string }}</div>
+         <a href="/projects/{{ project.id }}/edit/" class="edit-link">Edit Project</a>
+        {% endif %}
+    </div>
+
+    {% for day in days %}
+    {% include "projects-components/day-sessions.html" %}
+    {% endfor %}
+</div>
+{% endblock %}

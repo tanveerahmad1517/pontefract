@@ -187,11 +187,11 @@ class SessionAddingTests(TimeTrackingTest):
     def test_can_add_work_session_for_previous_day(self):
         # The user goes to the yesetrday page and fills out the form there
         self.login()
-        self.get("/time/2009/10/1/")
+        self.get("/day/2009-10-01/")
         self.fill_in_session_form("16:05", "16:35", "0", "Cycling")
 
         # They are on the day's page
-        self.check_page("/time/2009/10/1/")
+        self.check_page("/day/2009-10-01/")
 
         # The total for the day is updated
         today = self.browser.find_element_by_class_name("day-sessions")
@@ -397,7 +397,7 @@ class SessionViewingTests(TimeTrackingTest):
         # They can view the work done yesterday
         link = self.browser.find_element_by_class_name("yesterday-link")
         self.click(link)
-        self.check_page("/time/1997/05/01/")
+        self.check_page("/day/1997-05-01/")
         self.check_title("1 May, 1997")
         day = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(day, "1 hour, 20 minutes", [
@@ -419,14 +419,14 @@ class SessionViewingTests(TimeTrackingTest):
         # They can navigate between days
         link = self.browser.find_element_by_class_name("yesterday-link")
         self.click(link)
-        self.check_page("/time/1997/04/30/")
+        self.check_page("/day/1997-04-30/")
         self.check_title("30 April, 1997")
         day = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(day, "0 minutes", [], date="30 April, 1997")
         self.assertIn("no sessions", day.text)
         link = day.find_element_by_class_name("tomorrow-link")
         self.click(link)
-        self.check_page("/time/1997/05/01/")
+        self.check_page("/day/1997-05-01/")
         self.check_title("1 May, 1997")
         link = self.browser.find_element_by_class_name("tomorrow-link")
         self.click(link)
@@ -435,7 +435,7 @@ class SessionViewingTests(TimeTrackingTest):
 
     def test_day_view_auth_required(self):
         self.logout()
-        self.get("/time/1997/05/01/")
+        self.get("/day/1997-05-01/")
         self.check_page("/")
 
 
@@ -451,7 +451,7 @@ class SessionViewingTests(TimeTrackingTest):
         # They can view the work done in May
         link = today.find_element_by_class_name("month-link")
         self.click(link)
-        self.check_page("/time/1997/05/")
+        self.check_page("/time/1997-05/")
         self.check_title("May 1997")
         self.check_h1("May 1997")
         days = self.browser.find_elements_by_class_name("day-sessions")
@@ -470,7 +470,7 @@ class SessionViewingTests(TimeTrackingTest):
         with self.assertRaises(self.NoElement):
             self.browser.find_element_by_id("next-month")
         self.click(previous)
-        self.check_page("/time/1997/04/")
+        self.check_page("/time/1997-04/")
         self.check_title("April 1997")
         days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 30)
@@ -488,26 +488,26 @@ class SessionViewingTests(TimeTrackingTest):
                 self.check_day_report(day, "0 minutes", [])
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
-        self.check_page("/time/1997/03/")
+        self.check_page("/time/1997-03/")
         self.check_title("March 1997")
         days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 31)
         for day in days: self.check_day_report(day, "0 minutes", [])
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
-        self.check_page("/time/1997/02/")
+        self.check_page("/time/1997-02/")
         self.check_title("February 1997")
         days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 28)
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
-        self.check_page("/time/1997/01/")
+        self.check_page("/time/1997-01/")
         self.check_title("January 1997")
         days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 31)
         previous = self.browser.find_element_by_id("previous-month")
         self.click(previous)
-        self.check_page("/time/1996/12/")
+        self.check_page("/time/1996-12/")
         self.check_title("December 1996")
         days = self.browser.find_elements_by_class_name("day-sessions")
         self.assertEqual(len(days), 31)
@@ -521,25 +521,21 @@ class SessionViewingTests(TimeTrackingTest):
                 ], date="24 December, 1996")
             else:
                 self.check_day_report(day, "0 minutes", [])
-        with self.assertRaises(self.NoElement):
-            self.browser.find_element_by_id("previous-month")
         for n in range(5):
             next = self.browser.find_element_by_id("next-month")
             self.click(next)
-        self.check_page("/time/1997/05/")
+        self.check_page("/time/1997-05/")
         self.check_title("May 1997")
 
 
     def test_month_view_404(self):
         self.logout()
-        self.get("/time/1997/05/")
+        self.get("/time/1997-05/")
         self.check_page("/")
         self.login()
-        self.get("/time/1997/05/")
-        self.check_page("/time/1997/05/")
+        self.get("/time/1997-05/")
+        self.check_page("/time/1997-05/")
         self.check_title("May 1997")
-        self.get("/time/1952/10/")
-        self.check_title("Not Found")
 
 
     def test_can_view_project(self):
@@ -659,7 +655,7 @@ class SessionEditingTests(TimeTrackingTest):
         self.assertIn("1 hour", row.text)
         link = row.find_element_by_class_name("edit-link")
         self.click(link)
-        self.check_page("/sessions/{}/".format(self.session_id))
+        self.check_page("/sessions/{}/edit/".format(self.session_id))
         self.check_title("Edit Session")
 
         # The form has pre-loaded values
@@ -675,7 +671,7 @@ class SessionEditingTests(TimeTrackingTest):
         )
 
         # They are on the October page
-        self.check_page("/time/1996/05/01/")
+        self.check_page("/day/1996-05-01/")
 
         # The sessions are updated
         day = self.browser.find_element_by_class_name("day-sessions")
@@ -698,7 +694,7 @@ class SessionEditingTests(TimeTrackingTest):
         self.assertIn("1 hour", row.text)
         link = row.find_element_by_class_name("edit-link")
         self.click(link)
-        self.check_page("/sessions/{}/".format(self.session_id))
+        self.check_page("/sessions/{}/edit/".format(self.session_id))
         self.check_title("Edit Session")
 
         # The form has pre-loaded values
@@ -714,7 +710,7 @@ class SessionEditingTests(TimeTrackingTest):
         )
 
         # They are on the October page
-        self.check_page("/time/1996/05/01/")
+        self.check_page("/day/1996-05-01/")
 
         # The sessions are updated
         day = self.browser.find_element_by_class_name("day-sessions")
@@ -725,12 +721,12 @@ class SessionEditingTests(TimeTrackingTest):
 
     def test_session_editing_view_404(self):
         self.logout()
-        self.get("/sessions/{}/".format(self.session_id))
+        self.get("/sessions/{}/edit/".format(self.session_id))
         self.check_page("/")
         self.login()
-        self.get("/sessions/{}/".format(self.other_id))
+        self.get("/sessions/{}/edit/".format(self.other_id))
         self.check_title("Not Found")
-        self.get("/sessions/9999999/")
+        self.get("/sessions/9999999/edit/")
         self.check_title("Not Found")
 
 
@@ -748,7 +744,7 @@ class SessionEditingTests(TimeTrackingTest):
         self.assertIn("1 hour", row.text)
         link = row.find_element_by_class_name("edit-link")
         self.click(link)
-        self.check_page("/sessions/{}/".format(self.session_id))
+        self.check_page("/sessions/{}/edit/".format(self.session_id))
         self.check_title("Edit Session")
 
         # There is a link to the deletion page
@@ -764,7 +760,7 @@ class SessionEditingTests(TimeTrackingTest):
         self.assertIn("1 hour", main.text)
         back_link = main.find_element_by_id("back-link")
         self.click(back_link)
-        self.check_page("/sessions/{}/".format(self.session_id))
+        self.check_page("/sessions/{}/edit/".format(self.session_id))
         self.check_title("Edit Session")
 
         # But they want to delete
@@ -774,7 +770,7 @@ class SessionEditingTests(TimeTrackingTest):
         self.check_title("Delete Session")
         delete = self.browser.find_element_by_class_name("delete-button")
         self.click(delete)
-        self.check_page("/time/1997/05/02/")
+        self.check_page("/day/1997-05-02/")
         today = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(today, "20 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],

@@ -93,14 +93,15 @@ class ProjectTests(DjangoTest):
     def test_can_get_projects_by_last_done(self):
         user1, user2 = mixer.blend(User, project_order="LD"), mixer.blend(User)
         projects = [Project.objects.create(name=str(i), user=user1) for i in range(4)]
-        projects.append(Project.objects.create(name="4", user=user2))
+        projects.append(Project.objects.create(name="4", user=user1))
+        projects.append(Project.objects.create(name="5", user=user2))
         sessions = [mixer.blend(
          Session, project=projects[i // 2], breaks = 40 if i == 1 else i * 5,
          start=datetime(2008, 1, 1, 9, i, 0, tzinfo=pytz.timezone("UTC")),
          end=datetime(2008, 1, 1, 10, i, 0, tzinfo=pytz.timezone("UTC"))
         ) for i in range(10)]
         ordered = list(Project.by_user_order(user1))
-        self.assertEqual(ordered, projects[:4][::-1])
+        self.assertEqual(ordered, projects[:5][::-1])
 
 
 
@@ -227,7 +228,7 @@ class SessionTests(DjangoTest):
 
     @patch("projects.models.Day.group_sessions_by_local_date")
     @patch("projects.models.Day.insert_empty_month_days")
-    def test_can_get_sessions_from_project(self, mock_insert, mock_group):
+    def test_can_get_sessions_from_month(self, mock_insert, mock_group):
         mock_group.return_value = "DAYS"
         user = mixer.blend(User)
         project1, project2 = mixer.blend(Project, user=user), mixer.blend(Project, user=user)
@@ -238,7 +239,7 @@ class SessionTests(DjangoTest):
               2007, 1 + (day < 10), day, 12, 5, 0, tzinfo=AUCK
              ), end=self.dt3, project=project1 if day % 2 else project2
             )
-        self.assertEqual(Session.from_month(user, 2007, 1), "DAYS")
+        self.assertEqual(Session.from_month(user, date(2007, 1, 1)), "DAYS")
         self.assertEqual(
          list(mock_group.call_args_list[0][0][0]), list(Session.objects.all())[:4]
         )

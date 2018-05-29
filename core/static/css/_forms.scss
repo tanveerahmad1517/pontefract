@@ -72,6 +72,10 @@ form {
         @include button;
         @include margin-side(auto);
     }
+
+    .month-link {
+        background-color: #6c5ce7;
+    }
 }
 
 .ui-menu-item {

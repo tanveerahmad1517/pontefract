@@ -5,18 +5,16 @@ from testarsenal import DjangoTest
 from freezegun import freeze_time
 from projects.views import *
 
-class DayViewTests(DjangoTest):
+class TimeViewTests(DjangoTest):
 
     def setUp(self):
-        self.patch1 = patch("projects.views.SessionForm")
-        self.mock_form = self.patch1.start()
-        self.patch2 = patch("projects.views.Session.from_day")
-        self.mock_from = self.patch2.start()
-        self.mock_from.return_value = "DAYS"
-        self.patch3 = patch("projects.views.process_session_form_data")
-        self.mock_process = self.patch3.start()
+        self.patch1 = patch("projects.views.Session.from_month")
+        self.mock_month = self.patch1.start()
+        self.patch2 = patch("projects.views.Session.from_project")
+        self.mock_project = self.patch2.start()
+        self.patch3 = patch("projects.views.get_object_or_404")
+        self.mock_get = self.patch3.start()
         self.request = self.make_request("---", loggedin=True)
-        self.request.now = datetime(1234, 5, 6, 7, 8, 9)
 
 
     def tearDown(self):
@@ -25,158 +23,34 @@ class DayViewTests(DjangoTest):
         self.patch3.stop()
 
 
-    def test_day_view_uses_day_template(self):
-        self.check_view_uses_template(day, self.request, "day.html", 1990, 9, 28)
+    def test_times_view_uses_time_template(self):
+        self.check_view_uses_template(time, self.request, "time.html")
 
 
-    def test_day_view_sends_session_form(self):
-        self.mock_form.return_value = "FORM"
-        self.request.user.minutes_worked_today.return_value = 19
-        self.check_view_has_context(day, self.request, {"form": "FORM"}, 1990, 9, 28)
-        self.mock_form.assert_called_with(date=date(1990, 9, 28))
-
-
-    def test_day_view_sends_sessions_from_today(self):
-        self.check_view_has_context(day, self.request, {"day": "DAYS"}, 1990, 9, 28)
-        self.mock_from.assert_called_with(self.request.user, date(1990, 9, 28))
-
-
-    def test_day_view_can_return_incorrect_form(self):
-        self.mock_process.return_value = Mock()
-        self.mock_process.return_value.is_valid.return_value = False
-        request = self.make_request(
-         "---", method="post", data={"a": "u", "b": "p"}, loggedin=True
-        )
-        self.check_view_uses_template(day, request, "day.html", 1990, 9, 28)
-        self.mock_process.assert_called_with(request, date=date(1990, 9, 28))
-
-
-    def test_day_view_can_save_session(self):
-        self.mock_process.return_value = Mock()
-        self.mock_process.return_value.is_valid.return_value = True
-        request = self.make_request(
-         "---", method="post", data={"a": "u", "b": "p"}, loggedin=True
-        )
-        self.check_view_redirects(day, request, "/time/1990/9/28/", 1990, 9, 28)
-        self.mock_process.return_value.save.assert_called_with(request.user)
-        self.mock_process.assert_called_with(request, date=date(1990, 9, 28))
-
-
-
-class MonthViewTests(DjangoTest):
-
-    def setUp(self):
-        self.request = self.make_request("---", loggedin=True)
-        self.request.now = datetime(1984, 10, 3, 12, 0, 0)
-        self.request.user.first_month.return_value = date(1983, 6, 1)
-        self.patch1 = patch("core.views.Session.from_month")
-        self.mock_from = self.patch1.start()
-        self.days = [Mock(), Mock(), Mock()]
-        self.days[0].next_month.return_value = date(1984, 11, 1)
-        self.days[0].previous_month.return_value = date(1984, 9, 1)
-        self.mock_from.return_value = self.days
-
-
-    def tearDown(self):
-        self.patch1.stop()
-
-
-    def test_month_view_uses_month_template(self):
-        self.check_view_uses_template(
-         month, self.request, "month.html", 1990, 10
-        )
-
-
-    def test_month_view_requires_auth(self):
+    def test_projects_view_requires_auth(self):
         request = self.make_request("---")
-        self.check_view_redirects(month, request, "/", 1962, 4)
+        self.check_view_redirects(time, request, "/")
 
 
-    def test_month_view_sends_month(self):
-        self.check_view_has_context(
-         month, self.request, {"month": date(1990, 10, 1)}, 1990, 10
-        )
+    def test_time_view_can_send_month_sessions(self):
+        self.check_view_has_context(time, self.request, {
+         "title": "September 1990",
+         "days": self.mock_month.return_value,
+         "month_date": date(1990, 9, 1),
+         "project": None
+        }, month="1990-09")
+        self.mock_month.assert_called_with(self.request.user, date(1990, 9, 1))
 
 
-    def test_month_view_sends_days(self):
-        self.check_view_has_context(
-         month, self.request, {"days": self.days}, 1984, 10
-        )
-        self.mock_from.assert_called_with(self.request.user, 1984, 10)
-
-
-    def test_month_view_sends_go_ahead_for_next(self):
-        self.check_view_has_context(
-         month, self.request, {"next": False}, 1984, 4
-        )
-        self.request.now = datetime(1985, 10, 3, 12, 0, 0)
-        self.check_view_has_context(
-         month, self.request, {"next": True}, 1984, 4
-        )
-
-
-    def test_month_view_sends_go_ahead_for_previous(self):
-        self.check_view_has_context(
-         month, self.request, {"previous": True}, 1984, 4
-        )
-        self.request.user.first_month.return_value = date(1985, 10, 1)
-        self.check_view_has_context(
-         month, self.request, {"previous": False}, 1985, 11
-        )
-
-
-    def test_month_view_raises_404_on_month_out_of_bounds(self):
-        with self.assertRaises(Http404):
-            month(self.request, 1961, 6)
-
-
-    def test_month_view_raises_404_on_no_sessions(self):
-        self.request.user.first_month.return_value = None
-        with self.assertRaises(Http404):
-            month(self.request, 1984, 4)
-
-
-
-class ProjectViewTests(DjangoTest):
-
-    def setUp(self):
-        self.request = self.make_request("---", loggedin=True)
-        self.patch1 = patch("projects.views.get_object_or_404")
-        self.mock_get = self.patch1.start()
-        self.mock_get.return_value = "PROJECT"
-        self.patch2 = patch("projects.views.Session.from_project")
-        self.mock_from = self.patch2.start()
-        self.mock_from.return_value = [1, 2, 3]
-
-
-    def tearDown(self):
-        self.patch1.stop()
-        self.patch2.stop()
-
-
-    def test_project_view_uses_project_template(self):
-        self.check_view_uses_template(
-         project, self.request, "project.html", 3
-        )
-
-
-    def test_project_view_requires_auth(self):
-        request = self.make_request("---")
-        self.check_view_redirects(project, request, "/", 3)
-
-
-    def test_project_view_sends_project(self):
-        self.check_view_has_context(
-         project, self.request, {"project": "PROJECT"}, 3
-        )
-        self.mock_get.assert_called_with(Project, id=3, user=self.request.user)
-
-
-    def test_project_view_sends_days(self):
-        self.check_view_has_context(
-         project, self.request, {"days": [1, 2, 3]}, 3
-        )
-        self.mock_from.assert_called_with("PROJECT")
+    def test_time_view_can_send_project_sessions(self):
+        self.check_view_has_context(time, self.request, {
+         "title": self.mock_get.return_value.name,
+         "days": self.mock_project.return_value,
+         "month_date": None,
+         "project": self.mock_get.return_value
+        }, project="123")
+        self.mock_get.assert_called_with(Project, id="123", user=self.request.user)
+        self.mock_project.assert_called_with(self.mock_get.return_value)
 
 
 
@@ -266,7 +140,7 @@ class EditSessionViewTests(DjangoTest):
         request = self.make_request(
          "---", method="post", data={"a": "u", "b": "p"}, loggedin=True
         )
-        self.check_view_redirects(edit_session, request, "/time/1998/01/03/", 3)
+        self.check_view_redirects(edit_session, request, "/day/1998-01-03/", 3)
         self.mock_process.assert_called_with(request, instance="SESSION")
         self.mock_process.return_value.save.assert_called_with(request.user)
 
@@ -309,7 +183,7 @@ class DeleteSessionViewTests(DjangoTest):
         request = self.make_request(
          "---", method="post", data={"a": "u", "b": "p"}, loggedin=True
         )
-        self.check_view_redirects(delete_session, request, "/time/1998/01/03/", 3)
+        self.check_view_redirects(delete_session, request, "/day/1998-01-03/", 3)
         self.session.delete.assert_called_with()
 
 

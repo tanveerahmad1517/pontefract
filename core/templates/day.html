@@ -5,12 +5,13 @@
 {% block scripts %}
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 {% endblock %}
-{% block title %}Home{% endblock %}
+{% block title %}{% if home %}Home{% else %}{{ day.day }}{% endif %}{% endblock %}
 
 {% block main %}
 
-{% with "today" as day_context %}
-{% include "containers/day-container.html" %}
-{% endwith %}
+<div class="day-container">
+    {% include "projects-components/day-sessions.html" %}
+    {% include "projects-components/session-form.html" %}
+</div>
 
 {% endblock %}

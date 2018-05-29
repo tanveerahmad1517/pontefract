@@ -52,13 +52,20 @@ class Project(models.Model):
         projects = {
          p.id: p for p in Project.objects.filter(user=user).order_by("id")
         }
-        for project in projects.values(): project.duration = 0
+        for project in projects.values():
+            project.duration = 0
+            project.recent = None
         for session in sessions:
             projects[session.project_id].duration += session.duration()
             projects[session.project_id].recent = session
-
-        criteria = lambda p: p.recent.end if user.project_order == "LD" else p.duration
-        return reversed(sorted(projects.values(), key=criteria))
+        if user.project_order == "LD":
+            done_projects = [p for p in projects.values() if p.recent]
+            never_projects = [p for p in projects.values() if not p.recent]
+            return list(
+             reversed(sorted(done_projects, key=lambda p: p.recent.end))
+            ) + never_projects
+        else:
+            return reversed(sorted(projects.values(), key=lambda p: p.duration))
 
 
 class Session(models.Model):
@@ -135,7 +142,7 @@ class Session(models.Model):
 
 
     @classmethod
-    def from_month(cls, user, year, month):
+    def from_month(cls, user, month):
         """Gets all the user's sessions from a given month, as a list of ``Day``
         objects. Empty days will be included, days after the current day will
         not be.
@@ -143,12 +150,12 @@ class Session(models.Model):
         SQL queries: 1"""
 
         sessions = Session.objects.filter(
-         start__year=year, start__month=month, project__user=user
+         start__year=month.year, start__month=month.month, project__user=user
         ).annotate(
          project_id=models.F("project"), project_name=models.F("project__name")
         ).order_by("start")
         days = Day.group_sessions_by_local_date(sessions)
-        Day.insert_empty_month_days(days, year, month)
+        Day.insert_empty_month_days(days, month.year, month.month)
         return days
 
 

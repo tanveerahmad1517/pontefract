@@ -51,20 +51,6 @@ class UserTests(DjangoTest):
         self.assertEqual(user.project_order, "TD")
 
 
-    def test_user_first_session_month_none(self):
-        user = User(username="sam", email="sam@sam.sam", password="p")
-        self.assertIsNone(user.first_month())
-
-
-    def test_user_first_session_month(self):
-        user = User.objects.create(username="sam", email="sam@sam.sam")
-        p1, p2 = mixer.blend(Project, user=user), mixer.blend(Project)
-        s1 = mixer.blend(Session, start=datetime(1998, 4, 2, 9, 2, tzinfo=AUCK), project=p1)
-        s2 = mixer.blend(Session, start=datetime(1996, 1, 1, 8, 2, tzinfo=AUCK), project=p1)
-        s3 = mixer.blend(Session, start=datetime(1992, 1, 1, 8, 2, tzinfo=AUCK), project=p2)
-        self.assertEqual(user.first_month(), date(1995, 12, 1))
-
-
     def test_user_project_count(self):
         user = User.objects.create(username="sam", email="sam@sam.sam")
         for _ in range(4):

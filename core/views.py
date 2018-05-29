@@ -1,7 +1,9 @@
 from datetime import date
 from django.shortcuts import render, redirect
 import django.contrib.auth as auth
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from core.forms import *
 from projects.forms import SessionForm, ProjectForm, process_session_form_data
 from projects.models import Session, Project
@@ -12,7 +14,7 @@ def root(request):
     logged in."""
 
     if request.user.is_authenticated:
-        return home(request)
+        return day(request, home=True)
     return landing(request)
 
 
@@ -27,25 +29,6 @@ def landing(request):
             auth.login(request, user)
             return redirect("/")
     return render(request, "landing.html", {"form": form})
-
-
-def policy(request):
-    """The view that serves the policy page."""
-    
-    return render(request, "policy.html")
-
-
-def home(request):
-    """The view that serves the home page to logged in users."""
-
-    form = SessionForm()
-    if request.method == "POST":
-        form = process_session_form_data(request)
-        if form.is_valid():
-            form.save(request.user)
-            return redirect("/")
-    day = Session.from_day(request.user, request.now.date())
-    return render(request, "home.html", {"form": form, "day": day})
 
 
 def login(request):
@@ -63,6 +46,29 @@ def login(request):
     return render(request, "login.html", {"form": form})
 
 
+def policy(request):
+    """The view that serves the policy page."""
+
+    return render(request, "policy.html")
+
+
+@login_required(login_url="/", redirect_field_name=None)
+def day(request, day=None, home=False):
+    """The view that responds to requests for a given day."""
+
+    try:
+        day = date(*[int(x) for x in day.split("-")]) if day else request.now.date()
+    except: raise Http404
+    form = SessionForm(date=day)
+    if request.method == "POST":
+        form = process_session_form_data(request, date=day)
+        if form.is_valid():
+            form.save(request.user)
+            return redirect("/" if home else day.strftime("/day/%Y-%m-%d/"))
+    day = Session.from_day(request.user, day)
+    return render(request, "day.html", {"day": day, "form": form, "home": home})
+
+
 def logout(request):
     """The logout view logs out any user who makes a POST request to this
     view."""
@@ -73,37 +79,21 @@ def logout(request):
 
 
 @login_required(login_url="/", redirect_field_name=None)
-def profile(request):
+def profile(request, page="profile"):
     """The view dealing with the user's profile."""
 
-    return render(request, "profile.html", {"page": "profile"})
-
-
-@login_required(login_url="/", redirect_field_name=None)
-def time_settings(request):
-    """The view dealing with the user's time tracking settings."""
-
-    form = TimeSettingsForm(instance=request.user)
-    if request.method == "POST":
-        form = TimeSettingsForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect("/profile/time/")
-    return render(request, "profile.html", {"page": "time", "form": form})
-
-
-@login_required(login_url="/", redirect_field_name=None)
-def account_settings(request):
-    """The view dealing with the user's account settings."""
-
-    form = AccountSettingsForm(instance=request.user)
-    if request.method == "POST":
-        form = AccountSettingsForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            auth.update_session_auth_hash(request, form.instance)
-            return redirect("/profile/account/")
-    return render(request, "profile.html", {"page": "account", "form": form})
+    context = {"page": page}
+    if page in ("time", "account"):
+        Form = TimeSettingsForm if page == "time" else AccountSettingsForm
+        context["form"] = Form(instance=request.user)
+        if request.method == "POST":
+            context["form"] = Form(request.POST, instance=request.user)
+            if context["form"].is_valid():
+                context["form"].save()
+                if page == "account":
+                    update_session_auth_hash(request, context["form"].instance)
+                return redirect(f"/profile/{page}/")
+    return render(request, "profile.html", context)
 
 
 @login_required(login_url="/", redirect_field_name=None)
