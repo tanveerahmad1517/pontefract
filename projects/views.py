@@ -1,29 +1,49 @@
-from datetime import date
+from datetime import datetime, date, timedelta
+from calendar import monthrange
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404
+from django.db.models import F, ExpressionWrapper
 from django.contrib.auth.decorators import login_required
 from projects.forms import SessionForm, ProjectForm, process_session_form_data
-from projects.models import Session, Project
+from projects.models import Session, Project, Day
+
+
+def project(request, project):
+    """Returns a view of a project by sending the relevant params to the time
+    view."""
+
+    return time(request, project=project)
+
+
+def month(request, month):
+    """Returns a view of a month by sending the relevant params to the time
+    view."""
+
+    year, month = [int(x) for x in month.split("-")]
+    start = datetime(year, month, 1)
+    end = datetime(year, month, monthrange(year, month)[1]) + timedelta(days=1)
+    return time(request, start=start, end=end, as_month=start)
+
 
 @login_required(login_url="/", redirect_field_name=None)
-def time(request, month=None, project=None):
+def time(request, start=None, end=None, project=None, as_month=False, all=False):
     """This view sends a list of sessions clustered into days. A few diverse
     URLs point to it."""
-    
-    month_date, title, days = None, None, None
-    if month:
-        month_date = date(*[int(x) for x in month.split("-")], 1)
-        days = Session.from_month(request.user, month_date)
-        title = month_date.strftime("%B %Y")
+
+    sessions = Session.objects.filter(project__user=request.user).annotate(
+     project_id=F("project"), project_name=F("project__name")
+    )
     if project:
          project = get_object_or_404(Project, id=project, user=request.user)
-         days = Session.from_project(project)
-         title = project.name
+         sessions = sessions.filter(project=project)
+    if start:
+        sessions = sessions.filter(start__gte=request.user.timezone.localize(start))
+    if end:
+        sessions = sessions.filter(start__lte=request.user.timezone.localize(end))
+    days = Day.group_sessions_by_local_date(sessions.order_by("start"))
+    if as_month: Day.insert_empty_month_days(days, as_month.year, as_month.month)
     return render(request, "time.html", {
-     "title": title,
-     "days": days,
-     "month_date": month_date,
-     "project": project
+     "days": days, "project": project, "month_date": as_month
     })
 
 

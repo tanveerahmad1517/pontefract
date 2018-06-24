@@ -44,11 +44,11 @@ class CoreUrlTests(DjangoTest):
 class TimeUrlTests(DjangoTest):
 
     def test_month_url(self):
-        self.check_url_returns_view("/time/1990-09/", project_views.time)
+        self.check_url_returns_view("/time/1990-09/", project_views.month)
 
 
     def test_project_url(self):
-        self.check_url_returns_view("/projects/199/", project_views.time)
+        self.check_url_returns_view("/projects/199/", project_views.project)
 
 
     def test_projects_url(self):

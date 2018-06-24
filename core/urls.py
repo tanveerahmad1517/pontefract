@@ -13,9 +13,9 @@ urlpatterns = [
  path(r"delete-account/", core_views.delete_account),
  path(r"day/<slug:day>/", core_views.day),
 ] + [
- path(r"time/<slug:month>/", project_views.time),
+ path(r"time/<slug:month>/", project_views.month),
  path(r"projects/new/", project_views.new_project),
- path(r"projects/<slug:project>/", project_views.time),
+ path(r"projects/<slug:project>/", project_views.project),
  path(r"projects/<slug:project>/edit/", project_views.edit_project),
  path(r"projects/<slug:project>/delete/", project_views.delete_project),
  path(r"sessions/<slug:session>/edit/", project_views.edit_session),

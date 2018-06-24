@@ -1,5 +1,5 @@
 {% extends "user-base.html" %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{% if project %}{{ project.name }}{% elif month_date %}{{ month_date|date:'F Y' }}{% else %}Sessions{% endif %}{% endblock %}
 
 {% block css %}
 {% endblock %}
@@ -9,7 +9,7 @@
 <div class="day-list-container">
 
     <div class="title-box">
-        <h1>{{ title }}</h1>
+        <h1>{% if project %}{{ project.name }}{% elif month_date %}{{ month_date|date:'F Y' }}{% else %}Sessions{% endif %}</h1>
         {% if month_date %}
         <div class="nav-buttons">
             <a class="button" id="previous-month" class="block" href="/time/{{ days.0.previous_month|date:'Y-m/'}}">{{ days.0.previous_month|date:'F Y'}}</a>

@@ -5,22 +5,54 @@ from testarsenal import DjangoTest
 from freezegun import freeze_time
 from projects.views import *
 
+class ProjectViewTests(DjangoTest):
+
+    @patch("projects.views.time")
+    def test_project_view_sends_parameters_to_time_view(self, mock_time):
+        request = self.make_request("---")
+        response = project(request, "102")
+        mock_time.assert_called_with(request, project="102")
+        self.assertIs(response, mock_time.return_value)
+
+
+
+class MonthViewTests(DjangoTest):
+
+    @patch("projects.views.time")
+    def test_month_view_sends_parameters_to_time_view(self, mock_time):
+        request = self.make_request("---")
+        response =  month(request, "1990-09")
+        mock_time.assert_called_with(
+         request, start=datetime(1990, 9, 1), end=datetime(1990, 10, 1),
+         as_month=datetime(1990, 9, 1)
+        )
+        self.assertIs(response, mock_time.return_value)
+
+
+
 class TimeViewTests(DjangoTest):
 
     def setUp(self):
-        self.patch1 = patch("projects.views.Session.from_month")
-        self.mock_month = self.patch1.start()
-        self.patch2 = patch("projects.views.Session.from_project")
-        self.mock_project = self.patch2.start()
+        self.patch1 = patch("projects.views.Session.objects.filter")
+        self.mock_filter = self.patch1.start()
+        self.patch2 = patch("projects.views.Day.group_sessions_by_local_date")
+        self.mock_group = self.patch2.start()
         self.patch3 = patch("projects.views.get_object_or_404")
         self.mock_get = self.patch3.start()
+        self.patch4 = patch("projects.views.Day.insert_empty_month_days")
+        self.mock_insert = self.patch4.start()
         self.request = self.make_request("---", loggedin=True)
+        self.filtered = Mock()
+        self.annotated = Mock()
+        self.mock_filter.return_value = self.filtered
+        self.filtered.annotate.return_value = self.annotated
 
 
     def tearDown(self):
         self.patch1.stop()
         self.patch2.stop()
         self.patch3.stop()
+        self.patch4.stop()
 
 
     def test_times_view_uses_time_template(self):
@@ -30,28 +62,7 @@ class TimeViewTests(DjangoTest):
     def test_projects_view_requires_auth(self):
         request = self.make_request("---")
         self.check_view_redirects(time, request, "/")
-
-
-    def test_time_view_can_send_month_sessions(self):
-        self.check_view_has_context(time, self.request, {
-         "title": "September 1990",
-         "days": self.mock_month.return_value,
-         "month_date": date(1990, 9, 1),
-         "project": None
-        }, month="1990-09")
-        self.mock_month.assert_called_with(self.request.user, date(1990, 9, 1))
-
-
-    def test_time_view_can_send_project_sessions(self):
-        self.check_view_has_context(time, self.request, {
-         "title": self.mock_get.return_value.name,
-         "days": self.mock_project.return_value,
-         "month_date": None,
-         "project": self.mock_get.return_value
-        }, project="123")
-        self.mock_get.assert_called_with(Project, id="123", user=self.request.user)
-        self.mock_project.assert_called_with(self.mock_get.return_value)
-
+        
 
 
 class ProjectsViewTests(DjangoTest):

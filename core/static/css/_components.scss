@@ -95,11 +95,13 @@
     @include white-box;
     padding: 1rem;
     font-size: 0.8em;
+    text-align: center;
 
     .project-name {
         display: block;
         font-size: 1.5em;
-        @include non-left-margin(1.5rem);
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
     }
 
     .total-time {

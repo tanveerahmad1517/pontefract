@@ -210,42 +210,6 @@ class SessionTests(DjangoTest):
             )
 
 
-    @patch("projects.models.Day.group_sessions_by_local_date")
-    def test_can_get_sessions_from_project(self, mock_group):
-        mock_group.return_value = "DAYS"
-        project1, project2 = mixer.blend(Project), mixer.blend(Project)
-        for hour in [20, 21, 22, 23, 0, 1, 2, 3]:
-            Session.objects.create(
-             start=datetime(
-              2007, 1, 10 + (hour < 10), hour, 5, 0, tzinfo=AUCK
-             ), end=self.dt3, project=project1 if hour % 2 else project2
-            )
-        self.assertEqual(Session.from_project(project1), "DAYS")
-        self.assertEqual(
-         list(mock_group.call_args_list[0][0][0]), list(Session.objects.all())[1::2]
-        )
-
-
-    @patch("projects.models.Day.group_sessions_by_local_date")
-    @patch("projects.models.Day.insert_empty_month_days")
-    def test_can_get_sessions_from_month(self, mock_insert, mock_group):
-        mock_group.return_value = "DAYS"
-        user = mixer.blend(User)
-        project1, project2 = mixer.blend(Project, user=user), mixer.blend(Project, user=user)
-        project3 = mixer.blend(Project)
-        for day in [27, 28, 29, 31, 1, 2, 3, 4]:
-            Session.objects.create(
-             start=datetime(
-              2007, 1 + (day < 10), day, 12, 5, 0, tzinfo=AUCK
-             ), end=self.dt3, project=project1 if day % 2 else project2
-            )
-        self.assertEqual(Session.from_month(user, date(2007, 1, 1)), "DAYS")
-        self.assertEqual(
-         list(mock_group.call_args_list[0][0][0]), list(Session.objects.all())[:4]
-        )
-        mock_insert.assert_called_with("DAYS", 2007, 1)
-
-
 
 class DayTests(DjangoTest):
 

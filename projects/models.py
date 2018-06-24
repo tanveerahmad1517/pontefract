@@ -128,37 +128,6 @@ class Session(models.Model):
         return Day(sessions, day=day)
 
 
-    @classmethod
-    def from_project(cls, project):
-        """Gets all the user's sessions from a given project, as a list of
-        ``Day`` objects.
-
-        SQL queries: 1"""
-
-        sessions = cls.objects.filter(project=project).annotate(
-         project_id=models.F("project"), project_name=models.F("project__name")
-        ).order_by("start")
-        return Day.group_sessions_by_local_date(sessions)
-
-
-    @classmethod
-    def from_month(cls, user, month):
-        """Gets all the user's sessions from a given month, as a list of ``Day``
-        objects. Empty days will be included, days after the current day will
-        not be.
-
-        SQL queries: 1"""
-
-        sessions = Session.objects.filter(
-         start__year=month.year, start__month=month.month, project__user=user
-        ).annotate(
-         project_id=models.F("project"), project_name=models.F("project__name")
-        ).order_by("start")
-        days = Day.group_sessions_by_local_date(sessions)
-        Day.insert_empty_month_days(days, month.year, month.month)
-        return days
-
-
 
 class Day:
     """A day of sessions."""
