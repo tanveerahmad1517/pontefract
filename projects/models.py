@@ -79,6 +79,7 @@ class Session(models.Model):
     timezone = TimeZoneField()
     breaks = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    notes = models.TextField(blank=True)
 
 
     def local_start(self):

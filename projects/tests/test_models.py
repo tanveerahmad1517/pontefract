@@ -124,7 +124,7 @@ class SessionTests(DjangoTest):
     def test_can_create_session(self):
         session = Session(
          start=self.dt1, end=self.dt2, breaks=5, project=self.project,
-         timezone=AUCK
+         timezone=AUCK, notes="A good session."
         )
         session.full_clean(), session.save()
 
@@ -144,6 +144,14 @@ class SessionTests(DjangoTest):
          timezone=AUCK
         )
         with self.assertRaises(ValidationError): session.full_clean()
+
+
+    def test_notes_not_required(self):
+        session = Session(
+         start=self.dt1, end=self.dt2, breaks=5, project=self.project,
+         timezone=AUCK
+        )
+        session.full_clean(), session.save()
 
 
     def test_start_local_timezone(self):

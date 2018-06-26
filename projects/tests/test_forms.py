@@ -81,7 +81,7 @@ class SessionFormTests(DjangoTest):
         form = SessionForm()
         self.assertEqual(
          list(form.fields.keys()),
-         ["start", "end", "timezone", "breaks", "project"]
+         ["start", "end", "timezone", "breaks", "project", "notes"]
         )
 
 

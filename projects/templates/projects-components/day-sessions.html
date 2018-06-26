@@ -6,24 +6,25 @@
     </div>
 
 
-    <table>
+    <div class="sessions">
         {% if day.sessions %}
         {% for session in day %}
-        <tr class="session">
-            <td class="time-cell"><a href="/sessions/{{ session.id }}/edit/" class="edit-link">
+        <div class="session" data-id="{{ session.id }}">
+            <div class="cell time-cell"><a href="/sessions/{{ session.id }}/edit/" class="edit-link">
                 {{ session.start|date:"H:i" }} - {{ session.end|date:"H:i" }}
-            </a></td>
-            <td class="name-cell"><a class="project-link" href="/projects/{{ session.project_id }}/">
+            </a></div>
+            <div class="cell notes-cell">{% if session.notes %}<button class="notes-button" data-notes="{{ session.notes }}"></button>{% endif %}</div>
+            <div class="cell name-cell"><a class="project-link" href="/projects/{{ session.project_id }}/">
                 {{ session.project_name}}
-            </a></td>
-            <td class="duration-cell">{{ session.duration|time_string }}</td>
-            <td class="breaks-cell">{% if session.breaks %}({{ session.breaks }} minute break){% else %}-{% endif %}</td>
-        </tr>
+            </a></div>
+            <div class="cell duration-cell">{{ session.duration|time_string }}</div>
+            <div class="cell breaks-cell">{% if session.breaks %}({{ session.breaks }} minute break){% else %}-{% endif %}</div>
+        </div>
         {% endfor %}
         {% else %}
-        <tr class="no-sessions"><td>You have no sessions for this day.</td></tr>
+        <div class="session no-sessions"><div class="cell">You have no sessions for this day.</div></div>
         {% endif %}
-    </table>
+    </div>
 
     {% if home %}
     <div class="nav-buttons">

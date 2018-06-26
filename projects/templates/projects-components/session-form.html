@@ -43,6 +43,12 @@
     {{ form.project.label_tag }}
     {{ form.project }}
 
+    {% if form.errors.notes %}
+    <div class="error" id="notes-error">{{ form.errors.notes.0 }}</div>
+    {% endif %}
+    {{ form.notes.label_tag }}
+    {{ form.notes }}
+
     <script>
         $("#now-start").click(function() {
             var dt = new Date();

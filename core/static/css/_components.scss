@@ -17,46 +17,72 @@
         }
     }
 
-    table {
-        border-collapse: collapse;
+    .sessions {
         margin-top: 1.5rem;
+        font-size: 0.7em;
         width: 100%;
-        table-layout: auto;
         box-sizing: border-box;
 
-        tr {
-            font-size: 70%;
+        .session {
             height: 3.5rem;
-            box-sizing: border-box;
+            display: flex;
+            align-items: center;
             background: $pale-purple;
 
-            td {
-                box-sizing: border-box;
+            .cell {
                 text-align: center;
                 white-space: nowrap;
                 padding: 1rem;
+                width: 100%;
+
+                button {
+                    cursor: pointer;
+                    background-image: url("/static/images/notes.png");
+                    background-position: center;
+                    background-size: contain;
+                    padding: 1rem;
+                    border: none;
+                    vertical-align: middle;
+                    background-color: #ffffff00;
+                    opacity: 0.3;
+                }
             }
 
-            td.time-cell {
-                width: 15%;
+            .time-cell {
+                padding-right: 0px;
+                width: 10rem;
             }
 
-            td.name-cell {
+            .notes-cell {
+                padding: 0px;
+                width: 2rem;
+            }
+
+            .name-cell {
                 text-align: left;
                 white-space: normal;
+                width: 50%;
             }
 
-            td.duration-cell {
+            .duration-cell {
                 width: 15%;
             }
 
-            td.breaks-cell {
-                width: 10%;
+            .breaks-cell {
                 font-size: 0.7em;
+                width: 15%;
             }
         }
 
-        tr:nth-child(even), tr.no-sessions {
+        span {
+            display: block;
+            text-align: center;
+            padding: $padding;
+            padding-bottom: 1.5 * $padding;
+            box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC
+        }
+
+        .session:nth-of-type(2n), .no-sessions {
             background: $very-pale-purple;
         }
     }
@@ -242,9 +268,9 @@
 
 @mixin components--tablet() {
     .day-sessions {
-        table {
-            tr {
-                font-size: 0.8em;
+        .sessions {
+            .session {
+                font-size: 1.2em;
             }
         }
     }

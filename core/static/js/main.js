@@ -18,4 +18,20 @@ $(document).ready(function() {
             });
         }
     });
+
+    $(".notes-button").each(function(x) {
+        $(this).click(function(e) {
+            var row = $(this).parent().parent();
+            var sessionId = $(row).attr("data-id");
+            if ($('*[data-session-id="' + sessionId + '"]').length) {
+                $('*[data-session-id="' + sessionId + '"]').slideToggle("fast", function() {
+                    $(this).remove();
+                })
+            } else {
+                var note = $(this).attr("data-notes");
+                $("<span data-session-id='" + sessionId + "'>" + note + "</span>").insertAfter(row).hide().slideDown("fast");
+            }
+
+        });
+    })
 });

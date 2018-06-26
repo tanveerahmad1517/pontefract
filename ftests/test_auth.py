@@ -93,7 +93,8 @@ class SignupTests(FunctionalTest):
         self.assertIn("Friday 2 May, 1997", today.text)
         self.assertIn("no sessions", today.text)
         sessions = today.find_elements_by_class_name("session")
-        self.assertEqual(len(sessions), 0)
+        self.assertEqual(len(sessions), 1)
+        self.assertIn("have no", sessions[0].text)
 
 
     def test_usernames_must_be_unique(self):

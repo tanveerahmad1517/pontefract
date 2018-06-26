@@ -10,7 +10,7 @@ from .base import FunctionalTest
 class TimeTrackingTest(FunctionalTest):
 
     def fill_in_session_form(self, start_time, end_time, breaks,
-     project, existing=False, start_day=None, end_day=None):
+     project, notes=None, existing=False, start_day=None, end_day=None):
         # There is a form to record work
         form = self.browser.find_elements_by_tag_name("form")[1]
         start_day_input = form.find_elements_by_tag_name("input")[0]
@@ -19,6 +19,7 @@ class TimeTrackingTest(FunctionalTest):
         end_time_input = form.find_elements_by_tag_name("input")[3]
         breaks_input = form.find_elements_by_tag_name("input")[4]
         project_input = form.find_elements_by_tag_name("input")[5]
+        notes_input = form.find_element_by_tag_name("textarea")
         with self.assertRaises(self.NoElement):
             form.find_element_by_tag_name("select")
         now_buttons = form.find_elements_by_class_name("now-button")
@@ -55,13 +56,15 @@ class TimeTrackingTest(FunctionalTest):
             self.assertEqual(project_input.get_attribute("value"), project)
         else:
             project_input.send_keys(project)
+        if notes:
+            notes_input.send_keys(notes)
         submit = form.find_elements_by_tag_name("input")[-1]
         self.click(submit)
 
 
     def check_session_form(self, start_day=None, start_time=None, end_day=None,
-     end_time=None, breaks=None, project=None, start_error=None, end_error=None,
-     breaks_error=None, project_error=None):
+     end_time=None, breaks=None, project=None, notes=None, start_error=None,
+     end_error=None, breaks_error=None, project_error=None):
         form = self.browser.find_elements_by_tag_name("form")[1]
         start_day_input = form.find_elements_by_tag_name("input")[0]
         start_time_input = form.find_elements_by_tag_name("input")[1]
@@ -69,6 +72,7 @@ class TimeTrackingTest(FunctionalTest):
         end_time_input = form.find_elements_by_tag_name("input")[3]
         breaks_input = form.find_elements_by_tag_name("input")[4]
         project_input = form.find_elements_by_tag_name("input")[5]
+        notes_input = form.find_element_by_tag_name("textarea")
         if start_day:
             self.assertEqual(start_day_input.get_attribute("value"), start_day)
         if start_time:
@@ -81,6 +85,8 @@ class TimeTrackingTest(FunctionalTest):
             self.assertEqual(breaks_input.get_attribute("value"), breaks)
         if project:
             self.assertEqual(project_input.get_attribute("value"), project)
+        if notes:
+            self.assertEqual(notes_input.get_attribute("value"), notes)
         if start_error:
             error = form.find_element_by_id("start-error")
             self.assertIn(start_error, error.text)
@@ -100,15 +106,32 @@ class TimeTrackingTest(FunctionalTest):
             self.assertIn(date, div.find_element_by_class_name("date").text)
         self.assertIn(total, div.find_element_by_class_name("total-time").text)
         session_divs = div.find_elements_by_class_name("session")
-        self.assertEqual(len(sessions), len(session_divs))
+        self.assertEqual(len(sessions), len(session_divs) if sessions else len(session_divs) - 1)
         for session, session_div in zip(sessions, session_divs):
-            cells = session_div.find_elements_by_tag_name("td")
+            cells = session_div.find_elements_by_class_name("cell")
             self.assertIn(session[0], cells[0].text)
-            self.assertIn(session[1], cells[1].text)
-            if session[2]:
-                self.assertIn(session[2], cells[2].text)
+            self.assertIn(session[1], cells[2].text)
+            self.assertIn(session[2], cells[3].text)
+            if session[3]:
+                self.assertIn(session[3], cells[4].text)
             else:
-                self.assertEqual(cells[2].text, "")
+                self.assertEqual(cells[4].text, "-")
+            if len(session) > 4:
+                button = session_div.find_element_by_tag_name("button")
+                open_notes = div.find_elements_by_tag_name("span")
+                button.click()
+                new_open_notes = div.find_elements_by_tag_name("span")
+                self.assertEqual(
+                 len(open_notes) + 1, len(new_open_notes)
+                )
+                notes = [n for n in new_open_notes if n not in open_notes][0]
+                self.assertEqual(notes.text, session[4])
+                button.click()
+                self.sleep(0.6)
+                new_open_notes = div.find_elements_by_tag_name("span")
+                self.assertEqual(
+                 len(open_notes), len(new_open_notes)
+                )
 
 
     def fill_in_project_form(self, name):
@@ -170,7 +193,9 @@ class SessionAddingTests(TimeTrackingTest):
         # The user goes to the home page and fills out the form there
         self.login()
         self.get("/")
-        self.fill_in_session_form("16:05", "16:35", "0", "Cycling", existing=True)
+        self.fill_in_session_form(
+         "16:05", "16:35", "0", "Cycling", existing=True, notes="Some notes."
+        )
 
         # They are still on the main page
         self.check_page("/")
@@ -180,7 +205,7 @@ class SessionAddingTests(TimeTrackingTest):
         self.check_day_report(today, "1 hour, 50 minutes", [
          ["00:30 - 00:55", "Research", "20 minutes", "5 minute break"],
          ["01:00 - 02:00", "Yoga", "1 hour", None],
-         ["16:05 - 16:35", "Cycling", "30 minutes", None]
+         ["16:05 - 16:35", "Cycling", "30 minutes", None, "Some notes."]
         ])
 
 
@@ -477,8 +502,8 @@ class SessionViewingTests(TimeTrackingTest):
         for index, day in enumerate(days):
             if index == 9:
                 self.check_day_report(day, "1 hour, 15 minutes", [
-                ["15:20 - 16:00", "Teaching", "35 minutes", "5 minutes"],
-                ["20:05 - 21:00", "Coding", "40 minutes", "15 minutes"],
+                ["15:20 - 16:00", "Teaching", "35 minutes", "5 minute"],
+                ["20:05 - 21:00", "Coding", "40 minutes", "15 minute"],
                 ], date="21 April, 1997")
             elif index == 28:
                 self.check_day_report(day, "10 minutes", [
@@ -515,9 +540,9 @@ class SessionViewingTests(TimeTrackingTest):
             if index == 7:
                 self.check_day_report(day, "2 hours, 35 minutes", [
                 ["12:00 - 12:10", "Gym", "10 minutes", ""],
-                ["15:20 - 16:00", "Cycling", "35 minutes", "5 minutes"],
+                ["15:20 - 16:00", "Cycling", "35 minutes", "5 minute"],
                 ["19:00 - 20:10", "Research", "1 hour, 10 minutes", None],
-                ["20:05 - 21:00", "Running", "40 minutes", "15 minutes"],
+                ["20:05 - 21:00", "Running", "40 minutes", "15 minute"],
                 ], date="24 December, 1996")
             else:
                 self.check_day_report(day, "0 minutes", [])
@@ -544,8 +569,8 @@ class SessionViewingTests(TimeTrackingTest):
 
         # They decide to look at Research in more detail
         today = self.browser.find_element_by_class_name("day-sessions")
-        table = today.find_element_by_tag_name("table")
-        for row in table.find_elements_by_tag_name("tr"):
+        table = today.find_element_by_class_name("sessions")
+        for row in table.find_elements_by_class_name("session"):
             if "Research" in row.text:
                 link = row.find_element_by_class_name("project-link")
                 self.click(link)
@@ -651,7 +676,7 @@ class SessionEditingTests(TimeTrackingTest):
         ])
 
         # They go to edit the Yoga
-        row = today.find_elements_by_tag_name("tr")[1]
+        row = today.find_elements_by_class_name("session")[1]
         self.assertIn("1 hour", row.text)
         link = row.find_element_by_class_name("edit-link")
         self.click(link)
@@ -660,13 +685,13 @@ class SessionEditingTests(TimeTrackingTest):
 
         # The form has pre-loaded values
         self.check_session_form(
-         start_day="1997-05-02", end_day="1997-05-02",
+         start_day="1997-05-02", end_day="1997-05-02", notes="",
          start_time="01:00", end_time="02:00", breaks="", project="Yoga"
         )
 
         # They change those values and submit
         self.fill_in_session_form(
-         "23:45", "03:00", "10", "Base Jumping",
+         "23:45", "03:00", "10", "Base Jumping", notes="new note",
          start_day="1996-05-01", end_day="1996-05-02"
         )
 
@@ -676,7 +701,7 @@ class SessionEditingTests(TimeTrackingTest):
         # The sessions are updated
         day = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(day, "3 hours, 5 minutes", [
-         ["23:45 - 03:00", "Base Jumping", "3 hours, 5 minutes", "10 minutes"],
+         ["23:45 - 03:00", "Base Jumping", "3 hours, 5 minutes", "10 minute", "new note"],
         ], date="1 May, 1996")
 
 
@@ -690,7 +715,7 @@ class SessionEditingTests(TimeTrackingTest):
         ])
 
         # They go to edit the Yoga
-        row = today.find_elements_by_tag_name("tr")[1]
+        row = today.find_elements_by_class_name("session")[1]
         self.assertIn("1 hour", row.text)
         link = row.find_element_by_class_name("edit-link")
         self.click(link)
@@ -715,7 +740,7 @@ class SessionEditingTests(TimeTrackingTest):
         # The sessions are updated
         day = self.browser.find_element_by_class_name("day-sessions")
         self.check_day_report(day, "3 hours, 5 minutes", [
-         ["23:45 - 03:00", "Base Jumping", "3 hours, 5 minutes", "10 minutes"],
+         ["23:45 - 03:00", "Base Jumping", "3 hours, 5 minutes", "10 minute"],
         ], date="1 May, 1996")
 
 
@@ -740,7 +765,7 @@ class SessionEditingTests(TimeTrackingTest):
         ])
 
         # They go to edit the yoga
-        row = today.find_elements_by_tag_name("tr")[1]
+        row = today.find_elements_by_class_name("session")[1]
         self.assertIn("1 hour", row.text)
         link = row.find_element_by_class_name("edit-link")
         self.click(link)

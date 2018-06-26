@@ -28,7 +28,7 @@ form {
 	    font-size: 0.8em;
 	}
 
-	input, select {
+	input, select, textarea {
 	    display: block;
 	    padding: 1rem;
 	    font-size: 1em;
@@ -52,6 +52,11 @@ form {
 	    @include margin-side(auto);
 	    display: block;
 	}
+
+    textarea {
+        height: 12rem;
+        font-size: 0.9em;
+    }
 }
 
 .container-foot {
